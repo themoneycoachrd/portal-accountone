@@ -182,6 +182,7 @@
 <div class="footer">Los datos se guardan automáticamente en este navegador.</div>
 
 <script>
+if(sessionStorage.getItem('ao_portal_auth')!=='true'){window.location.href='../Pantalla de Inicio/index.html';throw'no auth';}
 // ==================== TYPES ====================
 // Constants, configuration, and data definitions.
 // Future: types/, constants/, data/

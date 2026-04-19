@@ -205,6 +205,7 @@
 <div class="footer">Account One 2026</div>
 
 <script>
+if(sessionStorage.getItem('ao_portal_auth')!=='true'){window.location.href='../Pantalla de Inicio/index.html';throw'no auth';}
 var MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 var STORAGE_KEY='accountone_cierre_mensual_2026';
 

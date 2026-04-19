@@ -193,6 +193,7 @@
 <div class="footer">Última actualización: 16 abril 2026</div>
 
 <script>
+if(sessionStorage.getItem('ao_portal_auth')!=='true'){window.location.href='../Pantalla de Inicio/index.html';throw'no auth';}
 // ==================== TYPES ====================
 // Constants, configuration, and data definitions.
 // Future: types/, constants/, data/
