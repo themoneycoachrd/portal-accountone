@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cierre Mensual — Account One</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #3b82f6;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --purple: #8b5cf6;
+    --orange: #f97316;
+    --teal: #14b8a6;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --light: #9ca3af;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+  .header { background:linear-gradient(135deg, #1e3a5f, #2d4a7a); color:white; padding:24px; }
+  .header h1 { font-size:1.5rem; font-weight:700; }
+  .header p { font-size:0.9rem; opacity:0.8; margin-top:4px; }
+
+  .main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
+  .main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.95rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; }
+  .main-tab:hover { color:var(--text); }
+  .main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+  .sub-tabs { display:flex; gap:4px; padding:10px 24px; background:#f8fafc; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .sub-tab { padding:6px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); white-space:nowrap; transition:all 0.15s; }
+  .sub-tab:hover { background:#e2e8f0; }
+  .sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  .breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; }
+  .breadcrumb-bar a { color:var(--muted); text-decoration:none; cursor:pointer; font-weight:500; }
+  .breadcrumb-bar a:hover { color:var(--navy); text-decoration:underline; }
+  .breadcrumb-bar .sep { color:var(--light); font-size:11px; }
+  .breadcrumb-bar .current { color:var(--text); font-weight:600; }
+
+  .content { padding:20px 24px; max-width:900px; margin:0 auto; }
+
+  /* Contadora cards */
+  .contadora-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .contadora-pick { background:var(--card); border-radius:14px; padding:20px; border:2px solid var(--border); cursor:pointer; transition:all 0.2s; text-align:center; }
+  .contadora-pick:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .contadora-avatar { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:800; color:white; margin:0 auto 10px; }
+  .contadora-pick-name { font-size:15px; font-weight:700; }
+  .contadora-pick-count { font-size:12px; color:var(--light); margin-top:4px; }
+
+  /* Client list */
+  .client-list-item { background:var(--card); border-radius:10px; padding:14px 18px; border:1px solid var(--border); cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .client-list-item:hover { border-color:var(--blue); background:#f8fafc; }
+  .client-name { font-size:14px; font-weight:600; }
+  .client-progress-mini { display:flex; align-items:center; gap:8px; }
+  .client-pct { font-size:12px; font-weight:700; color:var(--light); }
+  .client-mini-bar { width:60px; height:6px; background:#f1f5f9; border-radius:3px; overflow:hidden; }
+  .client-mini-fill { height:100%; border-radius:3px; background:var(--blue); transition:width 0.3s; }
+
+  /* Progress overview */
+  .progress-overview { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); margin-bottom:20px; }
+  .progress-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .progress-title { font-size:16px; font-weight:700; }
+  .progress-pct { font-size:24px; font-weight:800; }
+  .progress-pct.complete { color:var(--green); }
+  .progress-track { width:100%; height:12px; background:#f1f5f9; border-radius:6px; overflow:hidden; margin-bottom:8px; }
+  .progress-fill { height:100%; border-radius:6px; transition:width 0.4s ease; background:linear-gradient(90deg, var(--blue), var(--green)); }
+  .progress-fill.done { background:var(--green); }
+  .progress-sub { font-size:12px; color:var(--light); }
+
+  .group-progress-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:14px; }
+  .group-mini { background:#f8fafc; border-radius:8px; padding:10px; }
+  .group-mini-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
+  .group-mini-track { width:100%; height:6px; background:#e5e7eb; border-radius:3px; overflow:hidden; }
+  .group-mini-fill { height:100%; border-radius:3px; transition:width 0.3s; }
+  .group-mini-text { font-size:10px; color:var(--light); margin-top:4px; display:flex; justify-content:space-between; }
+
+  .group { margin-bottom:20px; }
+  .group-header { display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:12px 12px 0 0; cursor:pointer; transition:opacity 0.15s; }
+  .group-header:hover { opacity:0.9; }
+  .group-header.collapsed { border-radius:12px; }
+  .group-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; background:rgba(255,255,255,0.2); }
+  .group-info { flex:1; }
+  .group-name { font-size:15px; font-weight:700; color:white; }
+  .group-deadline { font-size:11px; color:rgba(255,255,255,0.8); margin-top:2px; }
+  .group-status { font-size:11px; font-weight:700; padding:4px 10px; border-radius:6px; background:rgba(255,255,255,0.2); color:white; }
+  .group-status.done { background:rgba(255,255,255,0.35); }
+  .group-arrow { font-size:16px; color:rgba(255,255,255,0.7); transition:transform 0.2s; }
+  .group-arrow.open { transform:rotate(180deg); }
+  .group-body { border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px; overflow:hidden; max-height:0; transition:max-height 0.4s ease; }
+  .group-body.open { max-height:8000px; }
+
+  .task-card { background:var(--card); border-bottom:1px solid #f1f5f9; }
+  .task-card:last-child { border-bottom:none; }
+  .task-card.completed { background:#f0fdf4; }
+  .task-header { display:flex; align-items:center; gap:12px; padding:14px 20px; cursor:pointer; transition:background 0.15s; }
+  .task-header:hover { background:#f8fafc; }
+  .task-header.expanded { background:#f1f5f9; border-bottom:1px solid var(--border); }
+  .task-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; background:#f1f5f9; }
+  .task-card.completed .task-icon { background:#d1fae5; }
+  .task-info { flex:1; }
+  .task-title { font-size:13px; font-weight:700; }
+  .task-card.completed .task-title { color:var(--green); }
+  .task-desc { font-size:11px; color:var(--light); margin-top:1px; }
+  .task-status { font-size:10px; font-weight:600; padding:3px 8px; border-radius:5px; }
+  .status-pending { background:#fef3c7; color:#92400e; }
+  .status-partial { background:#dbeafe; color:#1e40af; }
+  .status-done { background:#d1fae5; color:#065f46; }
+  .task-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; flex-shrink:0; }
+  .task-arrow.open { transform:rotate(180deg); }
+
+  .task-body { max-height:0; overflow:hidden; transition:max-height 0.35s ease, padding 0.3s ease; padding:0 20px; }
+  .task-body.open { max-height:3000px; padding:16px 20px; }
+
+  .upload-zone { border:2px dashed var(--border); border-radius:10px; padding:20px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:12px; background:#fafbfc; }
+  .upload-zone:hover { border-color:var(--blue); background:#f0f7ff; }
+  .upload-zone.uploaded { border-color:var(--green); border-style:solid; background:#f0fdf4; }
+  .upload-icon { font-size:24px; margin-bottom:6px; }
+  .upload-text { font-size:13px; font-weight:600; color:var(--muted); }
+  .upload-hint { font-size:11px; color:var(--light); margin-top:3px; }
+  .upload-done-text { font-size:13px; font-weight:600; color:var(--green); }
+
+  .question-card { background:#f8fafc; border-radius:10px; padding:14px 16px; margin-bottom:10px; border:1px solid #f1f5f9; }
+  .question-card:last-child { margin-bottom:0; }
+  .question-text { font-size:13px; font-weight:600; margin-bottom:10px; }
+  .question-options { display:flex; gap:8px; }
+  .q-option { padding:6px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; }
+  .q-option:hover { border-color:var(--blue); color:var(--blue); }
+  .q-option.selected-yes { background:#d1fae5; color:#065f46; border-color:#a7f3d0; }
+  .q-option.selected-no { background:#fee2e2; color:#991b1b; border-color:#fecaca; }
+  .q-detail { margin-top:12px; padding-top:12px; border-top:1px solid #e5e7eb; }
+
+  .info-banner { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:16px; font-size:13px; color:#1e40af; line-height:1.5; }
+  .info-banner strong { font-weight:700; }
+
+  .field-group { margin-bottom:14px; }
+  .field-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); margin-bottom:4px; font-weight:600; }
+  .field-input { padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:13px; width:140px; }
+  .field-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
+
+  .sub-section { margin-top:14px; padding-top:14px; border-top:1px solid #f1f5f9; }
+  .sub-title { font-size:12px; font-weight:700; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.3px; }
+
+  .note-box { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-top:10px; }
+  .info-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:10px 14px; font-size:12px; color:#1e40af; margin-top:10px; }
+  .check-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+  .check-row:last-child { border-bottom:none; }
+  .check-row input[type="checkbox"] { width:18px; height:18px; margin-top:2px; cursor:pointer; accent-color:var(--green); flex-shrink:0; }
+  .check-label { font-size:13px; flex:1; }
+  .check-label strong { font-weight:600; }
+  .check-hint { font-size:11px; color:var(--light); margin-top:2px; }
+
+  /* Summary */
+  .summary-section { padding:20px; }
+  .summary-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid #f1f5f9; }
+  .summary-row:last-child { border-bottom:none; }
+  .summary-num { width:24px; height:24px; border-radius:50%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:var(--muted); flex-shrink:0; }
+  .summary-row.ok .summary-num { background:#d1fae5; color:#065f46; }
+  .summary-label { flex:1; font-size:13px; }
+  .summary-value { font-size:13px; font-weight:700; }
+  .summary-pair { display:grid; grid-template-columns:1fr 1fr; gap:0; border-bottom:1px solid #f1f5f9; }
+  .summary-pair .summary-half { display:flex; align-items:center; gap:10px; padding:10px 14px; }
+  .summary-pair .summary-half:first-child { border-right:1px solid #f1f5f9; }
+
+  @media (max-width:600px) {
+    .group-progress-row { grid-template-columns:repeat(3,1fr); }
+    .summary-pair { grid-template-columns:1fr; }
+    .summary-pair .summary-half:first-child { border-right:none; border-bottom:1px solid #f1f5f9; }
+    .contadora-grid { grid-template-columns:1fr 1fr; }
+  }
+
+  .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:white; border-radius:16px; padding:24px; width:90%; max-width:400px; }
+  .modal h3 { font-size:16px; font-weight:700; margin-bottom:16px; }
+  .modal input { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:14px; margin-bottom:12px; }
+  .modal input:focus { outline:none; border-color:var(--blue); }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; }
+  .modal-btn { padding:8px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); }
+  .modal-btn.primary { background:var(--blue); color:white; border-color:var(--blue); }
+
+  .empty-state { text-align:center; padding:60px 20px; color:var(--light); }
+  .empty-state p { font-size:14px; margin-bottom:12px; }
+  .footer { text-align:center; font-size:11px; color:var(--light); padding:20px; }
+  textarea.field-input { min-height:60px; resize:vertical; width:100%; }
+  .section-title { font-size:14px; font-weight:700; margin-bottom:14px; color:var(--text); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Cierre Mensual Clientes - Account One</h1>
+  <p>2026</p>
+</div>
+
+<div class="main-tabs" id="mainTabs"></div>
+<div class="breadcrumb-bar" id="breadcrumbBar"></div>
+<div class="sub-tabs" id="subTabs" style="display:none"></div>
+<div class="content" id="content"></div>
+<div class="footer">Account One 2026</div>
+
+<script>
+var MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var STORAGE_KEY='accountone_cierre_mensual_2026';
+
+// ==================== CONTADORAS & CLIENTS ====================
+var CONTADORAS = {
+  Taina: { color:'#3b82f6', clients:['Blackbox','Impact','PSC','MSH','La Fragaria'] },
+  Beliani: { color:'#8b5cf6', clients:['Mv Creative','Iris Laura','Maria Raquel','Oleica','Sosa Arquitectura','Suplident','La Charpente','Unfold'] },
+  Yessica: { color:'#f59e0b', clients:['Tic Tag','RB Raquel Bencosme','SAV','Enlaces','Kalma','Mj Inversiones'] },
+  Karina: { color:'#10b981', clients:['CLC','Vitalie','Fleximoney'] },
+  Victoria: { color:'#ec4899', clients:['Gestaf','Grupisa','Kaizen','Polux','Dr. Maurice Morel','Louis Maurice Morel'] }
+};
+
+// ==================== GROUPS ====================
+var GROUPS=[
+  {id:'tss',name:'TSS (Tesorería de la Seguridad Social)',deadline:'Fecha límite: día 1',deadlineDay:1,color:'#10b981',icon:'👥',
+    tasks:[
+      {id:'cargar_nomina',title:'Cargar nómina',desc:'Responder preguntas y subir Excel de nómina',icon:'📄',mod:'nomina'},
+      {id:'cargar_volantes',title:'Cargar volantes de pago',desc:'Comprobantes de pago de cada empleado',icon:'🧾',mod:'volantes'}
+    ]},
+  {id:'ir3_ir17',name:'IR3 e IR17',deadline:'Fecha límite: día 10',deadlineDay:10,color:'#ef4444',icon:'🏛️',
+    tasks:[
+      {id:'ir3',title:'IR3 (Impuesto al salario)',desc:'Se calcula automáticamente desde los datos de nómina',icon:'🏛️',mod:'ir3'},
+      {id:'ir17_informales',title:'IR17 / Pagos a informales',desc:'Retenciones y pagos a proveedores informales',icon:'👤',mod:'ir17'}
+    ]},
+  {id:'itbis',name:'ITBIS',deadline:'Fecha límite: día 15',deadlineDay:15,color:'#f59e0b',icon:'🧾',
+    tasks:[
+      {id:'control_facturas',title:'Control de facturas recibidas',desc:'Cuántas facturas recibió, cuántas cargó, cuántas faltan',icon:'📊',mod:'control_facturas'},
+      {id:'cxp',title:'Comprobantes de pago (CxP)',desc:'Volantes de pago de facturas del mes y meses anteriores',icon:'🧾',mod:'cxp'}
+    ]},
+  {id:'anticipo',name:'Anticipo',deadline:'Fecha límite: día 15',deadlineDay:15,color:'#8b5cf6',icon:'💵',
+    tasks:[{id:'anticipo_pago',title:'Pago de anticipo',desc:'Recordatorio de pago de anticipo del período',icon:'💵',mod:'anticipo'}]},
+  {id:'cierre',name:'Cierre Mensual y Conciliación',deadline:'Fecha límite: día 20',deadlineDay:20,color:'#3b82f6',icon:'📊',
+    tasks:[
+      {id:'conciliacion',title:'Preguntas de cierre',desc:'Transferencias, retiros, préstamos y gastos personales',icon:'🔍',mod:'conciliacion'},
+      {id:'cxc',title:'Recibos de ingreso (CxC)',desc:'Recibos pagando facturas de este mes y meses anteriores',icon:'💰',mod:'cxc'}
+    ]}
+];
+
+var MODULE_CHECKS={
+  nomina:['cambios_respondido','nomina_cargada'],
+  volantes:['volantes_cargados'],
+  ir3:['ir3_confirmado'],
+  ir17:['informales_respondido'],
+  control_facturas:['control_respondido','nsf_respondido'],
+  cxp:['volantes_mes_cargados','volantes_ant_cargados'],
+  anticipo:['anticipo_respondido'],
+  conciliacion:['transferencias_respondido','retiros_respondido','prestamos_respondido','gastos_tc_respondido'],
+  cxc:['recibos_ant_cargados','recibos_mes_cargados']
+};
+
+var ALL_TASKS=GROUPS.flatMap(function(g){return g.tasks;});
+
+// ==================== STATE ====================
+var APP={mainTab:'contadoras',contadora:'',currentClient:'',currentMonth:getCurrentMonthIndex(),openGroups:{},data:loadData()};
+
+function getCurrentMonthIndex(){var m=new Date().getMonth();return m===0?11:m-1;}
+function loadData(){try{var r=localStorage.getItem(STORAGE_KEY);if(r)return JSON.parse(r);}catch(e){}return{checklist:{}};}
+function saveData(){localStorage.setItem(STORAGE_KEY,JSON.stringify(APP.data));}
+
+function getKey(c,m){return c+'__'+m;}
+function getTD(c,m,tid){var k=getKey(c,m);if(!APP.data.checklist[k])APP.data.checklist[k]={};if(!APP.data.checklist[k][tid])APP.data.checklist[k][tid]={};return APP.data.checklist[k][tid];}
+function setF(c,m,tid,fid,v){getTD(c,m,tid)[fid]=v;saveData();}
+function getF(c,m,tid,fid){var d=getTD(c,m,tid);return d[fid]!==undefined?d[fid]:'';}
+function isTrue(v){return v===true||v==='true';}
+function esc(s){return s.replace(/'/g,"\\'");}
+
+// ==================== PROGRESS ====================
+function taskProgress(c,m,task){
+  var checks=MODULE_CHECKS[task.mod]||[];if(checks.length===0)return{done:0,total:0,pct:0};
+  var done=0;checks.forEach(function(fid){if(isTrue(getF(c,m,task.id,fid)))done++;});
+  return{done:done,total:checks.length,pct:Math.round(done/checks.length*100)};
+}
+function groupProgress(c,m,g){
+  var t=0,d=0;g.tasks.forEach(function(tk){var p=taskProgress(c,m,tk);t+=p.total;d+=p.done;});
+  return t===0?{done:0,total:0,pct:0}:{done:d,total:t,pct:Math.round(d/t*100)};
+}
+function totalProgress(c,m){
+  var t=0,d=0;ALL_TASKS.forEach(function(tk){var p=taskProgress(c,m,tk);t+=p.total;d+=p.done;});
+  // Add resumen check
+  t++;if(isTrue(getF(c,m,'_resumen','leido')))d++;
+  return t===0?0:Math.round(d/t*100);
+}
+
+// ==================== NAVIGATION ====================
+function goContadoras(){APP.mainTab='contadoras';APP.contadora='';APP.currentClient='';renderAll();}
+function goClients(name){APP.mainTab='contadoras';APP.contadora=name;APP.currentClient='';renderAll();}
+function goChecklist(client){APP.mainTab='contadoras';APP.currentClient=client;APP.openGroups={};renderAll();}
+function switchMonth(i){APP.currentMonth=i;renderAll();}
+
+function navigateMain(tab){
+  APP.mainTab=tab;
+  APP.contadora='';
+  APP.currentClient='';
+  renderAll();
+}
+
+function renderAll(){
+  renderMainTabs();
+  renderBreadcrumb();
+  renderSubTabs();
+  renderContent();
+}
+
+function renderBreadcrumb(){
+  var el=document.getElementById('breadcrumbBar');
+  el.style.display='flex';
+  var h='<a href="../Pantalla de Inicio/index.html">Account One</a>';
+  h+='<span class="sep">›</span>';
+  if(APP.mainTab==='contadoras' && (APP.contadora || APP.currentClient)){
+    h+='<a onclick="goContadoras()">Cierre Mensual Clientes</a>';
+    if(APP.contadora){
+      h+='<span class="sep">›</span>';
+      if(APP.currentClient){
+        h+='<a onclick="goClients(\''+esc(APP.contadora)+'\')">'+APP.contadora+'</a>';
+        h+='<span class="sep">›</span>';
+        h+='<span class="current">'+APP.currentClient+' — '+MONTHS[APP.currentMonth]+'</span>';
+      } else {
+        h+='<span class="current">'+APP.contadora+'</span>';
+      }
+    }
+  } else {
+    h+='<span class="current">Cierre Mensual Clientes</span>';
+  }
+  el.innerHTML=h;
+}
+
+function renderMainTabs(){
+  var el=document.getElementById('mainTabs');
+  var tabs=[{id:'contadoras',label:'Contadoras'},{id:'clientes',label:'Clientes'}];
+  el.innerHTML=tabs.map(function(t){
+    return '<button class="main-tab '+(APP.mainTab===t.id?'active':'')+'" onclick="navigateMain(\''+t.id+'\')">'+t.label+'</button>';
+  }).join('');
+}
+
+function renderSubTabs(){
+  var el=document.getElementById('subTabs');
+  // Show month sub-tabs when viewing a client checklist OR client list under contadoras
+  if(APP.mainTab==='contadoras'&&APP.currentClient){
+    el.style.display='flex';
+    el.innerHTML=MONTHS.map(function(m,i){
+      return '<div class="sub-tab '+(i===APP.currentMonth?'active':'')+'" onclick="switchMonth('+i+')">'+m+'</div>';
+    }).join('');
+  } else {
+    el.style.display='none';
+  }
+}
+
+function renderContent(){
+  if(APP.mainTab==='clientes') return renderAllClients();
+  // Contadoras flow
+  if(APP.currentClient) return renderChecklist();
+  if(APP.contadora) return renderClients();
+  renderContadoras();
+}
+
+// ==================== VIEW: CONTADORAS ====================
+function renderContadoras(){
+  var ct=document.getElementById('content'),h='';
+  h+='<div class="section-title">Selecciona una contadora</div>';
+  h+='<div class="contadora-grid">';
+  Object.keys(CONTADORAS).forEach(function(name){
+    var c=CONTADORAS[name];
+    h+='<div class="contadora-pick" onclick="goClients(\''+esc(name)+'\')">';
+    h+='<div class="contadora-avatar" style="background:'+c.color+'">'+name.charAt(0)+'</div>';
+    h+='<div class="contadora-pick-name">'+name+'</div>';
+    h+='<div class="contadora-pick-count">'+c.clients.length+' cliente'+(c.clients.length!==1?'s':'')+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  ct.innerHTML=h;
+}
+
+// ==================== VIEW: CLIENTS ====================
+function renderClients(){
+  var ct=document.getElementById('content'),c=CONTADORAS[APP.contadora];
+  if(!c){ct.innerHTML='';return;}
+  var h='<div class="section-title">Clientes de '+APP.contadora+'</div>';
+  c.clients.forEach(function(cl){
+    var mo=MONTHS[APP.currentMonth];
+    var pct=totalProgress(cl,mo);
+    h+='<div class="client-list-item" onclick="goChecklist(\''+esc(cl)+'\')">';
+    h+='<div class="client-name">'+cl+'</div>';
+    h+='<div class="client-progress-mini">';
+    h+='<div class="client-mini-bar"><div class="client-mini-fill" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':'var(--blue)')+'"></div></div>';
+    h+='<div class="client-pct" style="color:'+(pct===100?'var(--green)':'var(--light)')+'">'+pct+'%</div>';
+    h+='</div></div>';
+  });
+  ct.innerHTML=h;
+}
+
+// ==================== VIEW: ALL CLIENTS ====================
+function renderAllClients(){
+  var ct=document.getElementById('content'),mo=MONTHS[APP.currentMonth],h='';
+  h+='<div class="section-title">Todos los clientes</div>';
+  Object.keys(CONTADORAS).forEach(function(name){
+    var c=CONTADORAS[name];
+    h+='<div style="margin-bottom:16px">';
+    h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 2px">';
+    h+='<div style="width:10px;height:10px;border-radius:50%;background:'+c.color+'"></div>';
+    h+='<span style="font-size:13px;font-weight:700;color:var(--muted)">'+name+'</span>';
+    h+='<span style="font-size:11px;color:var(--light)">('+c.clients.length+')</span></div>';
+    c.clients.forEach(function(cl){
+      var pct=totalProgress(cl,mo);
+      h+='<div class="client-list-item" onclick="goClientFromAll(\''+esc(name)+'\',\''+esc(cl)+'\')">';
+      h+='<div class="client-name">'+cl+'</div>';
+      h+='<div class="client-progress-mini">';
+      h+='<div class="client-mini-bar"><div class="client-mini-fill" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':'var(--blue)')+'"></div></div>';
+      h+='<div class="client-pct" style="color:'+(pct===100?'var(--green)':'var(--light)')+'">'+pct+'%</div>';
+      h+='</div></div>';
+    });
+    h+='</div>';
+  });
+  ct.innerHTML=h;
+}
+
+function goClientFromAll(contadora,client){
+  APP.mainTab='contadoras';
+  APP.contadora=contadora;
+  APP.currentClient=client;
+  APP.openGroups={};
+  renderAll();
+}
+
+// ==================== VIEW: CHECKLIST ====================
+function renderChecklist(){
+  var ct=document.getElementById('content'),cl=APP.currentClient,mo=MONTHS[APP.currentMonth];
+  var tp=totalProgress(cl,mo),done=tp===100,h='';
+
+  h+='<div class="progress-overview"><div class="progress-header"><div>';
+  h+='<div class="progress-title">'+cl+'</div><div class="progress-sub">Cierre de '+mo+' 2026</div></div>';
+  h+='<div class="progress-pct '+(done?'complete':'')+'">'+tp+'%</div></div>';
+  h+='<div class="progress-track"><div class="progress-fill '+(done?'done':'')+'" style="width:'+tp+'%"></div></div>';
+  h+='<div class="progress-sub">'+(done?'Cierre completado':'En progreso')+'</div>';
+  h+='<div class="group-progress-row">';
+  GROUPS.forEach(function(g){
+    var gp=groupProgress(cl,mo,g);
+    h+='<div class="group-mini"><div class="group-mini-label" style="color:'+g.color+'">'+g.name.split('(')[0].trim()+'</div>';
+    h+='<div class="group-mini-track"><div class="group-mini-fill" style="width:'+gp.pct+'%;background:'+g.color+'"></div></div>';
+    h+='<div class="group-mini-text"><span>'+gp.done+'/'+gp.total+'</span><span>Día '+g.deadlineDay+'</span></div></div>';
+  });
+  h+='</div></div>';
+
+  GROUPS.forEach(function(group){
+    var gp=groupProgress(cl,mo,group),gd=gp.pct===100,io=APP.openGroups[group.id]||false;
+    h+='<div class="group">';
+    h+='<div class="group-header '+(io?'':'collapsed')+'" style="background:'+group.color+'" onclick="toggleGroup(\''+group.id+'\')">';
+    h+='<div class="group-icon">'+group.icon+'</div><div class="group-info"><div class="group-name">'+group.name+'</div><div class="group-deadline">'+group.deadline+'</div></div>';
+    h+='<div class="group-status '+(gd?'done':'')+'">'+(gd?'✓ Listo':gp.done+'/'+gp.total)+'</div>';
+    h+='<span class="group-arrow '+(io?'open':'')+'">▼</span></div>';
+    h+='<div class="group-body '+(io?'open':'')+'" id="gbody_'+group.id+'">';
+    group.tasks.forEach(function(tk){
+      var tp2=taskProgress(cl,mo,tk),td=tp2.pct===100;
+      var sc='status-pending',st='Pendiente';
+      if(td){sc='status-done';st='Listo';}else if(tp2.pct>0){sc='status-partial';st=tp2.done+'/'+tp2.total;}
+      h+='<div class="task-card '+(td?'completed':'')+'">';
+      h+='<div class="task-header" onclick="toggleTask(\''+tk.id+'\')">';
+      h+='<div class="task-icon">'+tk.icon+'</div><div class="task-info"><div class="task-title">'+tk.title+'</div><div class="task-desc">'+tk.desc+'</div></div>';
+      h+='<span class="task-status '+sc+'">'+st+'</span><span class="task-arrow" id="arrow_'+tk.id+'">▼</span></div>';
+      h+='<div class="task-body" id="body_'+tk.id+'">'+renderModule(tk,cl,mo)+'</div></div>';
+    });
+    h+='</div></div>';
+  });
+
+  h+=renderSummary(cl,mo);
+  ct.innerHTML=h;
+}
+
+// ==================== MODULE RENDERERS ====================
+function renderModule(task,cl,mo){
+  var fn={nomina:renderNomina,volantes:renderVolantes,ir3:renderIR3,ir17:renderIR17,control_facturas:renderControlFacturas,cxp:renderCxP,anticipo:renderAnticipo,conciliacion:renderConciliacion,cxc:renderCxC};
+  return(fn[task.mod]||function(){return'';})(cl,mo,task.id);
+}
+
+function renderNomina(cl,mo,tid){
+  var up=isTrue(getF(cl,mo,tid,'nomina_cargada')),cambios=getF(cl,mo,tid,'hubo_cambios'),h='';
+  h+='<div class="question-card">';
+  h+='<div class="question-text">¿Hubo cambios o novedades en la nómina este mes?</div>';
+  h+='<div class="check-hint" style="margin-bottom:10px">Ejemplos: entradas o salidas de personal, cambios de salario, pago de comisiones</div>';
+  h+=qOptions(cl,mo,tid,'hubo_cambios','cambios_respondido',cambios);
+  if(cambios==='si'){
+    h+='<div class="q-detail"><div class="field-group" style="margin:0"><div class="field-label">Detalle de los cambios o novedades</div>';
+    h+='<textarea class="field-input" style="width:100%" placeholder="Ej: Entró Juan Pérez, aumento de sueldo a María, comisión de ventas..." onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'detalle_cambios\',this.value)">'+(getF(cl,mo,tid,'detalle_cambios')||'')+'</textarea></div></div>';
+  }
+  h+='</div>';
+  h+=uploadZone(up,'nomina_cargada','Cargar Excel de nómina','Nómina cargada','Archivo Excel con el detalle de nómina del mes',cl,mo,tid);
+  if(up){
+    h+='<div style="margin-top:4px"><div class="sub-title">Datos de la nómina</div>';
+    [['total_nomina','Total nómina'],['tss_monto','TSS'],['afp','AFP'],['seguro','Seguro']].forEach(function(f){
+      h+='<div class="field-group"><div class="field-label">'+f[1]+'</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,f[0])||'')+'" placeholder="RD$" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+f[0]+'\',this.value)"></div>';
+    });
+    h+='</div>';
+  }
+  return h;
+}
+
+function renderVolantes(cl,mo,tid){
+  var up=isTrue(getF(cl,mo,tid,'volantes_cargados')),h='';
+  h+=uploadZone(up,'volantes_cargados','Cargar volantes de pago','Volantes de pago cargados','Comprobantes de pago de cada empleado',cl,mo,tid);
+  if(up){h+='<div class="field-group"><div class="field-label">Cantidad de volantes</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_volantes')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_volantes\',this.value)"></div>';}
+  return h;
+}
+
+function renderIR3(cl,mo,tid){
+  var confirmed=isTrue(getF(cl,mo,tid,'ir3_confirmado')),h='';
+  h+='<div class="info-banner"><strong>No requiere acción del cliente.</strong><br><br>La información necesaria para calcular el IR3 viene desde la nómina. El estimado a pagar depende de los datos que el cliente cargó en la sección de TSS. Este es un paso informativo.</div>';
+  h+='<div style="margin-top:12px"><div class="check-row"><input type="checkbox" '+(confirmed?'checked':'')+' onchange="onCheck(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'ir3_confirmado\',this.checked)"><div class="check-label"><strong>Entendido, la nómina ya fue cargada</strong></div></div></div>';
+  return h;
+}
+
+function renderIR17(cl,mo,tid){
+  var resp=getF(cl,mo,tid,'hubo_informales'),h='';
+  h+='<div class="question-card">';
+  h+='<div class="question-text">¿Hubo pagos a proveedores informales este mes?</div>';
+  h+=qOptions(cl,mo,tid,'hubo_informales','informales_respondido',resp);
+  if(resp==='si'){
+    h+='<div class="q-detail">';
+    h+='<div class="field-group"><div class="field-label">¿Cuántos proveedores informales?</div>';
+    h+='<input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_informales')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_informales\',this.value)">';
+    var cant=parseInt(getF(cl,mo,tid,'cant_informales'))||0;
+    if(cant>0){h+='<div class="info-box" style="margin-top:8px">Necesitamos <strong>'+cant+' volante'+(cant>1?'s':'')+' de pago</strong> y el Excel con el detalle de los '+cant+' proveedor'+(cant>1?'es':'')+'.</div>';}
+    h+='</div>';
+    h+=uploadZone(isTrue(getF(cl,mo,tid,'excel_informales')),'excel_informales','Cargar Excel de proveedores informales','Excel de informales cargado','Listado con detalle de cada proveedor y monto',cl,mo,tid);
+    h+=uploadZone(isTrue(getF(cl,mo,tid,'volantes_informales')),'volantes_informales','Cargar volantes de pago a informales','Volantes de informales cargados','Comprobantes de pago de cada proveedor informal',cl,mo,tid);
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function renderControlFacturas(cl,mo,tid){
+  var h='';
+  // Semanas de facturas recibidas
+  h+='<div class="field-label" style="font-weight:700;margin-bottom:8px">Facturas recibidas por semana</div>';
+  var semanas=getF(cl,mo,tid,'facturas_semanas');
+  if(!semanas||typeof semanas!=='object'){semanas=[{qty:0},{qty:0},{qty:0},{qty:0},{qty:0}];setF(cl,mo,tid,'facturas_semanas',semanas);}
+  var totalSemanas=0;
+  for(var i=0;i<5;i++){totalSemanas+=(parseInt(semanas[i].qty)||0);}
+  h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">';
+  for(var i=0;i<5;i++){
+    var sq=parseInt(semanas[i].qty)||0;
+    h+='<div style="text-align:center">';
+    h+='<div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px">Semana '+(i+1)+'</div>';
+    h+='<input style="width:100%;text-align:center;padding:8px 4px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-weight:700" type="text" inputmode="numeric" value="'+(sq||'')+'" placeholder="0" onchange="updateFactSemana(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\','+i+',this.value)">';
+    h+='</div>';
+  }
+  h+='</div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#f0fdf4;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:16px">';
+  h+='<div style="font-size:13px;color:var(--muted)">Total facturas cargadas</div>';
+  h+='<div style="font-size:22px;font-weight:800;color:var(--green)">'+totalSemanas+'</div>';
+  h+='</div>';
+  // Pregunta: ¿Entiendes que faltan más facturas?
+  h+='<div class="question-card"><div class="question-text">¿Entiendes que faltan más facturas?</div>';
+  h+=qOptionsWithDate(cl,mo,tid,'faltan_facturas','control_respondido',getF(cl,mo,tid,'faltan_facturas'));
+  h+='</div>';
+  // Pregunta: ¿Se cargaron los NCF de los bancos?
+  h+='<div class="question-card" style="margin-top:14px"><div class="question-text">¿Se cargaron los NCF de los bancos?</div>';
+  h+=qOptionsWithDate(cl,mo,tid,'nsf','nsf_respondido',getF(cl,mo,tid,'nsf'));
+  h+='</div>';
+  return h;
+}
+
+function updateFactSemana(cl,mo,tid,weekIdx,value){
+  var semanas=getF(cl,mo,tid,'facturas_semanas');
+  if(!semanas||typeof semanas!=='object'){semanas=[{qty:0},{qty:0},{qty:0},{qty:0},{qty:0}];}
+  semanas[weekIdx].qty=parseInt(value)||0;
+  setF(cl,mo,tid,'facturas_semanas',semanas);
+  rerender(tid);
+}
+
+function qOptionsWithDate(cl,mo,tid,fieldId,checkKey,current){
+  var fechaKey=fieldId+'_fecha';
+  var fecha=getF(cl,mo,tid,fechaKey)||'';
+  var h='<div class="question-options">';
+  h+='<div class="q-option '+(current==='si'?'selected-yes':'')+'" onclick="answerQDate(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+fieldId+'\',\''+checkKey+'\',\'si\')">Sí</div>';
+  h+='<div class="q-option '+(current==='no'?'selected-no':'')+'" onclick="answerQDate(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+fieldId+'\',\''+checkKey+'\',\'no\')">No</div>';
+  h+='</div>';
+  if(fecha){
+    var d=new Date(fecha+'T12:00:00');
+    var dias=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+    h+='<div style="font-size:11px;color:var(--muted);margin-top:6px">Respondido: '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear()+' · '+dias[d.getDay()]+'</div>';
+  }
+  return h;
+}
+
+function answerQDate(cl,mo,tid,fid,checkKey,val){
+  var cur=getF(cl,mo,tid,fid);
+  var fechaKey=fid+'_fecha';
+  if(cur===val){setF(cl,mo,tid,fid,'');setF(cl,mo,tid,checkKey,false);setF(cl,mo,tid,fechaKey,'');}
+  else{
+    setF(cl,mo,tid,fid,val);setF(cl,mo,tid,checkKey,true);
+    var hoy=new Date();var yy=hoy.getFullYear();var mm=String(hoy.getMonth()+1).padStart(2,'0');var dd=String(hoy.getDate()).padStart(2,'0');
+    setF(cl,mo,tid,fechaKey,yy+'-'+mm+'-'+dd);
+  }
+  rerender(tid);
+}
+
+function renderCxP(cl,mo,tid){
+  var h='';
+  h+=uploadZone(isTrue(getF(cl,mo,tid,'volantes_mes_cargados')),'volantes_mes_cargados','Cargar comprobantes de transferencia — facturas de este mes','Comprobantes del mes cargados','Comprobantes de transferencia pagando facturas del mes actual',cl,mo,tid);
+  if(isTrue(getF(cl,mo,tid,'volantes_mes_cargados'))){h+='<div class="field-group"><div class="field-label">Cantidad de comprobantes del mes</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_volantes_mes')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_volantes_mes\',this.value)"></div>';}
+  h+='<div style="margin-top:4px"></div>';
+  h+=uploadZone(isTrue(getF(cl,mo,tid,'volantes_ant_cargados')),'volantes_ant_cargados','Cargar comprobantes de transferencia — facturas de meses anteriores','Comprobantes anteriores cargados','Comprobantes de transferencia pagando facturas de períodos pasados',cl,mo,tid);
+  if(isTrue(getF(cl,mo,tid,'volantes_ant_cargados'))){h+='<div class="field-group"><div class="field-label">Cantidad de comprobantes anteriores</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_volantes_ant')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_volantes_ant\',this.value)"></div>';}
+  return h;
+}
+
+function renderAnticipo(cl,mo,tid){
+  var resp=getF(cl,mo,tid,'pago_anticipo'),h='';
+  h+='<div class="info-banner" style="margin-bottom:12px"><strong>Recordatorio:</strong> El anticipo es una obligación fiscal que se paga mensualmente. Verifica con tu contador si aplica y si el monto está al día.</div>';
+  h+='<div class="question-card"><div class="question-text">¿Pagaste el anticipo de este período?</div>';
+  h+=qOptions(cl,mo,tid,'pago_anticipo','anticipo_respondido',resp);
+  if(resp==='no'){h+='<div class="q-detail"><div class="note-box" style="margin:0">Recuerda que el anticipo tiene fecha límite el día 15. Coordina con tu contador para evitar recargos.</div></div>';}
+  h+='</div>';
+  return h;
+}
+
+function renderConciliacion(cl,mo,tid){
+  var h='',questions=[
+    {key:'transferencias',label:'¿Hubo transferencias entre cuentas este mes?',checkKey:'transferencias_respondido',uploadLabel:'Cargar volantes de transferencias',uploadDone:'Volantes de transferencias cargados',uploadHint:'Comprobantes de cada transferencia entre cuentas propias',uploadKey:'transf_cargadas',detailLabel:'Detalle de las transferencias',detailKey:'detalle_transferencias',detailPlaceholder:'Ej: De cuenta corriente BHD a ahorro Popular, RD$50,000...'},
+    {key:'retiros',label:'¿Hubo retiros personales este mes?',checkKey:'retiros_respondido',uploadLabel:'Cargar comprobantes de retiros',uploadDone:'Comprobantes de retiros cargados',uploadHint:'Foto o volante de cada retiro personal',uploadKey:'retiros_cargados',detailLabel:'Detalle de los retiros',detailKey:'detalle_retiros',detailPlaceholder:'Ej: Retiro cajero BHD RD$20,000...'},
+    {key:'prestamos',label:'¿Hubo préstamos o abonos a capital este mes?',checkKey:'prestamos_respondido',uploadLabel:'Cargar documentos de préstamos',uploadDone:'Documentos de préstamos cargados',uploadHint:'Contratos, recibos de abono o estados de préstamo',uploadKey:'prestamos_cargados',detailLabel:'Detalle',detailKey:'detalle_prestamos',detailPlaceholder:'Ej: Abono capital préstamo Banreservas RD$15,000...'},
+    {key:'gastos_tc',label:'¿Hubo gastos personales en la tarjeta de crédito de la empresa?',checkKey:'gastos_tc_respondido',uploadLabel:'Cargar comprobantes de gastos personales',uploadDone:'Comprobantes cargados',uploadHint:'Foto de cada gasto personal pagado con tarjeta de la empresa',uploadKey:'gastostc_cargados',detailLabel:'Detalle',detailKey:'detalle_gastos_tc',detailPlaceholder:'Ej: Cena personal RD$3,500 con TC empresa...'}
+  ];
+  questions.forEach(function(q){
+    var resp=getF(cl,mo,tid,q.key);
+    h+='<div class="question-card"><div class="question-text">'+q.label+'</div>';
+    h+=qOptions(cl,mo,tid,q.key,q.checkKey,resp);
+    if(resp==='si'){
+      h+='<div class="q-detail">';
+      h+=uploadZone(isTrue(getF(cl,mo,tid,q.uploadKey)),q.uploadKey,q.uploadLabel,q.uploadDone,q.uploadHint,cl,mo,tid);
+      h+='<div class="field-group" style="margin:0"><div class="field-label">'+q.detailLabel+'</div>';
+      h+='<textarea class="field-input" style="width:100%" placeholder="'+q.detailPlaceholder+'" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+q.detailKey+'\',this.value)">'+(getF(cl,mo,tid,q.detailKey)||'')+'</textarea></div></div>';
+    }
+    h+='</div>';
+  });
+  return h;
+}
+
+function renderCxC(cl,mo,tid){
+  var h='';
+  h+=uploadZone(isTrue(getF(cl,mo,tid,'recibos_ant_cargados')),'recibos_ant_cargados','Cargar recibos de ingreso — facturas de meses anteriores','Recibos anteriores cargados','Recibos de cobro correspondientes a facturas de periodos pasados',cl,mo,tid);
+  if(isTrue(getF(cl,mo,tid,'recibos_ant_cargados'))){h+='<div class="field-group"><div class="field-label">Cantidad de recibos anteriores</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_recibos_ant')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_recibos_ant\',this.value)"></div>';}
+  h+='<div style="margin-top:4px"></div>';
+  h+=uploadZone(isTrue(getF(cl,mo,tid,'recibos_mes_cargados')),'recibos_mes_cargados','Cargar recibos de ingreso — facturas de este mes','Recibos del mes cargados','Recibos de cobro correspondientes a facturas del mes actual',cl,mo,tid);
+  if(isTrue(getF(cl,mo,tid,'recibos_mes_cargados'))){
+    h+='<div class="field-group"><div class="field-label">Cantidad de recibos del mes</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'cant_recibos_mes')||'')+'" placeholder="Cantidad" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'cant_recibos_mes\',this.value)"></div>';
+    h+='<div class="field-group"><div class="field-label">Total ingresos del mes</div><input class="field-input" type="text" inputmode="numeric" value="'+(getF(cl,mo,tid,'total_recibos_mes')||'')+'" placeholder="RD$" onchange="onField(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\'total_recibos_mes\',this.value)"></div>';
+  }
+  return h;
+}
+
+// ==================== SHARED COMPONENTS ====================
+function uploadZone(uploaded,fieldId,textPending,textDone,hint,cl,mo,tid){
+  var h='<div class="upload-zone '+(uploaded?'uploaded':'')+'" onclick="toggleUpload(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+fieldId+'\')">';
+  if(uploaded){h+='<div class="upload-icon">✅</div><div class="upload-done-text">'+textDone+'</div><div class="upload-hint">Clic para desmarcar</div>';}
+  else{h+='<div class="upload-icon">📤</div><div class="upload-text">'+textPending+'</div><div class="upload-hint">'+hint+'</div>';}
+  return h+'</div>';
+}
+function qOptions(cl,mo,tid,fieldId,checkKey,current){
+  var h='<div class="question-options">';
+  h+='<div class="q-option '+(current==='si'?'selected-yes':'')+'" onclick="answerQ(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+fieldId+'\',\''+checkKey+'\',\'si\')">Sí</div>';
+  h+='<div class="q-option '+(current==='no'?'selected-no':'')+'" onclick="answerQ(\''+esc(cl)+'\',\''+mo+'\',\''+tid+'\',\''+fieldId+'\',\''+checkKey+'\',\'no\')">No</div>';
+  return h+'</div>';
+}
+
+// ==================== SUMMARY ====================
+function renderSummary(cl,mo){
+  var resumenLeido=isTrue(getF(cl,mo,'_resumen','leido'));
+  var io=APP.openGroups['_resumen']||false;
+
+  // Count how many of the 10 items are done
+  var v1=isTrue(getF(cl,mo,'cargar_nomina','nomina_cargada'));
+  var v2=isTrue(getF(cl,mo,'ir3','ir3_confirmado'));
+  var v3i=getF(cl,mo,'ir17_informales','hubo_informales');
+  var v3=v3i==='no'||isTrue(getF(cl,mo,'ir17_informales','volantes_informales'));
+  var v3t=v3i==='no'?'No hubo':(isTrue(getF(cl,mo,'ir17_informales','volantes_informales'))?'Cargados':'Pendiente');
+  var v4=isTrue(getF(cl,mo,'control_facturas','control_respondido'));
+  var v5n=getF(cl,mo,'control_facturas','nsf');var v5=v5n!=='';
+  var v6a=isTrue(getF(cl,mo,'cxp','volantes_mes_cargados'))||isTrue(getF(cl,mo,'cxp','volantes_ant_cargados'));
+  var v6at=v6a?'Cargados':'Pendiente';
+  var v7a=isTrue(getF(cl,mo,'cxc','recibos_mes_cargados'))||isTrue(getF(cl,mo,'cxc','recibos_ant_cargados'));
+  var v7at=v7a?'Cargados':'Pendiente';
+  var v8=isTrue(getF(cl,mo,'conciliacion','transferencias_respondido'))&&isTrue(getF(cl,mo,'conciliacion','retiros_respondido'))&&isTrue(getF(cl,mo,'conciliacion','prestamos_respondido'))&&isTrue(getF(cl,mo,'conciliacion','gastos_tc_respondido'));
+  var v9p=getF(cl,mo,'anticipo_pago','pago_anticipo');var v9=v9p!=='';
+  var items=[v1,v2,v3,v4,v5,v6a,v7a,v8,v9,resumenLeido];
+  var sDone=items.filter(Boolean).length;
+  var sTotal=items.length;
+  var allDone=sDone===sTotal;
+
+  function sv(ok){return' style="color:'+(ok?'var(--green)':'var(--red)')+'">'; }
+
+  var h='<div class="group">';
+  h+='<div class="group-header '+(io?'':'collapsed')+'" style="background:#475569" onclick="toggleGroup(\'_resumen\')">';
+  h+='<div class="group-icon">📋</div><div class="group-info"><div class="group-name">Resumen del cierre</div><div class="group-deadline">Estado general de los 10 pasos</div></div>';
+  h+='<div class="group-status '+(allDone?'done':'')+'">'+(allDone?'✓ Listo':sDone+'/'+sTotal)+'</div>';
+  h+='<span class="group-arrow '+(io?'open':'')+'">▼</span></div>';
+  h+='<div class="group-body '+(io?'open':'')+'" id="gbody__resumen">';
+
+  h+='<div style="padding:8px 0">';
+  h+=sRow(1,v1,'Nómina',v1?'Cargada':'Pendiente');
+  h+=sRow(2,v2,'IR3',v2?'Confirmado':'Pendiente');
+  h+=sRow(3,v3,'Volantes de pago a proveedores informales',v3t);
+  var semanas=getF(cl,mo,'control_facturas','facturas_semanas');
+  var totalFact=0;if(semanas&&typeof semanas==='object'){for(var si=0;si<5;si++){totalFact+=(parseInt(semanas[si].qty)||0);}}
+  h+=sRow(4,v4,'Control de facturas'+(totalFact>0?' ('+totalFact+')':''),v4?'Respondido':'Pendiente');
+  h+=sRow(5,v5,'NCF bancos',v5?(v5n==='si'?'Sí':'No'):'Pendiente');
+
+  h+=sRow(6,v6a,'Comprobantes transferencia (CxP)',v6at);
+  h+=sRow(7,v7a,'Comprobantes transferencia (CxC)',v7at);
+
+  h+=sRow(8,v8,'Preguntas de cierre',v8?'Respondido':'Pendiente');
+  h+=sRow(9,v9,'Anticipo',v9?(v9p==='si'?'Pagado':'No pagado'):'Pendiente');
+
+  h+='<div class="summary-row '+(resumenLeido?'ok':'')+'">';
+  h+='<div class="summary-num '+(resumenLeido?'ok':'')+'">10</div>';
+  h+='<div class="summary-label">Leíste el resumen de declaración mensual</div>';
+  h+='<input type="checkbox" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer" '+(resumenLeido?'checked':'')+' onchange="onResumen(\''+esc(cl)+'\',\''+mo+'\',this.checked)">';
+  h+='</div>';
+  h+='</div>';
+
+  var pg=GROUPS.filter(function(g){return groupProgress(cl,mo,g).pct<100;});
+  h+='<div style="padding:0 20px 20px">';
+  if(pg.length>0&&!resumenLeido) h+='<div class="note-box" style="margin:0">Pendiente: '+pg.map(function(g){return g.name.split('(')[0].trim();}).join(', ')+'</div>';
+  else if(pg.length===0&&resumenLeido) h+='<div class="info-box" style="margin:0;background:#ecfdf5;border-color:#a7f3d0;color:#065f46">Cierre de '+mo+' completado. Listo para revisión.</div>';
+  else h+='<div class="note-box" style="margin:0">Completa todos los pasos y marca el resumen para cerrar el mes.</div>';
+  h+='</div>';
+
+  h+='</div></div>';
+  return h;
+}
+
+function sRow(num,ok,label,value){
+  return '<div class="summary-row '+(ok?'ok':'')+'"><div class="summary-num '+(ok?'ok':'')+'">'+num+'</div><div class="summary-label">'+label+'</div><div class="summary-value" style="color:'+(ok?'var(--green)':'var(--red)')+'">'+value+'</div></div>';
+}
+
+// ==================== INTERACTIONS ====================
+function toggleGroup(gid){
+  APP.openGroups[gid]=!APP.openGroups[gid];
+  var b=document.getElementById('gbody_'+gid),hd=b.previousElementSibling,ar=hd.querySelector('.group-arrow');
+  if(APP.openGroups[gid]){b.classList.add('open');ar.classList.add('open');hd.classList.remove('collapsed');}
+  else{b.classList.remove('open');ar.classList.remove('open');hd.classList.add('collapsed');}
+}
+function toggleTask(tid){
+  var b=document.getElementById('body_'+tid),ar=document.getElementById('arrow_'+tid),hd=b.previousElementSibling;
+  if(b.classList.contains('open')){b.classList.remove('open');ar.classList.remove('open');hd.classList.remove('expanded');}
+  else{b.classList.add('open');ar.classList.add('open');hd.classList.add('expanded');}
+}
+function toggleUpload(cl,mo,tid,fid){setF(cl,mo,tid,fid,!isTrue(getF(cl,mo,tid,fid)));rerender(tid);}
+function answerQ(cl,mo,tid,fid,checkKey,val){
+  var cur=getF(cl,mo,tid,fid);
+  if(cur===val){setF(cl,mo,tid,fid,'');setF(cl,mo,tid,checkKey,false);}
+  else{setF(cl,mo,tid,fid,val);setF(cl,mo,tid,checkKey,true);}
+  rerender(tid);
+}
+function onCheck(cl,mo,tid,fid,v){setF(cl,mo,tid,fid,v);rerender(tid);}
+function onField(cl,mo,tid,fid,v){setF(cl,mo,tid,fid,v);}
+function onFieldAndRerender(cl,mo,tid,fid,v){setF(cl,mo,tid,fid,v);rerender(tid);}
+function onResumen(cl,mo,v){setF(cl,mo,'_resumen','leido',v);renderChecklist();}
+
+function rerender(tid){
+  var gid=null;
+  GROUPS.forEach(function(g){g.tasks.forEach(function(t){if(t.id===tid)gid=g.id;});});
+  var wasOpen=gid?APP.openGroups[gid]:false;
+  renderChecklist();
+  setTimeout(function(){
+    if(gid&&wasOpen){APP.openGroups[gid]=true;var gb=document.getElementById('gbody_'+gid);if(gb){gb.classList.add('open');var gh=gb.previousElementSibling;if(gh){gh.classList.remove('collapsed');var ga=gh.querySelector('.group-arrow');if(ga)ga.classList.add('open');}}}
+    var b=document.getElementById('body_'+tid),ar=document.getElementById('arrow_'+tid);
+    if(b&&ar){b.classList.add('open');ar.classList.add('open');var hd=b.previousElementSibling;if(hd)hd.classList.add('expanded');}
+  },50);
+}
+
+// ==================== INIT ====================
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Contadoras — Account One 2026</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #3b82f6;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --purple: #8b5cf6;
+    --pink: #ec4899;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --light: #9ca3af;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+  .header { background:linear-gradient(135deg, var(--navy), #2d4a7a); color:white; padding:24px; }
+  .header h1 { font-size:1.5rem; font-weight:700; }
+  .header p { font-size:0.9rem; opacity:0.8; margin-top:4px; }
+
+  .container { max-width:900px; margin:0 auto; padding:20px 24px; }
+
+  /* ─── Selector de contadora ─── */
+  .selector-screen { text-align:center; padding:60px 20px; }
+  .selector-screen h2 { font-size:18px; font-weight:700; margin-bottom:8px; }
+  .selector-screen p { font-size:13px; color:var(--muted); margin-bottom:24px; }
+  .selector-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; max-width:600px; margin:0 auto; }
+  .selector-card { background:white; border:2px solid var(--border); border-radius:12px; padding:20px 16px; cursor:pointer; transition:all 0.2s; }
+  .selector-card:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+  .selector-card .sc-dot { width:14px; height:14px; border-radius:50%; margin:0 auto 10px; }
+  .selector-card .sc-name { font-size:15px; font-weight:700; }
+  .selector-card .sc-tier { font-size:11px; color:var(--light); margin-top:2px; }
+  .selector-card .sc-obj { font-size:12px; color:var(--muted); margin-top:6px; }
+
+  /* ─── Toolbar ─── */
+  .toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  .toolbar-left { display:flex; align-items:center; gap:12px; }
+  .toolbar-name { display:flex; align-items:center; gap:8px; }
+  .toolbar-dot { width:12px; height:12px; border-radius:50%; }
+  .toolbar-title { font-size:16px; font-weight:800; }
+  .toolbar-tier { font-size:11px; color:var(--light); }
+  .btn-back { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; }
+  .btn-back:hover { background:#f1f5f9; }
+
+  .quarter-bar { display:flex; gap:6px; margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--border); }
+  .q-btn { flex:1; padding:10px 8px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; border:2px solid var(--border); background:white; color:var(--muted); transition:all 0.2s; text-align:center; }
+  .q-btn:hover { border-color:var(--blue); background:#f8fafc; }
+  .q-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .q-btn .q-label { font-size:15px; }
+  .q-btn .q-months { font-size:10px; opacity:0.6; margin-top:2px; }
+
+  .month-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+  .month-tab { padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; }
+  .month-tab:hover { background:#f1f5f9; }
+  .month-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  /* ─── Score overview ─── */
+  .score-overview { background:white; border-radius:14px; border:1px solid var(--border); padding:20px; margin-bottom:20px; display:grid; grid-template-columns:auto 1fr auto; gap:20px; align-items:center; }
+  .score-big { text-align:center; }
+  .score-big .num { font-size:48px; font-weight:900; line-height:1; }
+  .score-big .of { font-size:13px; color:var(--light); }
+  .score-big .label { display:inline-block; margin-top:6px; padding:3px 12px; border-radius:10px; font-size:12px; font-weight:700; }
+  .score-breakdown { display:grid; grid-template-columns:1fr; gap:6px; }
+  .score-row { display:flex; align-items:center; gap:8px; }
+  .score-row-label { font-size:12px; color:var(--muted); width:110px; min-width:110px; }
+  .score-row-bar { flex:1; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; }
+  .score-row-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+  .score-row-pts { font-size:12px; font-weight:700; width:50px; text-align:right; }
+  .escala-mini { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  .escala-item { text-align:center; padding:8px 4px; border-radius:8px; border:1px solid var(--border); transition:all 0.2s; }
+  .escala-item.active { border-width:2px; }
+  .escala-range { font-size:14px; font-weight:800; }
+  .escala-name { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-top:1px; }
+
+  @media (max-width:768px) { .score-overview { grid-template-columns:1fr; } }
+
+  /* ─── Component cards ─── */
+  .comp-card { background:white; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+  .comp-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #f1f5f9; }
+  .comp-header-left { display:flex; align-items:center; gap:10px; }
+  .comp-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:white; }
+  .comp-title { font-size:14px; font-weight:700; }
+  .comp-weight { font-size:11px; color:var(--light); }
+  .comp-score-pill { padding:4px 12px; border-radius:8px; font-size:12px; font-weight:700; }
+  .comp-body { padding:18px; }
+
+  /* ─── Digitación ─── */
+  .dig-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .dig-stat { background:#f8fafc; border-radius:8px; padding:10px; text-align:center; }
+  .dig-stat-label { font-size:10px; text-transform:uppercase; color:var(--light); letter-spacing:0.3px; }
+  .dig-stat-value { font-size:20px; font-weight:800; margin-top:2px; }
+  .dig-input-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+  .dig-input-row label { font-size:12px; color:var(--muted); min-width:130px; }
+  .input-field { padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; font-family:inherit; width:140px; transition:all 0.15s; -moz-appearance:textfield; }
+  .input-field::-webkit-outer-spin-button, .input-field::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+  .input-field:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(59,130,246,0.12); }
+  .progress-bar { width:100%; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+  .time-badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:4px; }
+  .time-ok { background:#ecfdf5; color:#065f46; }
+  .time-late { background:#fef2f2; color:#991b1b; }
+
+  /* ─── Resúmenes ─── */
+  .res-progress { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .res-count { font-size:14px; font-weight:700; }
+  .client-table { width:100%; border-collapse:collapse; }
+  .client-table th { text-align:left; padding:8px 10px; background:#f8fafc; font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:0.3px; border-bottom:2px solid var(--border); }
+  .client-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .client-table tr:hover td { background:#fafbfc; }
+  .client-table input[type="checkbox"] { width:18px; height:18px; cursor:pointer; accent-color:var(--blue); }
+  .client-table input[type="date"] { padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; }
+  .client-table input[type="date"]:focus { outline:none; border-color:var(--blue); }
+  .row-done { background:#f0fdf4 !important; }
+
+  /* ─── Video / Reunión ─── */
+  .vid-info { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  .vid-info-item { background:#f8fafc; border-radius:8px; padding:10px; }
+  .vid-info-label { font-size:10px; text-transform:uppercase; color:var(--light); letter-spacing:0.3px; }
+  .vid-info-value { font-size:14px; font-weight:700; margin-top:2px; }
+  .vid-client-table { width:100%; border-collapse:collapse; }
+  .vid-client-table th { text-align:left; padding:8px 10px; background:#f8fafc; font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:0.3px; border-bottom:2px solid var(--border); }
+  .vid-client-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  .vid-client-table tr:hover td { background:#fafbfc; }
+  .toggle-group { display:flex; gap:0; }
+  .toggle-opt { padding:5px 14px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; }
+  .toggle-opt:first-child { border-radius:6px 0 0 6px; }
+  .toggle-opt:last-child { border-radius:0 6px 6px 0; border-left:none; }
+  .toggle-opt.active-yes { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+  .toggle-opt.active-no { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+  .vid-client-table input[type="date"] { padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:12px; font-family:inherit; }
+  .vid-client-table input[type="date"]:focus { outline:none; border-color:var(--blue); }
+
+  .note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:16px; }
+
+  /* ─── Calculadora de bono ─── */
+  .bono-card { background:linear-gradient(135deg, #1e3a5f 0%, #2d4a7a 50%, #3b5998 100%); border-radius:14px; padding:24px; margin-bottom:20px; color:white; position:relative; overflow:hidden; }
+  .bono-card::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:rgba(255,255,255,0.06); border-radius:50%; }
+  .bono-card::after { content:''; position:absolute; bottom:-20px; left:40%; width:80px; height:80px; background:rgba(255,255,255,0.04); border-radius:50%; }
+  .bono-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; position:relative; z-index:1; }
+  .bono-icon { width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .bono-header-text h3 { font-size:14px; font-weight:700; margin-bottom:1px; }
+  .bono-header-text span { font-size:11px; opacity:0.65; }
+  .bono-body { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; position:relative; z-index:1; }
+  .bono-item { text-align:center; }
+  .bono-item-label { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; opacity:0.6; margin-bottom:4px; }
+  .bono-item-value { font-size:22px; font-weight:900; }
+  .bono-item-sub { font-size:11px; opacity:0.5; margin-top:2px; }
+  .bono-pct-badge { display:inline-block; padding:3px 10px; border-radius:8px; font-size:12px; font-weight:700; margin-top:4px; }
+  .bono-msg { text-align:center; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.12); position:relative; z-index:1; }
+  .bono-msg p { font-size:13px; font-weight:600; }
+  .bono-msg span { font-size:11px; opacity:0.5; }
+
+  @media (max-width:500px) { .bono-body { grid-template-columns:1fr; gap:10px; } }
+
+  .breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; }
+  .breadcrumb-bar a { color:var(--muted); text-decoration:none; cursor:pointer; font-weight:500; }
+  .breadcrumb-bar a:hover { color:var(--navy); text-decoration:underline; }
+  .breadcrumb-bar .sep { color:var(--light); font-size:11px; }
+  .breadcrumb-bar .current { color:var(--text); font-weight:600; }
+
+  .footer { text-align:center; font-size:11px; color:var(--light); padding:20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>KPI Contadoras - Account One</h1>
+  <p>2026</p>
+</div>
+
+<div class="breadcrumb-bar" id="breadcrumbBar"></div>
+<div class="container" id="app"></div>
+<div class="footer">Los datos se guardan automáticamente en este navegador.</div>
+
+<script>
+// ==================== TYPES ====================
+// Constants, configuration, and data definitions.
+// Future: types/, constants/, data/
+
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const MESES_LABEL = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESES_FULL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const QUARTERS = [
+  { id:1, label:"Q1", meses:["enero","febrero","marzo"], cierre:"Marzo" },
+  { id:2, label:"Q2", meses:["abril","mayo","junio"], cierre:"Junio" },
+  { id:3, label:"Q3", meses:["julio","agosto","septiembre"], cierre:"Septiembre" },
+  { id:4, label:"Q4", meses:["octubre","noviembre","diciembre"], cierre:"Diciembre" }
+];
+
+const COLORS = {
+  Taina:"#3b82f6", Beliani:"#8b5cf6", Yessica:"#f59e0b", Victoria:"#ec4899"
+};
+
+const ASIGNACIONES = {
+  abril: {
+    Taina: [
+      {n:"Blackbox",a:75},{n:"Impact",a:30},{n:"PSC",a:80},{n:"MSH",a:60},{n:"La Fragaria",a:100}
+    ],
+    Beliani: [
+      {n:"Mv Creative",a:200},{n:"Iris Laura",a:30},{n:"Maria Raquel",a:60},
+      {n:"Oleica",a:10},{n:"Sosa Arquitectura",a:35},{n:"Suplident",a:50},
+      {n:"La Charpente",a:60},{n:"Unfold",a:50}
+    ],
+    Yessica: [
+      {n:"Tic Tag",a:15},{n:"RB Raquel Bencosme",a:150},{n:"SAV",a:30},
+      {n:"Enlaces",a:15},{n:"Kalma",a:30},{n:"Mj Inversiones",a:50}
+    ],
+    Victoria: [
+      {n:"Gestaf",a:50},{n:"Grupisa",a:50},{n:"Kaizen",a:50},
+      {n:"Polux",a:50},{n:"Dr. Maurice Morel",a:50},{n:"Louis Maurice Morel",a:50}
+    ]
+  }
+};
+
+const KPI_CONTADORAS = [
+  { id:"Beliani", tier:"Contadora I", objetivo:1000 },
+  { id:"Yessica", tier:"Contadora I", objetivo:1000 },
+  { id:"Taina", tier:"Contadora II", objetivo:500 },
+  { id:"Victoria", tier:"Por definir", objetivo:500 }
+];
+
+const KPI_ESCALA = [
+  { min:90, max:100, label:"Excelente", bonoPct:100, desc:"100% del bono", color:"#10b981", bg:"#ecfdf5" },
+  { min:80, max:89, label:"Bueno", bonoPct:75, desc:"75% del bono", color:"#3b82f6", bg:"#eff6ff" },
+  { min:70, max:79, label:"Aceptable", bonoPct:50, desc:"50% del bono", color:"#f59e0b", bg:"#fffbeb" },
+  { min:0, max:69, label:"Sin bono", bonoPct:0, desc:"No cobra bono", color:"#ef4444", bg:"#fef2f2" }
+];
+
+const SALARIOS = {
+  Beliani: 45000,
+  Yessica: 45000,
+  Victoria: 45000,
+  Taina: 60000
+};
+
+// Bono trimestral = 1/3 del salario mensual, redondeado
+function getBonoBase(contadora) {
+  const s = SALARIOS[contadora] || 0;
+  return Math.round(s / 3);
+}
+
+// ==================== UTILS ====================
+// Pure functions — no state, no DOM, no side effects.
+// Future: utils/scoring.js, utils/formatting.js
+
+function getEscala(score) { return KPI_ESCALA.find(e => score >= e.min && score <= e.max) || KPI_ESCALA[3]; }
+
+function getVideoTipo(mesIndex) {
+  return (mesIndex % 3 === 2) ? "Reunión" : "Video";
+}
+
+function getQuarterInfo(mesIndex) {
+  const q = Math.floor(mesIndex / 3) + 1;
+  const pos = (mesIndex % 3) + 1;
+  return { q, pos, label:`Q${q} — Mes ${pos} de 3` };
+}
+
+function calcDigScore(actual, asignadas) {
+  if (asignadas > 0) {
+    return Math.min(10, Math.round(actual / asignadas * 10 * 10) / 10);
+  }
+  return 10;
+}
+
+function calcResScore(resumenes) {
+  const keys = Object.keys(resumenes);
+  const done = keys.filter(k => resumenes[k].done).length;
+  return keys.length > 0 ? Math.round(done / keys.length * 10 * 10) / 10 : 10;
+}
+
+function calcVidScore(video) {
+  const keys = Object.keys(video);
+  const done = keys.filter(k => video[k].done).length;
+  return keys.length > 0 ? Math.round(done / keys.length * 10 * 10) / 10 : 10;
+}
+
+function calcTotalKPI(dig, res, vid) {
+  return Math.round(dig * 5 + res * 3 + vid * 2);
+}
+
+function calcScores(entry, asignadas, objetivo) {
+  const digScore = calcDigScore(getDigTotal(entry), asignadas);
+
+  const resKeys = Object.keys(entry.resumenes);
+  const resDone = resKeys.filter(k => entry.resumenes[k].done).length;
+  const resScore = calcResScore(entry.resumenes);
+
+  const vidKeys = Object.keys(entry.video);
+  const vidDone = vidKeys.filter(k => entry.video[k].done).length;
+  const vidScore = calcVidScore(entry.video);
+
+  const total = calcTotalKPI(digScore, resScore, vidScore);
+
+  return {
+    digScore, resScore, vidScore, total,
+    asignadas, resDone, resTotal:resKeys.length, vidDone, vidTotal:vidKeys.length,
+    objetivo: objetivo
+  };
+}
+
+function getBarColor(pct) {
+  return pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
+}
+
+function calcBonoReal(contadora, totalScore) {
+  const base = getBonoBase(contadora);
+  const escala = getEscala(totalScore);
+  return Math.round(base * escala.bonoPct / 100);
+}
+
+function getQuarterAvgScore(monthScores) {
+  const valid = monthScores.filter(s => s !== null);
+  if (valid.length === 0) return 0;
+  return Math.round(valid.reduce((a,b) => a+b, 0) / valid.length);
+}
+
+function resolveAsignaciones(mes, contadora) {
+  // Si el mes tiene datos, úsalos. Si no, hereda del mes anterior más cercano.
+  const idx = MESES.indexOf(mes);
+  for (let i = idx; i >= 0; i--) {
+    const m = MESES[i];
+    if (ASIGNACIONES[m] && ASIGNACIONES[m][contadora] && ASIGNACIONES[m][contadora].length > 0) {
+      return ASIGNACIONES[m][contadora];
+    }
+  }
+  return [];
+}
+
+function getCurrentQuarter() {
+  // Abril = Q2
+  const now = new Date();
+  return Math.floor(now.getMonth() / 3) + 1;
+}
+
+function formatMoney(n) {
+  return 'RD$' + n.toLocaleString();
+}
+
+// Check if date is within the reference month (year 2026, mesIdx 0-11)
+function isWithinMonth(fecha, mesIdx) {
+  if (!fecha) return null;
+  const d = new Date(fecha + 'T12:00:00');
+  const refYear = 2026;
+  const lastDay = new Date(refYear, mesIdx + 1, 0).getDate();
+  const deadline = new Date(refYear, mesIdx, lastDay, 23, 59, 59);
+  return d <= deadline;
+}
+
+function getTimeStatus(fecha, tipo, mesIdx) {
+  if (!fecha) return null;
+  if (tipo === 'digitacion') {
+    // Digitación: válido si se hizo dentro del mes corriente
+    const ok = isWithinMonth(fecha, mesIdx);
+    return ok
+      ? { ok:true, html:'<span class="time-badge time-ok">✓ A tiempo</span>' }
+      : { ok:false, html:'<span class="time-badge time-late">⚠ Fuera del mes</span>' };
+  }
+  if (tipo === 'resumen' || tipo === 'video') {
+    // Resumen y video: es del mes anterior, válido si se entrega dentro del mes corriente
+    const ok = isWithinMonth(fecha, mesIdx);
+    return ok
+      ? { ok:true, html:'<span class="time-badge time-ok">A tiempo</span>' }
+      : { ok:false, html:'<span class="time-badge time-late">Fuera del mes</span>' };
+  }
+  return null;
+}
+
+// ==================== HOOKS ====================
+// Mutable state and state mutation functions.
+// Future: hooks/useNavigation.js, hooks/useKPIData.js
+
+let state = { screen:"selector", contadora:null, quarter:getCurrentQuarter(), mes:null };
+
+function selectContadora(id) {
+  state.screen = 'kpi';
+  state.contadora = id;
+  // Default al primer mes del trimestre seleccionado
+  const q = QUARTERS[state.quarter - 1];
+  state.mes = q.meses[0];
+  render();
+}
+
+function goBack() {
+  state.screen = 'selector';
+  state.contadora = null;
+  render();
+}
+
+function selectQuarter(qNum) {
+  state.quarter = qNum;
+  const q = QUARTERS[qNum - 1];
+  state.mes = q.meses[0];
+  render();
+}
+
+function selectMonth(mes) {
+  state.mes = mes;
+  render();
+}
+
+function updateDig(contadora, mes, weekIdx, value) {
+  const entry = getEntry(mes, contadora);
+  const qty = parseInt(value) || 0;
+  entry.digitacion.semanas[weekIdx].qty = qty;
+  if (qty > 0 && !entry.digitacion.semanas[weekIdx].fecha) {
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth()+1).padStart(2,'0');
+    const dd = String(hoy.getDate()).padStart(2,'0');
+    entry.digitacion.semanas[weekIdx].fecha = yyyy+'-'+mm+'-'+dd;
+  }
+  if (qty === 0) entry.digitacion.semanas[weekIdx].fecha = "";
+  saveData();
+  render();
+}
+
+function updateRes(contadora, mes, clientName, field, value) {
+  const entry = getEntry(mes, contadora);
+  if (!entry.resumenes[clientName]) entry.resumenes[clientName] = {done:false, fecha:"", foto:false};
+  if (field === 'done') {
+    entry.resumenes[clientName].done = value;
+    if (value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth()+1).padStart(2,'0');
+      const dd = String(hoy.getDate()).padStart(2,'0');
+      entry.resumenes[clientName].fecha = yyyy+'-'+mm+'-'+dd;
+    } else {
+      entry.resumenes[clientName].fecha = "";
+      entry.resumenes[clientName].foto = false;
+    }
+  }
+  if (field === 'foto') entry.resumenes[clientName].foto = value;
+  saveData();
+  render();
+}
+
+function updateVid(contadora, mes, clientName, field, value) {
+  const entry = getEntry(mes, contadora);
+  if (!entry.video[clientName]) entry.video[clientName] = {done:false, fecha:"", link:""};
+  if (field === 'done') {
+    entry.video[clientName].done = value;
+    if (value) {
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth()+1).padStart(2,'0');
+      const dd = String(hoy.getDate()).padStart(2,'0');
+      entry.video[clientName].fecha = yyyy+'-'+mm+'-'+dd;
+    } else {
+      entry.video[clientName].fecha = "";
+      entry.video[clientName].link = "";
+    }
+  }
+  if (field === 'link') entry.video[clientName].link = value;
+  saveData();
+  render();
+}
+
+function promptVidLink(contadora, mes, clientName) {
+  const link = prompt('Pega el link del video para ' + clientName + ':');
+  if (link && link.trim()) {
+    updateVid(contadora, mes, clientName, 'link', link.trim());
+  }
+}
+
+function formatDateShort(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T12:00:00');
+  const dia = d.getDate();
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return dia + ' ' + meses[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function getDayName(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  return dias[d.getDay()];
+}
+
+// ==================== SERVICES ====================
+// Data persistence and data access — the API layer.
+// Future: services/storage.js, services/kpiData.js
+
+let kpiData = {};
+
+function loadData() {
+  try { kpiData = JSON.parse(localStorage.getItem('accountone_kpi_v2_2026') || '{}'); } catch(e) { kpiData = {}; }
+}
+
+function saveData() {
+  localStorage.setItem('accountone_kpi_v2_2026', JSON.stringify(kpiData));
+}
+
+function emptyWeeks() {
+  return [{qty:0,fecha:""},{qty:0,fecha:""},{qty:0,fecha:""},{qty:0,fecha:""},{qty:0,fecha:""}];
+}
+
+function getDigTotal(entry) {
+  if (entry.digitacion.semanas) return entry.digitacion.semanas.reduce((s,w) => s + (w.qty||0), 0);
+  return entry.digitacion.actual || 0;
+}
+
+function getDigLastDate(entry) {
+  if (entry.digitacion.semanas) {
+    const fechas = entry.digitacion.semanas.map(w => w.fecha).filter(f => f);
+    return fechas.length > 0 ? fechas[fechas.length - 1] : "";
+  }
+  return entry.digitacion.fecha || "";
+}
+
+function getEntry(mes, contadora) {
+  const key = mes + '_' + contadora;
+  if (!kpiData[key]) {
+    const clients = resolveAsignaciones(mes, contadora);
+    const resClientes = {};
+    const vidClientes = {};
+    clients.forEach(c => {
+      resClientes[c.n] = { done:false, fecha:"" };
+      vidClientes[c.n] = { done:false, fecha:"" };
+    });
+    kpiData[key] = {
+      digitacion: { semanas: emptyWeeks() },
+      resumenes: resClientes,
+      video: vidClientes
+    };
+  }
+  // Migrate old format
+  if (!kpiData[key].digitacion.semanas) {
+    const old = kpiData[key].digitacion;
+    kpiData[key].digitacion = { semanas: emptyWeeks() };
+    if (old.actual > 0) {
+      kpiData[key].digitacion.semanas[0] = { qty: old.actual, fecha: old.fecha || "" };
+    }
+  }
+  return kpiData[key];
+}
+
+function getClients(mes, contadora) {
+  return resolveAsignaciones(mes, contadora);
+}
+
+function getAdmTotal(mes, contadora) {
+  return getClients(mes, contadora).reduce((s,c) => s + c.a, 0);
+}
+
+function isMonthPast(mesIdx) {
+  const now = new Date();
+  const endOfMonth = new Date(2026, mesIdx + 1, 0, 23, 59, 59);
+  return now > endOfMonth;
+}
+
+function getQuarterBonoData(quarter, contadora) {
+  const q = QUARTERS[quarter - 1];
+  const cfg = KPI_CONTADORAS.find(x => x.id === contadora);
+  const monthScores = q.meses.map(mes => {
+    const clients = getClients(mes, contadora);
+    if (clients.length === 0) return null;
+    const entry = getEntry(mes, contadora);
+    const asignadas = clients.reduce((s,c) => s + c.a, 0);
+    return calcScores(entry, asignadas, cfg ? cfg.objetivo : 0).total;
+  });
+
+  // Bono optimista: para meses futuros (no terminados), proyectar 100
+  const projectedScores = q.meses.map((mes, i) => {
+    const mesIdx = MESES.indexOf(mes);
+    if (monthScores[i] === null) return null;
+    if (isMonthPast(mesIdx)) return monthScores[i]; // mes cerrado, usar score real
+    return Math.max(monthScores[i], 100); // mes abierto, proyectar 100
+  });
+
+  const avgReal = getQuarterAvgScore(monthScores);
+  const avgProjected = getQuarterAvgScore(projectedScores);
+  const escala = getEscala(avgProjected);
+  const bonoBase = getBonoBase(contadora);
+  const bonoReal = Math.round(bonoBase * escala.bonoPct / 100);
+  return { monthScores, projectedScores, avgScore: avgReal, avgProjected, escala, bonoBase, bonoReal, cierre: q.cierre, qLabel: q.label + ' 2026' };
+}
+
+function getKPIViewData(mes, contadora) {
+  const mesIdx = MESES.indexOf(mes);
+  const cfg = KPI_CONTADORAS.find(x => x.id === contadora);
+  const col = COLORS[contadora];
+  const entry = getEntry(mes, contadora);
+  const clients = getClients(mes, contadora);
+  const asignadas = getAdmTotal(mes, contadora);
+  const scores = calcScores(entry, asignadas, cfg ? cfg.objetivo : 0);
+  const displayTotal = (!isMonthPast(mesIdx) && scores.total < 100) ? Math.max(scores.total, 100) : scores.total;
+  const escala = getEscala(displayTotal);
+  const vidTipo = getVideoTipo(mesIdx);
+  const qInfo = getQuarterInfo(mesIdx);
+  const hasClients = clients.length > 0;
+
+  const digActual = getDigTotal(entry);
+  const digPct = scores.asignadas > 0 ? Math.min(100, Math.round(digActual / scores.asignadas * 100)) : 0;
+  const digBarColor = getBarColor(digPct);
+
+  const resPct = scores.resTotal > 0 ? Math.round(scores.resDone / scores.resTotal * 100) : 0;
+  const resBarColor = getBarColor(resPct);
+
+  const vidPct = scores.vidTotal > 0 ? Math.round(scores.vidDone / scores.vidTotal * 100) : 0;
+  const vidBarColor = getBarColor(vidPct);
+
+  const digLastDate = getDigLastDate(entry);
+  const digTimeStatus = getTimeStatus(digLastDate, 'digitacion', mesIdx);
+  const digTimeHtml = digTimeStatus ? digTimeStatus.html : '';
+
+  return {
+    mesIdx, cfg, col, entry, clients, scores, escala, displayTotal,
+    vidTipo, qInfo, hasClients,
+    digActual, digPct, digBarColor, resPct, resBarColor, vidPct, vidBarColor,
+    digTimeHtml,
+    mesLabel: MESES_FULL[mesIdx],
+    mesAnteriorLabel: mesIdx > 0 ? MESES_FULL[mesIdx - 1] : MESES_FULL[11]
+  };
+}
+
+// ==================== COMPONENTS ====================
+// Pure rendering — build HTML strings only.
+// Future: components/Selector.js, components/KPIDashboard.js
+
+function renderBreadcrumb() {
+  const el = document.getElementById('breadcrumbBar');
+  el.style.display = 'flex';
+  let h = '<a href="../Pantalla de Inicio/index.html">Account One</a>';
+  h += '<span class="sep">›</span>';
+  if (state.screen === 'selector') {
+    h += '<span class="current">KPI Contadoras</span>';
+  } else {
+    h += '<a onclick="goBack()">KPI Contadoras</a>';
+    h += '<span class="sep">›</span>';
+    const mesIdx = MESES.indexOf(state.mes);
+    const mesLabel = MESES_FULL[mesIdx];
+    h += '<span class="current">' + state.contadora + ' — ' + mesLabel + '</span>';
+  }
+  el.innerHTML = h;
+}
+
+function render() {
+  renderBreadcrumb();
+  const app = document.getElementById('app');
+  if (state.screen === 'selector') return renderSelector(app);
+  renderKPI(app);
+}
+
+function renderSelector(app) {
+  app.innerHTML = `
+    <div class="selector-screen">
+      <h2>Selecciona tu perfil</h2>
+      <p>Elige tu nombre para ver y completar tu KPI del mes.</p>
+      <div class="selector-grid">
+        ${KPI_CONTADORAS.map(c => `
+          <div class="selector-card" onclick="selectContadora('${c.id}')">
+            <div class="sc-dot" style="background:${COLORS[c.id]}"></div>
+            <div class="sc-name">${c.id}</div>
+            <div class="sc-tier">${c.tier}</div>
+            <div class="sc-obj">Objetivo: ${c.objetivo.toLocaleString()} tx</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderKPI(app) {
+  const c = state.contadora;
+  const mes = state.mes;
+  const qNum = state.quarter;
+  const q = QUARTERS[qNum - 1];
+  const v = getKPIViewData(mes, c);
+  const bono = getQuarterBonoData(qNum, c);
+
+  app.innerHTML = `
+    <!-- Selector de trimestre -->
+    <div class="quarter-bar">
+      ${QUARTERS.map(qq => `
+        <button class="q-btn ${qq.id===qNum?'active':''}" onclick="selectQuarter(${qq.id})">
+          <div class="q-label">${qq.label}</div>
+          <div class="q-months">${qq.meses.map(m=>MESES_LABEL[MESES.indexOf(m)]).join(' · ')}</div>
+        </button>
+      `).join('')}
+    </div>
+
+    <!-- Tabs de meses dentro del trimestre -->
+    <div class="month-tabs" style="margin-bottom:20px">
+      ${q.meses.map(m => {
+        const idx = MESES.indexOf(m);
+        return `<button class="month-tab ${m===mes?'active':''}" onclick="selectMonth('${m}')">${MESES_FULL[idx]}</button>`;
+      }).join('')}
+    </div>
+
+    <!-- Score overview del mes -->
+    <div class="score-overview">
+      <div class="score-big">
+        <div class="num" style="color:${v.escala.color}">${v.displayTotal}</div>
+        <div class="of">de 100 · ${MESES_FULL[v.mesIdx]}</div>
+        <div class="label" style="background:${v.escala.bg};color:${v.escala.color}">${v.escala.label}</div>
+      </div>
+      <div class="score-breakdown">
+        <div class="score-row">
+          <span class="score-row-label">Digitación (50%)</span>
+          <div class="score-row-bar"><div class="score-row-fill" style="width:${v.scores.digScore*10}%;background:${v.col}"></div></div>
+          <span class="score-row-pts">${Math.round(v.scores.digScore*5)} pts</span>
+        </div>
+        <div class="score-row">
+          <span class="score-row-label">Resúmenes (30%)</span>
+          <div class="score-row-bar"><div class="score-row-fill" style="width:${v.scores.resScore*10}%;background:${v.col}"></div></div>
+          <span class="score-row-pts">${Math.round(v.scores.resScore*3)} pts</span>
+        </div>
+        <div class="score-row">
+          <span class="score-row-label">${v.vidTipo} (20%)</span>
+          <div class="score-row-bar"><div class="score-row-fill" style="width:${v.scores.vidScore*10}%;background:${v.col}"></div></div>
+          <span class="score-row-pts">${Math.round(v.scores.vidScore*2)} pts</span>
+        </div>
+        <div class="escala-mini" style="margin-top:6px">
+          ${KPI_ESCALA.map(e => {
+            const active = v.displayTotal >= e.min && v.displayTotal <= e.max;
+            const montoNivel = Math.round(bono.bonoBase * e.bonoPct / 100);
+            return `<div class="escala-item ${active?'active':''}" style="${active?`border-color:${e.color};border-width:2px;background:${e.bg}`:''}">
+              <div class="escala-range" style="color:${e.color}">${e.min}-${e.max}</div>
+              <div class="escala-name" style="color:${e.color}">${e.label}</div>
+              <div style="font-size:9px;color:${e.color};margin-top:1px;opacity:0.8">${e.bonoPct}%</div>
+              <div style="font-size:11px;color:${e.color};font-weight:800;margin-top:3px">${formatMoney(montoNivel)}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculadora de bono trimestral -->
+    <div class="bono-card">
+      <div class="bono-header">
+        <div class="bono-icon">💰</div>
+        <div class="bono-header-text">
+          <h3>Bono ${q.label} 2026</h3>
+          <span>Cierre: ${q.cierre} · Promedio de ${bono.monthScores.filter(s=>s!==null).length} mes(es)</span>
+        </div>
+      </div>
+      <div class="bono-body">
+        <div class="bono-item">
+          <div class="bono-item-label">Bono base</div>
+          <div class="bono-item-value">${formatMoney(bono.bonoBase)}</div>
+          <div class="bono-item-sub">1/3 del salario</div>
+        </div>
+        <div class="bono-item">
+          <div class="bono-item-label">Proyección ${q.label}</div>
+          <div class="bono-item-value">${bono.avgProjected}<span style="font-size:14px;opacity:0.5">/100</span></div>
+          <div style="display:flex;gap:4px;justify-content:center;margin-top:6px">
+            ${bono.monthScores.map((s, i) => {
+              const mLabel = MESES_LABEL[MESES.indexOf(q.meses[i])];
+              const mesIdx = MESES.indexOf(q.meses[i]);
+              const past = isMonthPast(mesIdx);
+              if (s === null) return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.1);opacity:0.4">${mLabel}: —</span>`;
+              if (!past) return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.12);color:#6ee7b7">${mLabel}: ${s} ➜ 100</span>`;
+              const c2 = s >= 70 ? '#6ee7b7' : '#fca5a5';
+              return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.12);color:${c2}">${mLabel}: ${s}</span>`;
+            }).join('')}
+          </div>
+          <div class="bono-pct-badge" style="background:${bono.escala.bg};color:${bono.escala.color};margin-top:6px">${bono.escala.bonoPct}% del bono</div>
+        </div>
+        <div class="bono-item">
+          <div class="bono-item-label">Vas a cobrar</div>
+          <div class="bono-item-value" style="color:${bono.bonoReal > 0 ? '#6ee7b7' : '#fca5a5'}">${formatMoney(bono.bonoReal)}</div>
+          <div class="bono-item-sub">${bono.escala.label}</div>
+        </div>
+      </div>
+      ${bono.bonoReal > 0
+        ? `<div class="bono-msg"><p>Vas en camino a cobrar ${formatMoney(bono.bonoReal)} en ${q.cierre}.</p><span>Completa tus tareas para mantener este nivel.</span></div>`
+        : `<div class="bono-msg"><p style="color:#fca5a5">Necesitas subir tu promedio a 70+ para activar el bono.</p><span>Todavía hay tiempo, completa tus tareas pendientes.</span></div>`
+      }
+    </div>
+
+    <!-- 1. Digitación -->
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-header-left">
+          <div class="comp-num" style="background:${v.col}">1</div>
+          <div>
+            <div class="comp-title">Digitación de transacciones · ${v.mesLabel}</div>
+            <div class="comp-weight">Peso: 50% · Máximo: 50 puntos</div>
+          </div>
+        </div>
+        <span class="comp-score-pill" style="background:${v.escala.bg};color:${v.col}">${v.scores.digScore}/10 → ${Math.round(v.scores.digScore*5)} pts</span>
+      </div>
+      <div class="comp-body">
+        <div class="dig-stats">
+          <div class="dig-stat">
+            <div class="dig-stat-label">Objetivo</div>
+            <div class="dig-stat-value">${v.cfg.objetivo.toLocaleString()}</div>
+          </div>
+          <div class="dig-stat">
+            <div class="dig-stat-label">Tx asignadas (Adm)</div>
+            <div class="dig-stat-value">${v.scores.asignadas}</div>
+          </div>
+          <div class="dig-stat">
+            <div class="dig-stat-label">Tx digitadas</div>
+            <div class="dig-stat-value" style="color:${v.digPct>=90?'var(--green)':v.digPct>=70?'var(--amber)':'var(--red)'}">${v.digActual}</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+            ${v.entry.digitacion.semanas.map((w,i) => {
+              const fechaTxt = w.fecha ? formatDateShort(w.fecha) : '';
+              const diaTxt = w.fecha ? getDayName(w.fecha) : '';
+              const esViernes = w.fecha ? new Date(w.fecha + 'T12:00:00').getDay() === 5 : null;
+              const dotColor = esViernes === null ? '' : (esViernes ? 'var(--green)' : 'var(--red)');
+              const dotHtml = diaTxt ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dotColor};margin-right:3px;vertical-align:middle"></span>` : '';
+              return `<div style="background:#f8fafc;border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)">
+                <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Semana ${i+1}</div>
+                <input type="number" class="input-field" style="width:100%;text-align:center;padding:6px" value="${w.qty||''}" min="0" placeholder="0"
+                  onchange="updateDig('${c}','${mes}',${i},this.value)"
+                  onkeydown="if(event.key==='Enter'){this.blur();}">
+                <div style="font-size:9px;color:var(--light);margin-top:4px;min-height:14px">${fechaTxt}</div>
+                <div style="font-size:9px;color:var(--light);min-height:12px">${dotHtml}${diaTxt}</div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+            <span style="font-size:12px;color:var(--muted)">Total: <strong>${v.digActual}</strong> de ${v.scores.asignadas}</span>
+          </div>
+        </div>
+        <div class="progress-bar" style="margin-bottom:10px">
+          <div class="progress-fill" style="width:${v.digPct}%;background:${v.digBarColor}"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Resúmenes de declaración -->
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-header-left">
+          <div class="comp-num" style="background:${v.col}">2</div>
+          <div>
+            <div class="comp-title">Resúmenes de declaración · ${v.mesAnteriorLabel}</div>
+            <div class="comp-weight">Peso: 30% · Máximo: 30 puntos</div>
+          </div>
+        </div>
+        <span class="comp-score-pill" style="background:${v.escala.bg};color:${v.col}">${v.scores.resScore}/10 → ${Math.round(v.scores.resScore*3)} pts</span>
+      </div>
+      <div class="comp-body">
+        <div class="res-progress">
+          <div class="res-count">${v.scores.resDone} de ${v.scores.resTotal} clientes</div>
+          <div class="progress-bar" style="flex:1">
+            <div class="progress-fill" style="width:${v.resPct}%;background:${v.resBarColor}"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${v.resBarColor}">${v.resPct}%</span>
+        </div>
+        <table class="client-table">
+          <tr>
+            <th>Cliente</th>
+            <th style="width:80px">Tx (Adm)</th>
+            <th style="width:130px">¿Entregado?</th>
+            <th style="width:100px">Fecha</th>
+            <th style="width:90px">Foto</th>
+            <th style="width:100px">Estado</th>
+          </tr>
+          ${v.clients.map(cl => {
+            const r = v.entry.resumenes[cl.n] || {done:false, fecha:"", foto:false};
+            const cln = cl.n.replace(/'/g,"\\'");
+            let statusHtml = '';
+            if (r.done && r.fecha) {
+              const ts = getTimeStatus(r.fecha, 'resumen', v.mesIdx);
+              statusHtml = ts ? ts.html : '';
+            } else {
+              statusHtml = '<span style="font-size:11px;color:var(--light)">Pendiente</span>';
+            }
+            const fechaDisplay = r.fecha ? formatDateShort(r.fecha) : '—';
+            const fotoHtml = r.done
+              ? (r.foto
+                ? '<span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer" onclick="updateRes(\''+c+"','"+mes+"','"+cln+"','foto',false)"+'" title="Clic para quitar">✓ Cargada</span>'
+                : '<span style="font-size:11px;color:var(--amber);font-weight:600;cursor:pointer;text-decoration:underline" onclick="updateRes(\''+c+"','"+mes+"','"+cln+"','foto',true)"+'" title="Clic para marcar como cargada">Cargar</span>')
+              : '<span style="font-size:11px;color:var(--light)">—</span>';
+            return `<tr class="${r.done?'row-done':''}">
+              <td style="font-weight:600">${cl.n}</td>
+              <td>${cl.a}</td>
+              <td>
+                <div class="toggle-group">
+                  <button class="toggle-opt ${r.done?'active-yes':''}"
+                    onclick="updateRes('${c}','${mes}','${cln}','done',true)">Sí</button>
+                  <button class="toggle-opt ${!r.done?'active-no':''}"
+                    onclick="updateRes('${c}','${mes}','${cln}','done',false)">No</button>
+                </div>
+              </td>
+              <td style="font-size:12px;color:${r.done?'var(--text)':'var(--light)'}">${fechaDisplay}</td>
+              <td>${fotoHtml}</td>
+              <td>${statusHtml}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. Video / Reunión -->
+    <div class="comp-card">
+      <div class="comp-header">
+        <div class="comp-header-left">
+          <div class="comp-num" style="background:${v.col}">3</div>
+          <div>
+            <div class="comp-title">${v.vidTipo} con clientes · ${v.mesAnteriorLabel}</div>
+            <div class="comp-weight">Peso: 20% · Máximo: 20 puntos</div>
+          </div>
+        </div>
+        <span class="comp-score-pill" style="background:${v.escala.bg};color:${v.col}">${v.scores.vidScore}/10 → ${Math.round(v.scores.vidScore*2)} pts</span>
+      </div>
+      <div class="comp-body">
+        <div class="vid-info">
+          <div class="vid-info-item">
+            <div class="vid-info-label">Ciclo trimestral</div>
+            <div class="vid-info-value">${v.qInfo.label}</div>
+          </div>
+          <div class="vid-info-item">
+            <div class="vid-info-label">Tipo requerido este mes</div>
+            <div class="vid-info-value" style="color:${v.vidTipo==='Reunión'?'var(--purple)':'var(--blue)'}">${v.vidTipo}</div>
+          </div>
+        </div>
+        <div class="res-progress" style="margin-bottom:14px">
+          <div class="res-count">${v.scores.vidDone} de ${v.scores.vidTotal} clientes</div>
+          <div class="progress-bar" style="flex:1">
+            <div class="progress-fill" style="width:${v.vidPct}%;background:${v.vidBarColor}"></div>
+          </div>
+          <span style="font-size:12px;font-weight:700;color:${v.vidBarColor}">${v.vidPct}%</span>
+        </div>
+        <table class="vid-client-table">
+          <tr>
+            <th>Cliente</th>
+            <th style="width:80px">Tx (Adm)</th>
+            <th style="width:130px">¿Se realizó?</th>
+            <th style="width:100px">Fecha</th>
+            <th style="width:120px">Link video</th>
+            <th style="width:100px">Estado</th>
+          </tr>
+          ${v.clients.map(cl => {
+            const vd = v.entry.video[cl.n] || {done:false, fecha:"", link:""};
+            const vcln = cl.n.replace(/'/g,"\\'");
+            let statusHtml = '';
+            if (vd.done && vd.fecha) {
+              const ts = getTimeStatus(vd.fecha, 'video', v.mesIdx);
+              statusHtml = ts ? ts.html : '';
+            } else {
+              statusHtml = '<span style="font-size:11px;color:var(--light)">Pendiente</span>';
+            }
+            const fechaDisplay = vd.fecha ? formatDateShort(vd.fecha) : '—';
+            const linkHtml = vd.done
+              ? (vd.link
+                ? '<span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer" onclick="updateVid(\''+c+"','"+mes+"','"+vcln+"','link','')"+'" title="Clic para quitar">✓ Guardado</span>'
+                : '<span style="font-size:11px;color:var(--amber);font-weight:600;cursor:pointer;text-decoration:underline" onclick="promptVidLink(\''+c+"','"+mes+"','"+vcln+"')"+'" title="Agregar link del video">Agregar</span>')
+              : '<span style="font-size:11px;color:var(--light)">—</span>';
+            return `<tr class="${vd.done?'row-done':''}">
+              <td style="font-weight:600">${cl.n}</td>
+              <td>${cl.a}</td>
+              <td>
+                <div class="toggle-group">
+                  <button class="toggle-opt ${vd.done?'active-yes':''}"
+                    onclick="updateVid('${c}','${mes}','${vcln}','done',true)">Sí</button>
+                  <button class="toggle-opt ${!vd.done?'active-no':''}"
+                    onclick="updateVid('${c}','${mes}','${vcln}','done',false)">No</button>
+                </div>
+              </td>
+              <td style="font-size:12px;color:${vd.done?'var(--text)':'var(--light)'}">${fechaDisplay}</td>
+              <td>${linkHtml}</td>
+              <td>${statusHtml}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== MAIN APP ====================
+// Bootstrap: load persisted data and render initial screen.
+// Future: main.js
+
+loadData();
+render();
+</script>
+</body>
+</html>
