@@ -404,7 +404,7 @@ async function loadData() {
   });
 
   // Cargar leads desde Supabase
-  const { data: leads, error: leadsErr } = await supabase
+  const { data: leads, error: leadsErr } = await sb
     .from('leads').select('*').eq('anio', 2026);
   if (leadsErr) console.error('Error cargando leads:', leadsErr);
   if (leads) {
@@ -427,7 +427,7 @@ async function loadData() {
   }
 
   // Cargar ROAS desde Supabase
-  const { data: roasRows, error: roasErr } = await supabase
+  const { data: roasRows, error: roasErr } = await sb
     .from('roas_mensual').select('*').eq('anio', 2026);
   if (roasErr) console.error('Error cargando ROAS:', roasErr);
   if (roasRows) {
