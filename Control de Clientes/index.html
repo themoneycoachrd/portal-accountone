@@ -656,9 +656,10 @@ function renderDashboard(el) {
       <div class="card"><h3>Transacciones mensuales (Serv. Contratado)</h3><canvas id="chartTx"></canvas></div>
       <div class="card"><h3>Resumen mensual</h3>
         <div class="table-wrap"><table>
-          <tr><th>Mes</th><th>Total</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Crecimiento</th><th>Serv.</th></tr>
+          <tr><th>Mes</th><th>Inicio</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Cierre</th><th>Crecimiento</th><th>Fact.</th></tr>
           ${months.map((m,i)=>{
             const d=DATA[m];
+            const inicio=d.total-d.nuevos.length+d.churn.length;
             const neto=d.nuevos.length-d.churn.length;
             const pct=growthData[i];
             const pctStr=(pct>=0?'+':'')+pct.toFixed(1)+'%';
@@ -667,12 +668,13 @@ function renderDashboard(el) {
             const nuevosHtml=d.nuevos.length>0?d.nuevos.map(n=>'<span class="badge badge-new" style="margin:1px 2px">'+n+'</span>').join(''):'—';
             const churnHtml=d.churn.length>0?d.churn.map(n=>'<span class="badge badge-churn" style="margin:1px 2px">'+n+'</span>').join(''):'—';
             return `<tr id="${rowId}" style="cursor:pointer" onclick="toggleDashDetail('${m}')">
-            <td><strong>${MESES_FULL[MESES.indexOf(m)]}</strong></td><td>${d.total}</td>
+            <td><strong>${MESES_FULL[MESES.indexOf(m)]}</strong></td><td>${inicio}</td>
             <td style="color:var(--green)">${d.nuevos.length}</td><td style="color:var(--red)">${d.churn.length}</td>
             <td style="color:${neto>=0?'var(--green)':'var(--red)'}">${neto>=0?'+':''}${neto}</td>
+            <td><strong>${d.total}</strong></td>
             <td style="color:${pct>=0?'var(--green)':'var(--red)'}">${pctStr}</td>
             <td>${d.txTotal.serv.toLocaleString()}</td></tr>
-            <tr id="${detailId}" style="display:none"><td colspan="7" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">
+            <tr id="${detailId}" style="display:none"><td colspan="8" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">
               <div style="display:flex;gap:20px;flex-wrap:wrap">
                 <div><span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.3px">Entraron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${nuevosHtml}</div></div>
                 <div><span style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.3px">Salieron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${churnHtml}</div></div>
@@ -837,7 +839,7 @@ function renderSoftware(el) {
     <div class="card">
       <h3>Resumen mensual</h3>
       <div class="table-wrap"><table>
-        <tr><th>Mes</th><th>Total</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Crecimiento</th><th>Monto</th></tr>
+        <tr><th>Mes</th><th>Inicio</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Cierre</th><th>Crecimiento</th><th>Monto</th></tr>
         ${stats.rows.map(r => {
           const mi = MESES.indexOf(r.mes);
           const pctStr = (r.pct >= 0 ? '+' : '') + r.pct.toFixed(1) + '%';
@@ -852,15 +854,17 @@ function renderSoftware(el) {
             : '\u2014';
           const rowId = 'sw-row-' + r.mes;
           const detailId = 'sw-detail-' + r.mes;
+          const inicio = r.total - r.nuevos.length + r.churn.length;
           return '<tr id="' + rowId + '" style="cursor:pointer" onclick="toggleSwDetail(\'' + r.mes + '\')">' +
             '<td><strong>' + MESES_FULL[mi] + '</strong></td>' +
-            '<td>' + r.total + '</td>' +
+            '<td>' + inicio + '</td>' +
             '<td style="color:var(--green)">' + r.nuevos.length + '</td>' +
             '<td style="color:var(--red)">' + r.churn.length + '</td>' +
             '<td style="color:' + netoColor + '">' + netoStr + '</td>' +
+            '<td><strong>' + r.total + '</strong></td>' +
             '<td style="color:' + pctColor + '">' + pctStr + '</td>' +
             '<td>US$ ' + r.monto.toLocaleString() + '</td></tr>' +
-            '<tr id="' + detailId + '" style="display:none"><td colspan="7" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">' +
+            '<tr id="' + detailId + '" style="display:none"><td colspan="8" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">' +
               '<div style="display:flex;gap:20px;flex-wrap:wrap">' +
                 '<div><span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.3px">Entraron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">' + nuevosHtml + '</div></div>' +
                 '<div><span style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.3px">Salieron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">' + churnHtml + '</div></div>' +
