@@ -36,7 +36,7 @@
 
 // Cambia esta versión cada vez que actualices la data.
 // Al detectar un cambio, la app recarga los datos desde aquí.
-var DATA_VERSION = "2026-04-19b";
+var DATA_VERSION = "2026-04-19c";
 
 var SEED_PIPELINE = {
   enero: [
@@ -77,19 +77,19 @@ var SEED_PIPELINE = {
     {n:"Sarah Wu",t:"Colegio",e:"Allegro",temp:"Tibio",demo:"2026-02-04",f:"Cotización Enviada",impl:1500,fe:500,serv:400,soft:54,notas:"Colegio Espacial Contabilidad Completa"},
     {n:"Noelle Herrera",t:"Estudio de Moda",e:"Noelle Herrera Designs",temp:"Caliente",demo:"2026-02-04",f:"Cerrado Perdido",impl:2000,fe:500,serv:400,soft:54,notas:""},
     {n:"Maria Fernanda Joa",t:"Alquiler para Eventos",e:"Joa Inversiones",temp:"Frio",demo:"2026-02-05",f:"Esperando Cotización",impl:2000,fe:500,serv:400,soft:54,notas:""},
-    {n:"Phillip Escoto",t:"Electrónica",e:"Phillips Electronica",temp:"Caliente",demo:"2026-02-04",f:"Cerrado Ganado",impl:1160,fe:290,serv:0,soft:94,notas:""},
+    {n:"Phillip Escoto",t:"Electrónica",e:"Phillips Electronica",temp:"Caliente",demo:"2026-02-04",f:"Cerrado Ganado",impl:1160,fe:290,serv:0,soft:94,desc:0,notas:""},
     {n:"Anyelin Pereyra",t:"Almacenes",e:"Giuliani Almacenes Diversos",temp:"Tibio",demo:"2026-02-03",f:"Cotización Enviada",impl:0,fe:0,serv:0,soft:0,notas:""},
     {n:"Mildred Leiva y Marcia Ureña",t:"Firma Arquitectos",e:"Ormarquitectos",temp:"Tibio",demo:"2026-02-03",f:"Cotización Enviada",impl:2000,fe:500,serv:0,soft:90,notas:""},
     {n:"Sara de Jesus Lazala",t:"Comida Empresarial",e:"D Sara Delicatessen",temp:"Tibio",demo:"2026-02-03",f:"Cotización Enviada",impl:2000,fe:500,serv:0,soft:54,notas:""},
     {n:"Victor Polanco",t:"Buzos de Barcos",e:"Caribe Divers Works",temp:"Tibio",demo:"2026-02-11",f:"Cotización Enviada",impl:2000,fe:500,serv:600,soft:54,notas:""},
     {n:"Lucia Sánchez",t:"Andamios",e:"Andamios y Encofrados del Caribe",temp:"Tibio",demo:"2026-02-10",f:"Cotización Enviada",impl:2000,fe:500,serv:0,soft:54,notas:""},
     {n:"Lucia Sánchez",t:"Grúas",e:"Grúas Dominicanas, Grudom",temp:"Caliente",demo:"2026-02-10",f:"Cotización Enviada",impl:2000,fe:500,serv:400,soft:54,notas:""},
-    {n:"Johanna Simpson",t:"Salud",e:"CLC",temp:"Caliente",demo:"2026-02-12",f:"Cerrado Ganado",impl:0,fe:500,serv:0,soft:0,notas:""},
-    {n:"Johanna Simpson",t:"Salud",e:"Vitalie",temp:"Caliente",demo:"2026-02-12",f:"Cerrado Ganado",impl:0,fe:500,serv:0,soft:0,notas:""},
+    {n:"Johanna Simpson",t:"Salud",e:"CLC",temp:"Caliente",demo:"2026-02-12",f:"Cerrado Ganado",impl:0,fe:500,serv:0,soft:0,desc:0,notas:""},
+    {n:"Johanna Simpson",t:"Salud",e:"Vitalie",temp:"Caliente",demo:"2026-02-12",f:"Cerrado Ganado",impl:0,fe:500,serv:0,soft:0,desc:0,notas:""},
     {n:"Rolando Fermin",t:"",e:"Isfar Group",temp:"Caliente",demo:"2026-02-12",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:""},
     {n:"Rolando Fermin",t:"Agencia de Viajes",e:"Novalty Travel",temp:"Caliente",demo:"2026-02-12",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:""},
     {n:"Tamara Finch",t:"",e:"Realtor",temp:"Caliente",demo:"2026-02-12",f:"Cotización Enviada",impl:2000,fe:500,serv:0,soft:54,notas:""},
-    {n:"Leinny Jimenez",t:"Venta de químicos",e:"Extra Química",temp:"Caliente",demo:"2026-01-26",f:"Cerrado Ganado",impl:500,fe:0,serv:0,soft:54,notas:""},
+    {n:"Leinny Jimenez",t:"Venta de químicos",e:"Extra Química",temp:"Caliente",demo:"2026-01-26",f:"Cerrado Ganado",impl:500,fe:0,serv:0,soft:54,desc:0,notas:""},
     {n:"Stephany Hernandez",t:"Transporte Empresarial",e:"Transpriem",temp:"Caliente",demo:"2026-02-16",f:"Esperando Cotización",impl:1500,fe:500,serv:0,soft:54,notas:""},
     {n:"Alba Santana",t:"Empresa de Letreros",e:"",temp:"Caliente",demo:"2026-02-20",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:""},
     {n:"Ricardo Santana",t:"Firma de Abogados",e:"",temp:"Caliente",demo:"2026-02-20",f:"Esperando Demo",impl:1500,fe:500,serv:0,soft:54,notas:""},
@@ -100,31 +100,31 @@ var SEED_PIPELINE = {
     {n:"Dilepsia Polanco",t:"Empresa de Embutidos",e:"",temp:"Tibio",demo:"",f:"Cotización Enviada",impl:0,fe:0,serv:0,soft:0,notas:"Envié correo el 12/03"},
     {n:"Ilis Vasquez",t:"Courrier",e:"Madre 13 Agencias",temp:"Caliente",demo:"",f:"Esperando Cotización",impl:0,fe:0,serv:0,soft:0,notas:"Pidió presupuesto y fecha"},
     {n:"Annalisa",t:"Empresa de Catering Pequeña",e:"",temp:"Caliente",demo:"2026-03-10",f:"Cotización Enviada",impl:750,fe:500,serv:400,soft:54,notas:"Dar seguimiento Lunes 16"},
-    {n:"Alba Santana",t:"Letreros",e:"",temp:"Caliente",demo:"2026-03-10",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:"Pagará mañana"},
+    {n:"Alba Santana",t:"Letreros",e:"",temp:"Caliente",demo:"2026-03-10",f:"Cerrado Ganado",impl:0,fe:500,serv:0,soft:54,desc:0,notas:"Pagará mañana"},
     {n:"Lucia",t:"Mes pasado",e:"",temp:"Frio",demo:"",f:"Cotización Enviada",impl:0,fe:1000,serv:0,soft:108,notas:""},
     {n:"Angelo (Esposo Luz)",t:"",e:"Novus Paradigma",temp:"Caliente",demo:"2026-03-10",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:"Dar seguimiento a final de mes"},
     {n:"Jennifer García",t:"",e:"Jennifer Garcia Beauty Center",temp:"Tibio",demo:"2026-03-10",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:"Centro de Belleza, Microblading"},
     {n:"Ruby Polanco",t:"No Show",e:"",temp:"Frio",demo:"2026-03-11",f:"No Show",impl:0,fe:0,serv:0,soft:0,notas:""},
     {n:"Daniel Sanchez",t:"Manejo de propiedades",e:"Casa de",temp:"Caliente",demo:"2026-03-11",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:54,notas:"15 Propiedades que son 15 empresas"},
-    {n:"Massiel Delgado",t:"RST Anual 2 Empresas",e:"",temp:"Tibio",demo:"2026-03-11",f:"Esperando Cotización",impl:0,fe:0,serv:0,soft:54,notas:"Paso Software"},
+    {n:"Massiel Delgado",t:"RST Anual 2 Empresas",e:"",temp:"Tibio",demo:"2026-03-11",f:"Cerrado Ganado",impl:0,fe:0,serv:0,soft:54,desc:0,notas:"Paso Software"},
     {n:"Adris Cid",t:"",e:"Mia Vision TV",temp:"Tibio",demo:"2026-03-11",f:"Esperando Cotización",impl:0,fe:500,serv:0,soft:0,notas:""},
     {n:"Adris Cid",t:"",e:"Blue Vic Boutique",temp:"Tibio",demo:"2026-03-11",f:"Esperando Cotización",impl:0,fe:0,serv:0,soft:54,notas:""},
     {n:"Jonathan Romero",t:"",e:"",temp:"Tibio",demo:"2026-03-13",f:"Esperando Cotización",impl:0,fe:0,serv:0,soft:0,notas:"Agendó para el viernes 13/03"},
     {n:"Madre Janet Contreras",t:"Tenedoras de Propiedades",e:"",temp:"Tibio",demo:"",f:"Esperando Demo",impl:0,fe:0,serv:0,soft:0,notas:""},
     {n:"Carlos Moretta",t:"Oftálmologo",e:"",temp:"Tibio",demo:"",f:"Esperando Demo",impl:0,fe:0,serv:0,soft:0,notas:"Lead por Instagram"},
     {n:"Mary Gomez",t:"Constructora",e:"",temp:"Tibio",demo:"",f:"Esperando Demo",impl:0,fe:0,serv:0,soft:0,notas:"Hicimos primera demo, harán 2da"},
-    {n:"Oscar de Leon",t:"Asesoría Turismo",e:"",temp:"Caliente",demo:"2026-03-13",f:"Cerrado Ganado",impl:0,fe:375,serv:0,soft:54,notas:""},
+    {n:"Oscar de Leon",t:"Asesoría Turismo",e:"",temp:"Caliente",demo:"2026-03-13",f:"Cerrado Ganado",impl:0,fe:375,serv:0,soft:54,desc:0,notas:""},
     {n:"Black Box",t:"Importación",e:"",temp:"Frio",demo:"",f:"Cotización Enviada",impl:0,fe:500,serv:0,soft:0,notas:""},
     {n:"Amelia Cespedes",t:"Distribución Arroz",e:"",temp:"Frio",demo:"2026-03-20",f:"No Show",impl:0,fe:0,serv:0,soft:0,notas:"Hablando por whatsapp"},
     {n:"Nikarlie",t:"No Prospectado",e:"",temp:"Frio",demo:"2026-03-24",f:"No Show",impl:0,fe:0,serv:0,soft:0,notas:"Hablando por whatsapp"},
     {n:"Elvyn Soa",t:"GPS",e:"",temp:"Frio",demo:"2026-03-24",f:"Cotización Enviada",impl:1500,fe:500,serv:400,soft:54,notas:"Colegio Espacial Contabilidad Completa"},
     {n:"Alicia Puello",t:"",e:"My Studio Club",temp:"Caliente",demo:"2026-03-26",f:"Cotización Enviada",impl:1500,fe:500,serv:0,soft:54,notas:"Firma de Contadores. Hija queriendo modernizar"},
     {n:"Yamile Ortiz Burgos",t:"",e:"Ortiz Burgos Contadores",temp:"Caliente",demo:"2026-03-26",f:"Cotización Enviada",impl:1125,fe:0,serv:400,soft:90,notas:"Firma de Abogados, lo ha intentado antes"},
-    {n:"Eva Ortega",t:"",e:"Dior Legal Partners",temp:"Caliente",demo:"2026-03-27",f:"Cerrado Ganado",impl:500,fe:0,serv:250,soft:0,notas:""},
-    {n:"Janet Contreras",t:"",e:"Inversiones Saclar",temp:"Caliente",demo:"2026-03-23",f:"Cerrado Ganado",impl:500,fe:0,serv:250,soft:0,notas:""},
-    {n:"Janet Contreras",t:"",e:"Vista Catalina",temp:"Caliente",demo:"2026-03-23",f:"Cerrado Ganado",impl:0,fe:0,serv:0,soft:0,notas:""},
+    {n:"Eva Ortega",t:"",e:"Dior Legal Partners",temp:"Caliente",demo:"2026-03-27",f:"Cerrado Ganado",impl:1125,fe:0,serv:400,soft:90,desc:0,notas:""},
+    {n:"Janet Contreras",t:"",e:"Inversiones Saclar",temp:"Caliente",demo:"2026-03-23",f:"Cerrado Ganado",impl:500,fe:0,serv:250,soft:0,desc:0,notas:""},
+    {n:"Janet Contreras",t:"",e:"Vista Catalina",temp:"Caliente",demo:"2026-03-23",f:"Cerrado Ganado",impl:500,fe:0,serv:250,soft:0,desc:0,notas:""},
     {n:"Kumiko Kasahara",t:"",e:"",temp:"Frio",demo:"",f:"Esperando Demo",impl:0,fe:0,serv:0,soft:0,notas:""},
-    {n:"Yilem Comunica",t:"",e:"",temp:"Caliente",demo:"2026-03-31",f:"Cerrado Ganado",impl:0,fe:0,serv:0,soft:0,notas:""}
+    {n:"Yilem Comunica",t:"",e:"",temp:"Caliente",demo:"2026-03-31",f:"Cerrado Ganado",impl:500,fe:0,serv:0,soft:54,desc:0,notas:""}
   ],
   abril: [
     {n:"Raul Aristy",t:"Constructora",e:"Architectural & Civil",temp:"Caliente",demo:"2026-04-01",f:"Cerrado Ganado",impl:1500,fe:500,serv:0,soft:90,desc:25,notas:"Friday 10/04"},
