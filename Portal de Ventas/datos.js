@@ -3,8 +3,92 @@
 // ============================================================
 // Este archivo contiene TODA la data del pipeline.
 // Para actualizar: edita directamente aquí y sube a GitHub.
+// Cambia DATA_VERSION cada vez que actualices para que la app recargue.
 //
-// Cada lead tiene estos campos:
+// ============================================================
+// RESUMEN DE CIERRES POR MES (más reciente primero)
+// ============================================================
+//
+// --- ACUMULADO 2026: 22 cierres | Vendido: US$26,528 | Invertido: US$2,420 | ROAS: 10.96x ---
+//
+// --- ABRIL (5 cierres | Vendido: US$8,272 | Invertido: US$375 | ROAS: 22.06x) ---
+//
+//  1. Raul Aristy — Architectural & Civil
+//     Producto: Impl + FE + Software | Desc: 25% | Vendido: US$1,590
+//
+//  2. Igssel Santana — Igsan
+//     Producto: Impl + FE + Servicio + Software | Desc: 25% | Vendido: US$1,554
+//
+//  3. Keren Jerez — Centro Adorartes SRL
+//     Producto: Impl + FE + Servicio + Software | Desc: 25% | Vendido: US$1,554
+//     Nota: RST. Pago 50% ahora, 50% el 03 de Mayo
+//
+//  4. Jima — 2da Empresa Paloma
+//     Producto: FE | Desc: 0% | Vendido: US$500
+//
+//  5. Kumiko Kasahara — K&G
+//     Producto: FE (8 con 25% y 7 Adm Basic con 70% desc) | Desc: 0% | Vendido: US$3,074
+//
+// --- MARZO (7 cierres | Vendido: US$3,806 | Invertido: US$950 | ROAS: 4.01x) ---
+//
+//  1. Alba Santana — Letreros
+//     Producto: FE + Software | Desc: 0% | Vendido: US$554
+//
+//  2. Oscar de Leon — Asesoría Turismo
+//     Producto: FE + Software | Desc: 0% | Vendido: US$429
+//
+//  3. Eva Ortega — Dior Legal Partners
+//     Producto: Impl + Servicio + Software | Desc: 0% | Vendido: US$1,215
+//
+//  4. Janet Contreras — Inversiones Saclar
+//     Producto: Impl + Servicio | Desc: 0% | Vendido: US$500
+//
+//  5. Janet Contreras — Vista Catalina
+//     Producto: Impl + Servicio | Desc: 0% | Vendido: US$500
+//
+//  6. Yilem Comunica
+//     Producto: Impl + Software | Desc: 0% | Vendido: US$554
+//
+//  7. Massiel Delgado — RST Anual 2 Empresas
+//     Producto: Software | Desc: 0% | Vendido: US$54 | Nota: Paso Software
+//
+// --- FEBRERO (4 cierres | Vendido: US$2,950 | Invertido: US$495 | ROAS: 5.96x) ---
+//
+//  1. Phillip Escoto — Phillips Electronica
+//     Producto: Impl + FE + Software | Desc: 0% | Vendido: US$1,450
+//
+//  2. Johanna Simpson — CLC
+//     Producto: FE | Desc: 0% | Vendido: US$500
+//
+//  3. Johanna Simpson — Vitalie
+//     Producto: FE | Desc: 0% | Vendido: US$500
+//
+//  4. Leinny Jimenez — Extra Química
+//     Producto: Impl + Software | Desc: 0% | Vendido: US$500
+//
+// --- ENERO (6 cierres | Vendido: US$11,500 | Invertido: US$600 | ROAS: 19.17x) ---
+//
+//  1. Oleica Jimenez — Psicología
+//     Producto: Impl + FE + Servicio + Software | Desc: 0% | Vendido: US$1,000
+//
+//  2. Nadime Bacha — Dime 7
+//     Producto: Impl + FE + Software | Desc: 0% | Vendido: US$2,500
+//
+//  3. Marie Tic Tag — Tic Tag
+//     Producto: Impl + FE + Servicio + Software | Desc: 0% | Vendido: US$2,500
+//
+//  4. Lizardi Gonzalez — Lidomi Constructora
+//     Producto: Impl + FE + Servicio + Software | Desc: 0% | Vendido: US$2,500
+//
+//  5. Paloma Viajes Pat — Viajes Pat
+//     Producto: Impl + FE | Desc: 0% | Vendido: US$1,500
+//
+//  6. Carolina Arbaje — Distrito Legal
+//     Producto: Impl + FE | Desc: 0% | Vendido: US$1,500
+//
+// ============================================================
+// GUIA DE CAMPOS
+// ============================================================
 //   n     = Nombre del contacto
 //   t     = Tipo de negocio
 //   e     = Nombre de la empresa
@@ -22,16 +106,8 @@
 //   desc  = Porcentaje de descuento (ej: 25 = 25%). Si no se pone, asume 25%.
 //   notas = Notas libres
 //
-// ROAS mensual:
-//   leads       = Cantidad de leads del mes
-//   presupuesto = Presupuesto de marketing (US$)
-//   ejecutado   = Monto realmente gastado (US$)
-//   cierres     = Cantidad de cierres ganados
-//   vendido     = Monto total vendido (US$)
-//   cotizado    = Monto total cotizado (US$)
-//   cpa         = Costo por adquisición (US$)
-//   retorno     = Retorno neto (US$)
-//   roas        = Retorno sobre inversión publicitaria (veces)
+// ROAS mensual (presupuesto y ejecutado son manuales, lo demás se calcula del pipeline):
+//   leads, presupuesto, ejecutado, cierres, vendido, cotizado, cpa, retorno, roas
 // ============================================================
 
 // Cambia esta versión cada vez que actualices la data.
