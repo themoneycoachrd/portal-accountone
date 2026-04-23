@@ -8,6 +8,7 @@
 <style>
 :root {
   --navy: #1e3a5f;
+  --navy-light: #2d4a7a;
   --blue: #3b82f6;
   --green: #10b981;
   --red: #ef4444;
@@ -18,6 +19,8 @@
   --border: #e5e7eb;
   --text: #1f2937;
   --muted: #6b7280;
+  --light: #9ca3af;
+  --sidebar-w: 260px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -60,72 +63,227 @@ body {
   width: 100%; padding: 12px; background: var(--navy); color: white; border: none;
   border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 8px;
 }
-.login-btn:hover { background: #2d4a7a; }
+.login-btn:hover { background: var(--navy-light); }
 .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .login-error { color: var(--red); font-size: 0.8rem; margin-top: 12px; display: none; }
 
-/* ==================== HEADER ==================== */
-.header {
-  background: linear-gradient(135deg, #1e3a5f, #2d4a7a);
-  color: white;
-  padding: 24px 32px;
-}
-.header-inner {
-  max-width: 1000px;
-  margin: 0 auto;
+/* ==================== APP LAYOUT ==================== */
+.app-layout {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  min-height: 100vh;
 }
-.header h1 { font-size: 1.5rem; font-weight: 700; }
-.header p { opacity: 0.8; font-size: 0.9rem; margin-top: 4px; }
-.user-bar { display: flex; align-items: center; gap: 12px; }
-.user-bar .user-name {
-  font-size: 0.8rem; opacity: 0.9;
-  background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px;
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--navy);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand h1 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.sidebar-brand p {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+}
+.sidebar-section-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.35);
+  padding: 12px 8px 6px;
+  font-weight: 600;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  cursor: pointer;
+  position: relative;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+.nav-item.active {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-weight: 600;
+}
+.nav-item.disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+.nav-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.nav-label { flex: 1; }
+.nav-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.nav-badge-active {
+  background: rgba(16,185,129,0.2);
+  color: #6ee7b7;
+}
+.nav-badge-pending {
+  background: rgba(245,158,11,0.2);
+  color: #fcd34d;
+}
+
+/* ─── Sidebar user ─── */
+.sidebar-user {
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.user-meta { flex: 1; min-width: 0; }
+.user-meta-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-meta-role {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  text-transform: capitalize;
 }
 .btn-logout {
-  font-size: 0.75rem; padding: 4px 12px;
-  background: rgba(255,255,255,0.15); color: white;
-  border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer;
+  width: 100%;
+  padding: 7px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
 }
-.btn-logout:hover { background: rgba(255,255,255,0.25); }
+.btn-logout:hover {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
 
-/* ==================== MODULES GRID ==================== */
-.container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 32px 20px;
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-.welcome {
-  font-size: 1.1rem;
+
+.main-header {
+  padding: 28px 36px 0;
+}
+.main-header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
   color: var(--text);
-  margin-bottom: 24px;
 }
+.main-header p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.main-body {
+  flex: 1;
+  padding: 28px 36px;
+}
+
+/* ─── Module cards (main area) ─── */
 .modules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
 }
 .module-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
-  transition: all 0.2s;
-  cursor: pointer;
+  border-radius: 14px;
+  padding: 24px;
   text-decoration: none;
   color: inherit;
-  display: block;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: all 0.2s;
+  cursor: pointer;
   position: relative;
 }
 .module-card:hover {
   border-color: var(--blue);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
 }
 .module-card.disabled {
-  opacity: 0.55;
+  opacity: 0.45;
   cursor: default;
 }
 .module-card.disabled:hover {
@@ -133,55 +291,94 @@ body {
   box-shadow: none;
   transform: none;
 }
-.module-icon {
-  width: 48px; height: 48px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.4rem;
-  margin-bottom: 16px;
+.module-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
 }
-.module-card h3 {
-  font-size: 1.05rem;
+.module-card-body { flex: 1; }
+.module-card-body h3 {
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
-.module-card p {
-  font-size: 0.85rem;
+.module-card-body p {
+  font-size: 0.8rem;
   color: var(--muted);
   line-height: 1.5;
 }
-.badge-pending {
+.module-card-badge {
   position: absolute;
-  top: 16px; right: 16px;
-  background: #fef3c7;
-  color: #92400e;
-  font-size: 0.7rem;
+  top: 12px;
+  right: 14px;
+  font-size: 0.65rem;
   font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.badge-active {
-  position: absolute;
-  top: 16px; right: 16px;
-  background: #d1fae5;
-  color: #065f46;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+.badge-active { background: #d1fae5; color: #065f46; }
+.badge-pending { background: #fef3c7; color: #92400e; }
+
+/* ─── Welcome section ─── */
+.welcome-section {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  margin-bottom: 28px;
+}
+.welcome-section h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.welcome-section p {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+.welcome-date {
+  font-size: 0.8rem;
+  opacity: 0.5;
+  margin-top: 12px;
 }
 
-.footer {
+/* ─── Footer ─── */
+.main-footer {
+  padding: 20px 36px;
+  font-size: 0.75rem;
+  color: var(--light);
   text-align: center;
-  padding: 40px 20px 20px;
-  font-size: 0.8rem;
-  color: var(--muted);
 }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 220px; }
+  .main-body { padding: 20px; }
+  .main-header { padding: 20px 20px 0; }
+  .modules-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; }
+  .mobile-header {
+    display: flex;
+    background: var(--navy);
+    color: white;
+    padding: 16px 20px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .mobile-header h1 { font-size: 1.1rem; font-weight: 700; }
+}
+
 .hidden { display: none; }
 </style>
 </head>
@@ -191,13 +388,13 @@ body {
 <div class="login-overlay" id="login-screen">
   <div class="login-box">
     <h2>Account One</h2>
-    <p class="subtitle">Inicia sesión para continuar</p>
+    <p class="subtitle">Inicia sesion para continuar</p>
     <div class="field">
       <label>Email</label>
       <input type="email" id="login-email" placeholder="tu@accountone.do">
     </div>
     <div class="field">
-      <label>Contraseña</label>
+      <label>Contrasena</label>
       <input type="password" id="login-password" placeholder="••••••••">
     </div>
     <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
@@ -207,27 +404,41 @@ body {
 
 <!-- APP -->
 <div id="app-wrapper" class="hidden">
+<div class="app-layout">
 
-<div class="header">
-  <div class="header-inner">
-    <div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
       <h1>Account One</h1>
       <p>Portal Interno</p>
     </div>
-    <div class="user-bar">
-      <span class="user-name" id="user-display-name"></span>
-      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Rendered by JS -->
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-avatar"></div>
+        <div class="user-meta">
+          <div class="user-meta-name" id="user-display-name"></div>
+          <div class="user-meta-role" id="user-display-role"></div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">Cerrar sesion</button>
     </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="main-body">
+      <div class="welcome-section" id="welcome-section"></div>
+      <div class="modules-grid" id="modules-grid"></div>
+    </div>
+    <div class="main-footer">Account One — Portal Interno 2026</div>
   </div>
+
 </div>
-
-<div class="container">
-  <p class="welcome" id="welcome-msg"></p>
-  <div class="modules-grid" id="modules-grid"></div>
-</div>
-
-<div class="footer">Account One — Portal Interno 2026</div>
-
 </div><!-- /app-wrapper -->
 
 <script>
@@ -238,13 +449,20 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let userRole = null;
 let userName = '';
 
-// Modules configuration
+const ROLE_LABELS = {
+  admin: 'Administrador',
+  ventas: 'Ventas',
+  contadora: 'Contadora',
+  implementadora: 'Implementadora',
+  analista: 'Analista'
+};
+
 const ALL_MODULES = [
   {
     id: 'ventas',
     title: 'Pipeline de Ventas',
-    desc: 'Leads por mes, funnel de ventas, métricas ROAS y seguimiento del pipeline comercial.',
-    icon: '📈',
+    desc: 'Leads, funnel de ventas, ROAS y seguimiento del pipeline comercial.',
+    icon: '\ud83d\udcc8',
     iconBg: '#eff6ff',
     href: 'ventas.html',
     roles: ['admin', 'ventas'],
@@ -253,8 +471,8 @@ const ALL_MODULES = [
   {
     id: 'contadores',
     title: 'Control de Clientes',
-    desc: 'Dashboard de clientes, asignaciones por contadora, evolución de cartera y carga de trabajo.',
-    icon: '👥',
+    desc: 'Clientes por contadora, carga de trabajo, implementaciones y software.',
+    icon: '\ud83d\udc65',
     iconBg: '#f0fdf4',
     href: 'contadores.html',
     roles: ['admin', 'contadora', 'implementadora', 'analista'],
@@ -263,8 +481,8 @@ const ALL_MODULES = [
   {
     id: 'kpi',
     title: 'KPI Scorecard',
-    desc: 'Evaluación trimestral de contadoras: digitación, resúmenes de declaración y video/reuniones.',
-    icon: '🎯',
+    desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.',
+    icon: '\ud83c\udfaf',
     iconBg: '#faf5ff',
     href: 'kpi.html',
     roles: ['admin', 'contadora'],
@@ -273,8 +491,8 @@ const ALL_MODULES = [
   {
     id: 'implementaciones',
     title: 'Implementaciones',
-    desc: 'Clientes en proceso de onboarding, seguimiento de fecha de inicio, primer mes y estado.',
-    icon: '🚀',
+    desc: 'Onboarding de clientes, fechas y estado de cada implementacion.',
+    icon: '\ud83d\ude80',
     iconBg: '#fff7ed',
     href: 'implementaciones.html',
     roles: ['admin', 'implementadora'],
@@ -282,32 +500,87 @@ const ALL_MODULES = [
   }
 ];
 
+function getInitials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Buenos dias';
+  if (h < 18) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+function formatToday() {
+  const d = new Date();
+  const dias = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()] + ', ' + d.getFullYear();
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  const visible = ALL_MODULES.filter(m => m.roles.includes(userRole));
+
+  let html = '<div class="sidebar-section-label">Modulos</div>';
+  visible.forEach(m => {
+    const badgeClass = m.active ? 'nav-badge-active' : 'nav-badge-pending';
+    const badgeText = m.active ? 'Activo' : 'Pendiente';
+    const disabledClass = m.active ? '' : ' disabled';
+    const tag = m.active ? 'a' : 'div';
+    const hrefAttr = m.active ? ' href="' + m.href + '"' : '';
+
+    html += '<' + tag + ' class="nav-item' + disabledClass + '"' + hrefAttr + '>';
+    html += '<div class="nav-icon" style="background:' + m.iconBg + '">' + m.icon + '</div>';
+    html += '<span class="nav-label">' + m.title + '</span>';
+    html += '<span class="nav-badge ' + badgeClass + '">' + badgeText + '</span>';
+    html += '</' + tag + '>';
+  });
+
+  nav.innerHTML = html;
+}
+
 function renderModules() {
   const grid = document.getElementById('modules-grid');
   const visible = ALL_MODULES.filter(m => m.roles.includes(userRole));
 
   grid.innerHTML = visible.map(m => {
-    const tag = m.active
-      ? '<span class="badge-active">Activo</span>'
-      : '<span class="badge-pending">Pendiente</span>';
+    const badgeClass = m.active ? 'badge-active' : 'badge-pending';
+    const badgeText = m.active ? 'Activo' : 'Pendiente';
+    const tag = m.active ? 'a' : 'div';
+    const hrefAttr = m.active ? ' href="' + m.href + '"' : '';
+    const disabledClass = m.active ? '' : ' disabled';
 
-    if (m.active) {
-      return `<a href="${m.href}" class="module-card">
-        ${tag}
-        <div class="module-icon" style="background:${m.iconBg}">${m.icon}</div>
-        <h3>${m.title}</h3>
-        <p>${m.desc}</p>
-      </a>`;
-    } else {
-      return `<div class="module-card disabled">
-        ${tag}
-        <div class="module-icon" style="background:${m.iconBg}">${m.icon}</div>
-        <h3>${m.title}</h3>
-        <p>${m.desc}</p>
-      </div>`;
-    }
+    return '<' + tag + ' class="module-card' + disabledClass + '"' + hrefAttr + '>' +
+      '<span class="module-card-badge ' + badgeClass + '">' + badgeText + '</span>' +
+      '<div class="module-card-icon" style="background:' + m.iconBg + '">' + m.icon + '</div>' +
+      '<div class="module-card-body">' +
+        '<h3>' + m.title + '</h3>' +
+        '<p>' + m.desc + '</p>' +
+      '</div>' +
+    '</' + tag + '>';
   }).join('');
 }
+
+function renderWelcome() {
+  const el = document.getElementById('welcome-section');
+  const firstName = userName.split(' ')[0];
+
+  el.innerHTML =
+    '<h2>' + getGreeting() + ', ' + firstName + '</h2>' +
+    '<p>Selecciona un modulo del menu para comenzar.</p>' +
+    '<div class="welcome-date">' + formatToday() + '</div>';
+}
+
+function renderUserInfo() {
+  document.getElementById('user-avatar').textContent = getInitials(userName);
+  document.getElementById('user-display-name').textContent = userName;
+  document.getElementById('user-display-role').textContent = ROLE_LABELS[userRole] || userRole;
+}
+
+// ==================== AUTH ====================
 
 async function handleLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -316,7 +589,7 @@ async function handleLogin() {
   const btn = document.getElementById('btn-login');
 
   if (!email || !password) {
-    errorEl.textContent = 'Ingresa email y contraseña.';
+    errorEl.textContent = 'Ingresa email y contrasena.';
     errorEl.style.display = 'block';
     return;
   }
@@ -328,7 +601,7 @@ async function handleLogin() {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
   if (error) {
-    errorEl.textContent = 'Email o contraseña incorrectos.';
+    errorEl.textContent = 'Email o contrasena incorrectos.';
     errorEl.style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Entrar';
@@ -369,11 +642,10 @@ async function loadUserProfile() {
 function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-wrapper').classList.remove('hidden');
-  document.getElementById('user-display-name').textContent = userName;
 
-  const firstName = userName.split(' ')[0];
-  document.getElementById('welcome-msg').textContent = 'Hola, ' + firstName + '. ¿Qué quieres hacer hoy?';
-
+  renderUserInfo();
+  renderSidebar();
+  renderWelcome();
   renderModules();
 }
 
