@@ -317,17 +317,152 @@ tr.expanded { background: #f0f9ff; }
 }
 .hidden { display: none; }
 .currency { font-variant-numeric: tabular-nums; }
+
+/* ==================== LOGIN SCREEN ==================== */
+.login-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a7a 50%, #1e3a5f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-box h2 {
+  font-size: 1.4rem;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.login-box .subtitle {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.login-box .field {
+  margin-bottom: 16px;
+}
+.login-box .field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.login-box .field input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.login-box .field input:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+}
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+.login-btn:hover { background: #2d4a7a; }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-error {
+  color: var(--red);
+  font-size: 0.8rem;
+  margin-top: 12px;
+  display: none;
+}
+
+/* ==================== USER BAR ==================== */
+.user-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.user-bar .user-name {
+  font-size: 0.8rem;
+  opacity: 0.9;
+  background: rgba(255,255,255,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.user-bar .user-role {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.btn-logout {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.25); }
 </style>
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>Account One</h2>
+    <p class="subtitle">Inicia sesión para continuar</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@accountone.do">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+
 <div class="header">
-  <h1>Pipeline de Ventas - Account One</h1>
-  <p>2026</p>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <h1>Pipeline de Ventas - Account One</h1>
+      <p>2026</p>
+    </div>
+    <div class="user-bar">
+      <span class="user-name" id="user-display-name"></span>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </div>
 </div>
 
 <div class="breadcrumb-bar">
-  <a href="../Pantalla de Inicio/index.html">Account One</a>
+  <a href="index.html">Account One</a>
   <span class="sep">›</span>
   <span class="current">Pipeline de Ventas</span>
 </div>
@@ -341,6 +476,8 @@ tr.expanded { background: #f0f9ff; }
 <div id="tab-pipeline" class="container hidden"></div>
 
 <div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
+
+</div><!-- /app-wrapper -->
 
 <script>
 // ==================== TYPES ====================
@@ -531,13 +668,21 @@ let APP = {
   expandedRow: -1,
   addingLead: false,
   editingRoas: null, // {month, field}
-  charts: {}
+  charts: {},
+  userRole: null,  // 'admin', 'ventas', 'contadora', etc.
+  userName: ''
 };
 
 // ==================== COMPONENTS ====================
 
 function renderMainTabs() {
+  const isVentas = APP.userRole === 'ventas';
   document.querySelectorAll('.main-tab').forEach(tab => {
+    // Ventas no ve tab de ROAS
+    if (isVentas && tab.dataset.tab === 'roas') {
+      tab.style.display = 'none';
+      return;
+    }
     tab.classList.toggle('active', tab.dataset.tab === APP.activeTab);
     tab.onclick = () => {
       APP.activeTab = tab.dataset.tab;
@@ -606,19 +751,24 @@ function renderPipeline() {
   });
   html += '</div>';
 
-  // Summary stats with ROAS
+  // Summary stats
+  const isVentas = APP.userRole === 'ventas';
   html += '<div class="stats-grid stats-grid-pipeline">';
   html += `<div class="stat-card"><div class="label">Total Leads</div><div class="value navy">${totalLeads}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Costo x Lead</div><div class="value amber">${fmtCurrency(Math.round(cpl))}</div></div>`;
+  if (!isVentas) html += `<div class="stat-card"><div class="label">Costo x Lead</div><div class="value amber">${fmtCurrency(Math.round(cpl))}</div></div>`;
   html += `<div class="stat-card"><div class="label">Cierres</div><div class="value green">${cierres}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Costo Adquisición</div><div class="value amber">${fmtCurrency(Math.round(cpa))}</div></div>`;
+  if (!isVentas) html += `<div class="stat-card"><div class="label">Costo Adquisición</div><div class="value amber">${fmtCurrency(Math.round(cpa))}</div></div>`;
   html += `<div class="stat-card"><div class="label">% de Cierre</div><div class="value navy">${fmtPct(pctCierre)}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Total Cotizado</div><div class="value blue">${fmtCurrency(totalCotizado)}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Total Vendido</div><div class="value green">${fmtCurrency(Math.round(totalVendido))}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Invertido</div><div class="value amber">${fmtCurrency(invertido)}</div></div>`;
-  html += `<div class="stat-card"><div class="label">Ganancia</div><div class="value ${ganancia >= 0 ? 'green' : 'red'}">${fmtCurrency(Math.round(ganancia))}</div></div>`;
-  html += `<div class="stat-card"><div class="label">ROAS</div><div class="value blue">${roasVal.toFixed(2)}x</div></div>`;
   html += '</div>';
+  if (!isVentas) {
+    html += '<div class="stats-grid stats-grid-pipeline">';
+    html += `<div class="stat-card"><div class="label">Total Cotizado</div><div class="value blue">${fmtCurrency(totalCotizado)}</div></div>`;
+    html += `<div class="stat-card"><div class="label">Total Vendido</div><div class="value green">${fmtCurrency(Math.round(totalVendido))}</div></div>`;
+    html += `<div class="stat-card"><div class="label">Invertido</div><div class="value amber">${fmtCurrency(invertido)}</div></div>`;
+    html += `<div class="stat-card"><div class="label">Ganancia</div><div class="value ${ganancia >= 0 ? 'green' : 'red'}">${fmtCurrency(Math.round(ganancia))}</div></div>`;
+    html += `<div class="stat-card"><div class="label">ROAS</div><div class="value blue">${roasVal.toFixed(2)}x</div></div>`;
+    html += '</div>';
+  }
 
   // Funnel
   if (totalLeads > 0) {
@@ -657,7 +807,9 @@ function renderPipeline() {
   // Table
   if (filtered.length > 0) {
     html += '<div class="card"><div class="table-wrapper"><table>';
-    html += '<thead><tr><th>#</th><th>Nombre</th><th>Empresa</th><th>Temp</th><th>Demo</th><th>Funnel</th><th>Impl</th><th>FE</th><th>Serv</th><th>Soft</th><th>Cotizado</th><th>Desc%</th><th>Vendido</th><th>Notas</th></tr></thead>';
+    html += '<thead><tr><th>#</th><th>Nombre</th><th>Empresa</th><th>Temp</th><th>Demo</th><th>Funnel</th><th>Impl</th><th>FE</th><th>Serv</th><th>Soft</th>';
+    if (!isVentas) html += '<th>Cotizado</th><th>Desc%</th><th>Vendido</th>';
+    html += '<th>Notas</th></tr></thead>';
     html += '<tbody>';
     filtered.forEach((lead, idx) => {
       const realIdx = leads.indexOf(lead);
@@ -676,9 +828,9 @@ function renderPipeline() {
         <td class="currency">${fmt(lead.fe)}</td>
         <td class="currency">${fmt(lead.serv)}</td>
         <td class="currency">${fmt(lead.soft)}</td>
-        <td class="currency"><strong>${fmt(leadTotal(lead))}</strong></td>
+        ${!isVentas ? `<td class="currency"><strong>${fmt(leadTotal(lead))}</strong></td>
         <td>${isGanado ? descPct + '%' : '-'}</td>
-        <td class="currency">${isGanado ? '<strong>' + fmt(Math.round(vendido)) + '</strong>' : '-'}</td>
+        <td class="currency">${isGanado ? '<strong>' + fmt(Math.round(vendido)) + '</strong>' : '-'}</td>` : ''}
         <td>${lead.notas}</td>
       </tr>`;
       if (isExpanded) {
@@ -696,7 +848,8 @@ function renderPipeline() {
 
 function renderEditRow(lead, idx) {
   const descVal = lead.desc != null ? lead.desc : 25;
-  return `<tr class="edit-row"><td colspan="14">
+  const colSpan = APP.userRole === 'ventas' ? 11 : 14;
+  return `<tr class="edit-row"><td colspan="${colSpan}">
     <div class="edit-form" style="grid-template-columns:repeat(5,1fr);">
       <div class="field"><label>Nombre</label><input type="text" data-field="n" value="${esc(lead.n)}"></div>
       <div class="field"><label>Tipo de Empresa</label><input type="text" data-field="t" value="${esc(lead.t)}"></div>
@@ -1157,14 +1310,85 @@ function renderApp() {
   }
 }
 
-async function init() {
+// ==================== AUTH ====================
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Ingresa email y contraseña.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errorEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = 'Email o contraseña incorrectos.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  await loadUserProfile();
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  APP.userRole = null;
+  APP.userName = '';
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function loadUserProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await sb.from('profiles')
+    .select('nombre, rol')
+    .eq('id', user.id)
+    .single();
+
+  if (profile) {
+    APP.userRole = profile.rol;
+    APP.userName = profile.nombre || user.email;
+  } else {
+    // Si no tiene perfil, acceso básico
+    APP.userRole = 'contadora';
+    APP.userName = user.email;
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  document.getElementById('user-display-name').textContent = APP.userName;
+
+  // Si es ventas, arrancar en pipeline (no tiene acceso a ROAS)
+  if (APP.userRole === 'ventas') {
+    APP.activeTab = 'pipeline';
+  }
+
+  startApp();
+}
+
+async function startApp() {
   APP.data = await loadData();
-  // Ensure all months have pipeline and roas entries
   MONTHS.forEach(m => {
     if (!APP.data.pipeline[m]) APP.data.pipeline[m] = [];
     if (!APP.data.roas[m]) APP.data.roas[m] = { leads:0, presupuesto:0, ejecutado:0, cierres:0, vendido:0, cotizado:0, cpa:0, retorno:0, roas:0 };
   });
-  // Set budget for future months (May-Aug: 2000, Sep-Dec: 3000)
   ['mayo','junio','julio','agosto'].forEach(m => {
     if (APP.data.roas[m].leads === 0 && APP.data.roas[m].presupuesto === 0) {
       APP.data.roas[m].presupuesto = 2000;
@@ -1178,6 +1402,24 @@ async function init() {
   syncRoasFromPipeline();
   renderMainTabs();
   renderApp();
+}
+
+// Allow login with Enter key
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+// Check if already logged in
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile();
+    showApp();
+  }
+  // If no session, login screen is already visible
 }
 
 init();

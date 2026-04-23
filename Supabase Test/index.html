@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account One — Portal Interno</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #1e3a5f;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --purple: #8b5cf6;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #1f2937;
+  --muted: #6b7280;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ==================== LOGIN ==================== */
+.login-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, #1e3a5f 0%, #2d4a7a 50%, #1e3a5f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-box h2 { font-size: 1.4rem; color: var(--navy); margin-bottom: 4px; }
+.login-box .subtitle { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
+.login-box .field { margin-bottom: 16px; }
+.login-box .field label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.login-box .field input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.95rem; font-family: inherit;
+}
+.login-box .field input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.login-btn {
+  width: 100%; padding: 12px; background: var(--navy); color: white; border: none;
+  border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-top: 8px;
+}
+.login-btn:hover { background: #2d4a7a; }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-error { color: var(--red); font-size: 0.8rem; margin-top: 12px; display: none; }
+
+/* ==================== HEADER ==================== */
+.header {
+  background: linear-gradient(135deg, #1e3a5f, #2d4a7a);
+  color: white;
+  padding: 24px 32px;
+}
+.header-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.header h1 { font-size: 1.5rem; font-weight: 700; }
+.header p { opacity: 0.8; font-size: 0.9rem; margin-top: 4px; }
+.user-bar { display: flex; align-items: center; gap: 12px; }
+.user-bar .user-name {
+  font-size: 0.8rem; opacity: 0.9;
+  background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px;
+}
+.btn-logout {
+  font-size: 0.75rem; padding: 4px 12px;
+  background: rgba(255,255,255,0.15); color: white;
+  border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+/* ==================== MODULES GRID ==================== */
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+.welcome {
+  font-size: 1.1rem;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  transition: all 0.2s;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  position: relative;
+}
+.module-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+.module-card.disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.module-card.disabled:hover {
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+}
+.module-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+.module-card h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.module-card p {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.badge-pending {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.badge-active {
+  position: absolute;
+  top: 16px; right: 16px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.footer {
+  text-align: center;
+  padding: 40px 20px 20px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>Account One</h2>
+    <p class="subtitle">Inicia sesión para continuar</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@accountone.do">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Account One</h1>
+      <p>Portal Interno</p>
+    </div>
+    <div class="user-bar">
+      <span class="user-name" id="user-display-name"></span>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <p class="welcome" id="welcome-msg"></p>
+  <div class="modules-grid" id="modules-grid"></div>
+</div>
+
+<div class="footer">Account One — Portal Interno 2026</div>
+
+</div><!-- /app-wrapper -->
+
+<script>
+const SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZXR1c3N0cXZweWpleWNmZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDcwNzksImV4cCI6MjA5MjIyMzA3OX0.Bsys947JLGEuf3zdBF2GPFdbJVJtaZdC4YEmyBU5Bow';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let userRole = null;
+let userName = '';
+
+// Modules configuration
+const ALL_MODULES = [
+  {
+    id: 'ventas',
+    title: 'Pipeline de Ventas',
+    desc: 'Leads por mes, funnel de ventas, métricas ROAS y seguimiento del pipeline comercial.',
+    icon: '📈',
+    iconBg: '#eff6ff',
+    href: 'ventas.html',
+    roles: ['admin', 'ventas'],
+    active: true
+  },
+  {
+    id: 'contadores',
+    title: 'Control de Clientes',
+    desc: 'Dashboard de clientes, asignaciones por contadora, evolución de cartera y carga de trabajo.',
+    icon: '👥',
+    iconBg: '#f0fdf4',
+    href: 'contadores.html',
+    roles: ['admin', 'contadora', 'implementadora', 'analista'],
+    active: false
+  },
+  {
+    id: 'kpi',
+    title: 'KPI Scorecard',
+    desc: 'Evaluación trimestral de contadoras: digitación, resúmenes de declaración y video/reuniones.',
+    icon: '🎯',
+    iconBg: '#faf5ff',
+    href: 'kpi.html',
+    roles: ['admin', 'contadora'],
+    active: false
+  },
+  {
+    id: 'implementaciones',
+    title: 'Implementaciones',
+    desc: 'Clientes en proceso de onboarding, seguimiento de fecha de inicio, primer mes y estado.',
+    icon: '🚀',
+    iconBg: '#fff7ed',
+    href: 'implementaciones.html',
+    roles: ['admin', 'implementadora'],
+    active: false
+  }
+];
+
+function renderModules() {
+  const grid = document.getElementById('modules-grid');
+  const visible = ALL_MODULES.filter(m => m.roles.includes(userRole));
+
+  grid.innerHTML = visible.map(m => {
+    const tag = m.active
+      ? '<span class="badge-active">Activo</span>'
+      : '<span class="badge-pending">Pendiente</span>';
+
+    if (m.active) {
+      return `<a href="${m.href}" class="module-card">
+        ${tag}
+        <div class="module-icon" style="background:${m.iconBg}">${m.icon}</div>
+        <h3>${m.title}</h3>
+        <p>${m.desc}</p>
+      </a>`;
+    } else {
+      return `<div class="module-card disabled">
+        ${tag}
+        <div class="module-icon" style="background:${m.iconBg}">${m.icon}</div>
+        <h3>${m.title}</h3>
+        <p>${m.desc}</p>
+      </div>`;
+    }
+  }).join('');
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Ingresa email y contraseña.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errorEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = 'Email o contraseña incorrectos.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  await loadUserProfile();
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  userRole = null;
+  userName = '';
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function loadUserProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await sb.from('profiles')
+    .select('nombre, rol')
+    .eq('id', user.id)
+    .single();
+
+  if (profile) {
+    userRole = profile.rol;
+    userName = profile.nombre || user.email;
+  } else {
+    userRole = 'contadora';
+    userName = user.email;
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  document.getElementById('user-display-name').textContent = userName;
+
+  const firstName = userName.split(' ')[0];
+  document.getElementById('welcome-msg').textContent = 'Hola, ' + firstName + '. ¿Qué quieres hacer hoy?';
+
+  renderModules();
+}
+
+// Enter key handlers
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+// Check existing session
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile();
+    showApp();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
