@@ -676,13 +676,7 @@ let APP = {
 // ==================== COMPONENTS ====================
 
 function renderMainTabs() {
-  const isVentas = APP.userRole === 'ventas';
   document.querySelectorAll('.main-tab').forEach(tab => {
-    // Ventas no ve tab de ROAS
-    if (isVentas && tab.dataset.tab === 'roas') {
-      tab.style.display = 'none';
-      return;
-    }
     tab.classList.toggle('active', tab.dataset.tab === APP.activeTab);
     tab.onclick = () => {
       APP.activeTab = tab.dataset.tab;
@@ -1057,110 +1051,105 @@ function renderROAS() {
 
   let html = '';
 
+  const isVentas = APP.userRole === 'ventas';
+
   // General summary cards
   if (activeMonths.length > 0) {
     html += '<h3 style="font-size:1rem;margin-bottom:12px;">Resumen General 2026</h3>';
-    // Fila 1: Leads, CPL, Cierres, CPA, % de Cierre
-    html += '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">';
-    html += `<div class="stat-card"><div class="label">Leads</div><div class="value navy">${fmt(totLeads)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">CPL</div><div class="value amber">${fmtCurrency(Math.round(totCpl * 100) / 100)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">Cierres</div><div class="value green">${fmt(totCierres)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">CPA</div><div class="value amber">${fmtCurrency(Math.round(totCpa * 100) / 100)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">% de Cierre</div><div class="value green">${fmtPct(totPctCierre)}</div></div>`;
-    html += '</div>';
-    // Fila 2: Ejecutado, Monto Vendido, Retorno, ROAS
-    html += '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">';
-    html += `<div class="stat-card"><div class="label">Ejecutado</div><div class="value navy">${fmtCurrency(totEjecutado)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">Monto Vendido</div><div class="value green">${fmtCurrency(totVendido)}</div></div>`;
-    html += `<div class="stat-card"><div class="label">Retorno</div><div class="value blue">${fmtCurrency(Math.round(totRetorno))}</div></div>`;
-    html += `<div class="stat-card"><div class="label">ROAS</div><div class="value blue">${totRoas.toFixed(2)}x</div></div>`;
-    html += '</div>';
+    if (isVentas) {
+      // Ventas solo ve: Leads, Cierres, % de Cierre
+      html += '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">';
+      html += `<div class="stat-card"><div class="label">Leads</div><div class="value navy">${fmt(totLeads)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">Cierres</div><div class="value green">${fmt(totCierres)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">% de Cierre</div><div class="value green">${fmtPct(totPctCierre)}</div></div>`;
+      html += '</div>';
+    } else {
+      // Admin ve todo
+      html += '<div class="stats-grid" style="grid-template-columns:repeat(5,1fr);">';
+      html += `<div class="stat-card"><div class="label">Leads</div><div class="value navy">${fmt(totLeads)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">CPL</div><div class="value amber">${fmtCurrency(Math.round(totCpl * 100) / 100)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">Cierres</div><div class="value green">${fmt(totCierres)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">CPA</div><div class="value amber">${fmtCurrency(Math.round(totCpa * 100) / 100)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">% de Cierre</div><div class="value green">${fmtPct(totPctCierre)}</div></div>`;
+      html += '</div>';
+      html += '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">';
+      html += `<div class="stat-card"><div class="label">Ejecutado</div><div class="value navy">${fmtCurrency(totEjecutado)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">Monto Vendido</div><div class="value green">${fmtCurrency(totVendido)}</div></div>`;
+      html += `<div class="stat-card"><div class="label">Retorno</div><div class="value blue">${fmtCurrency(Math.round(totRetorno))}</div></div>`;
+      html += `<div class="stat-card"><div class="label">ROAS</div><div class="value blue">${totRoas.toFixed(2)}x</div></div>`;
+      html += '</div>';
+    }
   }
 
-  // Charts
+  // Charts — ventas solo ve Leads vs Cierres y % de Cierre
   html += '<div class="chart-grid">';
   html += '<div class="chart-card"><h3>Leads y Cierres por Mes</h3><canvas id="chart-leads-cierres"></canvas></div>';
   html += '<div class="chart-card"><h3>% de Cierre</h3><canvas id="chart-pct-cierre"></canvas></div>';
-  html += '<div class="chart-card"><h3>Cotizado vs Vendido</h3><canvas id="chart-cotizado-vendido"></canvas></div>';
-  html += '<div class="chart-card"><h3>CPL (US$)</h3><canvas id="chart-costo-lead"></canvas></div>';
+  if (!isVentas) {
+    html += '<div class="chart-card"><h3>Cotizado vs Vendido</h3><canvas id="chart-cotizado-vendido"></canvas></div>';
+    html += '<div class="chart-card"><h3>CPL (US$)</h3><canvas id="chart-costo-lead"></canvas></div>';
+  }
   html += '</div>';
 
-  // Monthly ROAS table — only months with data
-  html += '<div class="card"><h3 style="font-size:0.95rem;margin-bottom:12px;">Detalle Mensual <span style="font-weight:400;font-size:0.8rem;color:var(--muted);">(presupuesto y ejecutado editables, lo dem\u00e1s se calcula del pipeline)</span></h3>';
-  html += '<div class="roas-table-wrapper"><table class="roas-table">';
-  html += '<thead><tr><th>Mes</th><th>Leads</th><th>Presupuesto</th><th>Ejecutado</th><th>CPL</th><th>Cierres</th><th>% Cierre</th><th>Monto Vendido</th><th>CPA</th><th>Retorno</th><th>ROAS</th></tr></thead>';
-  html += '<tbody>';
-  activeMonths.forEach((m) => {
-    const i = MONTHS.indexOf(m);
-    const d = roas[m];
-    const cpl = d.leads > 0 ? d.ejecutado / d.leads : 0;
-    const pctCierre = d.leads > 0 ? (d.cierres / d.leads * 100) : 0;
-    const cpa = d.cierres > 0 ? d.ejecutado / d.cierres : 0;
-    const retorno = d.vendido - d.ejecutado;
-    const roasVal = d.ejecutado > 0 ? d.vendido / d.ejecutado : 0;
+  // Monthly ROAS table — solo para admin
+  if (!isVentas) {
+    html += '<div class="card"><h3 style="font-size:0.95rem;margin-bottom:12px;">Detalle Mensual <span style="font-weight:400;font-size:0.8rem;color:var(--muted);">(presupuesto y ejecutado editables, lo dem\u00e1s se calcula del pipeline)</span></h3>';
+    html += '<div class="roas-table-wrapper"><table class="roas-table">';
+    html += '<thead><tr><th>Mes</th><th>Leads</th><th>Presupuesto</th><th>Ejecutado</th><th>CPL</th><th>Cierres</th><th>% Cierre</th><th>Monto Vendido</th><th>CPA</th><th>Retorno</th><th>ROAS</th></tr></thead>';
+    html += '<tbody>';
+    activeMonths.forEach((m) => {
+      const i = MONTHS.indexOf(m);
+      const d = roas[m];
+      const cpl = d.leads > 0 ? d.ejecutado / d.leads : 0;
+      const pctCierre = d.leads > 0 ? (d.cierres / d.leads * 100) : 0;
+      const cpa = d.cierres > 0 ? d.ejecutado / d.cierres : 0;
+      const retorno = d.vendido - d.ejecutado;
+      const roasVal = d.ejecutado > 0 ? d.vendido / d.ejecutado : 0;
 
-    html += '<tr>';
-    html += `<td>${MONTH_LABELS[i]}</td>`;
+      html += '<tr>';
+      html += `<td>${MONTH_LABELS[i]}</td>`;
+      html += `<td>${fmt(d.leads)}</td>`;
 
-    // Leads (auto from pipeline)
-    html += `<td>${fmt(d.leads)}</td>`;
+      const isEditingPres = APP.editingRoas && APP.editingRoas.month === m && APP.editingRoas.field === 'presupuesto';
+      if (isEditingPres) {
+        html += `<td><input class="inline-edit" type="number" data-roas-month="${m}" data-roas-field="presupuesto" value="${d.presupuesto}" autofocus></td>`;
+      } else {
+        html += `<td class="editable" data-roas-month="${m}" data-roas-field="presupuesto">${fmtCurrency(d.presupuesto)}</td>`;
+      }
 
-    // Presupuesto (editable)
-    const isEditingPres = APP.editingRoas && APP.editingRoas.month === m && APP.editingRoas.field === 'presupuesto';
-    if (isEditingPres) {
-      html += `<td><input class="inline-edit" type="number" data-roas-month="${m}" data-roas-field="presupuesto" value="${d.presupuesto}" autofocus></td>`;
-    } else {
-      html += `<td class="editable" data-roas-month="${m}" data-roas-field="presupuesto">${fmtCurrency(d.presupuesto)}</td>`;
-    }
+      const isEditingEjec = APP.editingRoas && APP.editingRoas.month === m && APP.editingRoas.field === 'ejecutado';
+      if (isEditingEjec) {
+        html += `<td><input class="inline-edit" type="number" data-roas-month="${m}" data-roas-field="ejecutado" value="${d.ejecutado}" autofocus></td>`;
+      } else {
+        html += `<td class="editable" data-roas-month="${m}" data-roas-field="ejecutado">${fmtCurrency(d.ejecutado)}</td>`;
+      }
 
-    // Ejecutado (editable)
-    const isEditingEjec = APP.editingRoas && APP.editingRoas.month === m && APP.editingRoas.field === 'ejecutado';
-    if (isEditingEjec) {
-      html += `<td><input class="inline-edit" type="number" data-roas-month="${m}" data-roas-field="ejecutado" value="${d.ejecutado}" autofocus></td>`;
-    } else {
-      html += `<td class="editable" data-roas-month="${m}" data-roas-field="ejecutado">${fmtCurrency(d.ejecutado)}</td>`;
-    }
+      html += `<td>${fmtCurrency(Math.round(cpl * 100) / 100)}</td>`;
+      html += `<td>${fmt(d.cierres)}</td>`;
+      html += `<td>${fmtPct(pctCierre)}</td>`;
+      html += `<td>${fmtCurrency(d.vendido)}</td>`;
+      html += `<td>${fmtCurrency(Math.round(cpa * 100) / 100)}</td>`;
+      html += `<td>${fmtCurrency(Math.round(retorno))}</td>`;
+      html += `<td>${roasVal.toFixed(2)}x</td>`;
+      html += '</tr>';
+    });
 
-    // CPL (calculated)
-    html += `<td>${fmtCurrency(Math.round(cpl * 100) / 100)}</td>`;
-
-    // Cierres (auto from pipeline)
-    html += `<td>${fmt(d.cierres)}</td>`;
-
-    // % Cierre (calculated)
-    html += `<td>${fmtPct(pctCierre)}</td>`;
-
-    // Monto Vendido (auto from pipeline)
-    html += `<td>${fmtCurrency(d.vendido)}</td>`;
-
-    // CPA (calculated)
-    html += `<td>${fmtCurrency(Math.round(cpa * 100) / 100)}</td>`;
-
-    // Retorno (calculated)
-    html += `<td>${fmtCurrency(Math.round(retorno))}</td>`;
-
-    // ROAS (calculated)
-    html += `<td>${roasVal.toFixed(2)}x</td>`;
-
+    html += '<tr style="font-weight:700;border-top:2px solid var(--navy);">';
+    html += '<td>Total</td>';
+    html += `<td>${fmt(totLeads)}</td>`;
+    html += `<td>${fmtCurrency(totPresupuesto)}</td>`;
+    html += `<td>${fmtCurrency(totEjecutado)}</td>`;
+    html += `<td>${fmtCurrency(Math.round(totCpl * 100) / 100)}</td>`;
+    html += `<td>${fmt(totCierres)}</td>`;
+    html += `<td>${fmtPct(totPctCierre)}</td>`;
+    html += `<td>${fmtCurrency(totVendido)}</td>`;
+    html += `<td>${fmtCurrency(Math.round(totCpa * 100) / 100)}</td>`;
+    html += `<td>${fmtCurrency(Math.round(totRetorno))}</td>`;
+    html += `<td>${totRoas.toFixed(2)}x</td>`;
     html += '</tr>';
-  });
 
-  // Total row
-  html += '<tr style="font-weight:700;border-top:2px solid var(--navy);">';
-  html += '<td>Total</td>';
-  html += `<td>${fmt(totLeads)}</td>`;
-  html += `<td>${fmtCurrency(totPresupuesto)}</td>`;
-  html += `<td>${fmtCurrency(totEjecutado)}</td>`;
-  html += `<td>${fmtCurrency(Math.round(totCpl * 100) / 100)}</td>`;
-  html += `<td>${fmt(totCierres)}</td>`;
-  html += `<td>${fmtPct(totPctCierre)}</td>`;
-  html += `<td>${fmtCurrency(totVendido)}</td>`;
-  html += `<td>${fmtCurrency(Math.round(totCpa * 100) / 100)}</td>`;
-  html += `<td>${fmtCurrency(Math.round(totRetorno))}</td>`;
-  html += `<td>${totRoas.toFixed(2)}x</td>`;
-  html += '</tr>';
-
-  html += '</tbody></table></div></div>';
+    html += '</tbody></table></div></div>';
+  }
 
   container.innerHTML = html;
   bindROASEvents();
@@ -1374,11 +1363,6 @@ function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-wrapper').classList.remove('hidden');
   document.getElementById('user-display-name').textContent = APP.userName;
-
-  // Si es ventas, arrancar en pipeline (no tiene acceso a ROAS)
-  if (APP.userRole === 'ventas') {
-    APP.activeTab = 'pipeline';
-  }
 
   startApp();
 }
