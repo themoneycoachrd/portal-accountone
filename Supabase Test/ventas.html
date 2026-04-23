@@ -319,6 +319,13 @@ tr.expanded { background: #f0f9ff; }
 .hidden { display: none; }
 .currency { font-variant-numeric: tabular-nums; }
 
+/* Embed mode: hide login, header, breadcrumb */
+body.embed .login-overlay { display: none !important; }
+body.embed .header { display: none !important; }
+body.embed .breadcrumb-bar { display: none !important; }
+body.embed #app-wrapper { display: block !important; }
+body.embed .footer { display: none !important; }
+
 /* ==================== LOGIN SCREEN ==================== */
 .login-overlay {
   position: fixed;
@@ -1396,14 +1403,20 @@ document.getElementById('login-email').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('login-password').focus();
 });
 
+// Embed mode detection
+const isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+if (isEmbed) document.body.classList.add('embed');
+
 // Check if already logged in
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadUserProfile();
     showApp();
+  } else if (isEmbed) {
+    // In embed mode without session, show nothing (parent handles auth)
+    document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#7c8495;">Sesion no encontrada. Recarga la pagina principal.</div>';
   }
-  // If no session, login screen is already visible
 }
 
 init();
