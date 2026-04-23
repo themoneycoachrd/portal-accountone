@@ -19,6 +19,7 @@
   --border: #e5e7eb;
   --text: #1f2937;
   --muted: #6b7280;
+  --light: #9ca3af;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1000,7 +1001,7 @@ function bindPipelineEvents() {
 
   const btnSaveNew = document.getElementById('btn-save-new');
   if (btnSaveNew) {
-    btnSaveNew.onclick = () => {
+    btnSaveNew.onclick = async () => {
       const form = document.getElementById('add-lead-form');
       const newLead = {};
       form.querySelectorAll('[data-field]').forEach(input => {
@@ -1013,10 +1014,9 @@ function bindPipelineEvents() {
         }
       });
       if (!newLead.n || !newLead.n.trim()) { alert('El nombre es obligatorio.'); return; }
-      // Insertar en Supabase y obtener ID
-      dbInsertLead(APP.currentMonth, newLead).then(id => {
-        if (id) newLead._id = id;
-      });
+      // Insertar en Supabase y obtener ID antes de agregar al array
+      const newId = await dbInsertLead(APP.currentMonth, newLead);
+      if (newId) newLead._id = newId;
       APP.data.pipeline[APP.currentMonth].push(newLead);
       syncRoasFromPipeline();
       APP.addingLead = false;
