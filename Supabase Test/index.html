@@ -168,6 +168,69 @@ body {
 }
 .nav-item.active .nav-icon { background: rgba(255,255,255,0.15); }
 .nav-label { flex: 1; }
+
+/* ─── Section headers (expandable) ─── */
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  margin-bottom: 2px;
+  transition: all 0.12s;
+}
+.nav-section:hover { background: #f5f7fa; color: var(--text); }
+.nav-section.has-active { color: var(--navy); }
+.nav-section.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+.nav-section-arrow {
+  font-size: 10px;
+  color: var(--light);
+  transition: transform 0.2s;
+  margin-left: auto;
+}
+.nav-section-arrow.open { transform: rotate(90deg); }
+
+/* ─── Sub-items (children of sections) ─── */
+.nav-children { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
+.nav-children.open { max-height: 200px; }
+.nav-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px 7px 50px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  margin-bottom: 1px;
+  transition: all 0.12s;
+}
+.nav-child:hover { background: #f5f7fa; color: var(--text); }
+.nav-child.active { background: var(--navy); color: white; }
+.nav-child.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+.nav-child-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--light);
+  flex-shrink: 0;
+}
+.nav-child.active .nav-child-dot { background: rgba(255,255,255,0.5); }
+
 .nav-badge {
   font-size: 0.58rem;
   font-weight: 700;
@@ -399,6 +462,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let userRole = null;
 let userName = '';
 let activeModule = null;
+let openSections = {};
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -408,48 +472,111 @@ const ROLE_LABELS = {
   analista: 'Analista'
 };
 
-const ALL_MODULES = [
+// Estructura del menu: secciones con hijos (expandibles) o modulos directos
+const MENU = [
   {
-    id: 'ventas',
-    title: 'Equipo Comercial',
-    desc: 'Leads, funnel de ventas, ROAS y seguimiento del pipeline comercial.',
+    id: 'gerencia',
+    title: 'Gerencia',
+    icon: '\ud83c\udfe2',
+    iconBg: '#ecfdf5',
+    roles: ['admin'],
+    children: [
+      { id: 'control-clientes', title: 'Control de Clientes', href: 'contadores.html', active: true,
+        desc: 'Clientes por contadora, carga de trabajo e implementaciones.' },
+      { id: 'control-contadoras', title: 'Control de Contadoras', href: 'control-contadoras.html', active: false,
+        desc: 'Vista consolidada del equipo de contadoras.' }
+    ]
+  },
+  {
+    id: 'comercial',
+    title: 'Comercial',
     icon: '\ud83d\udcc8',
     iconBg: '#eef2ff',
-    href: 'ventas.html',
     roles: ['admin', 'ventas'],
-    active: true
+    href: 'ventas.html',
+    active: true,
+    desc: 'Leads, funnel de ventas, ROAS y seguimiento del pipeline comercial.'
   },
   {
-    id: 'contadores',
-    title: 'Control de Clientes',
-    desc: 'Clientes por contadora, carga de trabajo, implementaciones y software.',
-    icon: '\ud83d\udc65',
-    iconBg: '#ecfdf5',
-    href: 'contadores.html',
-    roles: ['admin', 'contadora', 'implementadora', 'analista'],
-    active: true
-  },
-  {
-    id: 'kpi',
-    title: 'KPI Scorecard',
-    desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.',
+    id: 'contadoras',
+    title: 'Contadoras',
     icon: '\ud83c\udfaf',
     iconBg: '#f5f3ff',
-    href: 'kpi.html',
     roles: ['admin', 'contadora'],
-    active: true
+    children: [
+      { id: 'checklist', title: 'Checklist Mensual', href: 'checklist.html', active: false,
+        desc: 'Checklist mensual de tareas por cliente y porcentaje completado.' },
+      { id: 'kpi', title: 'KPI', href: 'kpi.html', active: true,
+        desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.' }
+    ]
+  },
+  {
+    id: 'impuestos',
+    title: 'Impuestos',
+    icon: '\ud83d\udccb',
+    iconBg: '#fffbeb',
+    roles: ['admin', 'contadora'],
+    href: 'impuestos.html',
+    active: false,
+    desc: 'Calendario fiscal, declaraciones y cumplimiento tributario.'
   },
   {
     id: 'implementaciones',
     title: 'Implementaciones',
-    desc: 'Onboarding, fechas y estado de cada implementacion.',
     icon: '\ud83d\ude80',
     iconBg: '#fff7ed',
-    href: 'implementaciones.html',
     roles: ['admin', 'implementadora'],
-    active: false
+    href: 'implementaciones.html',
+    active: false,
+    desc: 'Onboarding, fechas y estado de cada implementacion.'
+  },
+  {
+    id: 'portal-clientes',
+    title: 'Portal de Clientes',
+    icon: '\ud83c\udf10',
+    iconBg: '#fef2f2',
+    roles: ['admin'],
+    href: 'portal-clientes.html',
+    active: false,
+    desc: 'Portal externo para clientes de la firma.'
   }
 ];
+
+// Helpers para buscar modulos en la estructura plana
+function findModule(moduleId) {
+  for (const section of MENU) {
+    if (section.children) {
+      const child = section.children.find(c => c.id === moduleId);
+      if (child) return child;
+    } else if (section.id === moduleId) {
+      return section;
+    }
+  }
+  return null;
+}
+
+function findParentSection(moduleId) {
+  for (const section of MENU) {
+    if (section.children && section.children.some(c => c.id === moduleId)) {
+      return section;
+    }
+  }
+  return null;
+}
+
+function getAllModulesFlat() {
+  const flat = [];
+  MENU.forEach(section => {
+    if (section.children) {
+      section.children.forEach(child => {
+        flat.push({ ...child, parentTitle: section.title, parentIcon: section.icon, parentIconBg: section.iconBg, roles: section.roles });
+      });
+    } else {
+      flat.push(section);
+    }
+  });
+  return flat;
+}
 
 function getInitials(name) {
   const parts = name.trim().split(/\s+/);
@@ -480,23 +607,33 @@ function goHome() {
 }
 
 function openModule(moduleId) {
-  const m = ALL_MODULES.find(mod => mod.id === moduleId);
+  const m = findModule(moduleId);
   if (!m || !m.active) return;
 
   activeModule = moduleId;
+
+  // Auto-abrir la seccion padre en el sidebar
+  const parent = findParentSection(moduleId);
+  if (parent) openSections[parent.id] = true;
+
   document.getElementById('home-view').style.display = 'none';
   document.getElementById('module-view').classList.add('active');
   document.getElementById('module-iframe').src = m.href + '?embed=1';
   renderSidebar();
 }
 
+function toggleSection(sectionId) {
+  openSections[sectionId] = !openSections[sectionId];
+  renderSidebar();
+}
+
 function renderSidebar() {
   const nav = document.getElementById('sidebar-nav');
-  const visible = ALL_MODULES.filter(m => m.roles.includes(userRole));
+  const visible = MENU.filter(s => s.roles.includes(userRole));
 
   let html = '';
 
-  // Home item
+  // Home
   html += '<button class="nav-item' + (activeModule === null ? ' active' : '') + '" onclick="goHome()">';
   html += '<div class="nav-icon" style="background:' + (activeModule === null ? 'rgba(255,255,255,0.15)' : '#f5f7fa') + '">';
   html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="' + (activeModule === null ? 'white' : '#7c8495') + '" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
@@ -506,17 +643,41 @@ function renderSidebar() {
 
   html += '<div style="height:6px"></div>';
 
-  visible.forEach(m => {
-    const isActive = activeModule === m.id;
-    const badgeClass = m.active ? 'nav-badge-active' : 'nav-badge-pending';
-    const badgeText = m.active ? 'Activo' : 'Pendiente';
-    const disabledClass = m.active ? '' : ' disabled';
-    const activeClass = isActive ? ' active' : '';
+  visible.forEach(section => {
+    if (section.children) {
+      // Seccion expandible con hijos
+      const isOpen = openSections[section.id] || false;
+      const hasActiveChild = section.children.some(c => c.id === activeModule);
+      const allDisabled = section.children.every(c => !c.active);
 
-    html += '<button class="nav-item' + activeClass + disabledClass + '" onclick="openModule(\'' + m.id + '\')">';
-    html += '<div class="nav-icon" style="background:' + (isActive ? 'rgba(255,255,255,0.15)' : m.iconBg) + '">' + m.icon + '</div>';
-    html += '<span class="nav-label">' + m.title + '</span>';
-    html += '</button>';
+      html += '<button class="nav-section' + (hasActiveChild ? ' has-active' : '') + (allDisabled ? ' disabled' : '') + '" onclick="toggleSection(\'' + section.id + '\')">';
+      html += '<div class="nav-icon" style="background:' + (hasActiveChild ? '#e8ecf1' : section.iconBg) + '">' + section.icon + '</div>';
+      html += '<span class="nav-label">' + section.title + '</span>';
+      html += '<span class="nav-section-arrow' + (isOpen ? ' open' : '') + '">\u25B6</span>';
+      html += '</button>';
+
+      html += '<div class="nav-children' + (isOpen ? ' open' : '') + '">';
+      section.children.forEach(child => {
+        const isActive = activeModule === child.id;
+        const disabledClass = child.active ? '' : ' disabled';
+
+        html += '<button class="nav-child' + (isActive ? ' active' : '') + disabledClass + '" onclick="openModule(\'' + child.id + '\')">';
+        html += '<span class="nav-child-dot"></span>';
+        html += '<span>' + child.title + '</span>';
+        html += '</button>';
+      });
+      html += '</div>';
+
+    } else {
+      // Modulo directo (sin hijos)
+      const isActive = activeModule === section.id;
+      const disabledClass = section.active ? '' : ' disabled';
+
+      html += '<button class="nav-item' + (isActive ? ' active' : '') + disabledClass + '" onclick="openModule(\'' + section.id + '\')">';
+      html += '<div class="nav-icon" style="background:' + (isActive ? 'rgba(255,255,255,0.15)' : section.iconBg) + '">' + section.icon + '</div>';
+      html += '<span class="nav-label">' + section.title + '</span>';
+      html += '</button>';
+    }
   });
 
   nav.innerHTML = html;
@@ -524,18 +685,21 @@ function renderSidebar() {
 
 function renderModules() {
   const grid = document.getElementById('modules-grid');
-  const visible = ALL_MODULES.filter(m => m.roles.includes(userRole));
+  const allFlat = getAllModulesFlat().filter(m => m.roles.includes(userRole));
 
-  grid.innerHTML = visible.map(m => {
+  grid.innerHTML = allFlat.map(m => {
     const badgeClass = m.active ? 'badge-active' : 'badge-pending';
     const badgeText = m.active ? 'Activo' : 'Pendiente';
     const disabledClass = m.active ? '' : ' disabled';
     const onclick = m.active ? ' onclick="openModule(\'' + m.id + '\')"' : '';
+    const parentIcon = m.parentIcon || m.icon;
+    const parentIconBg = m.parentIconBg || m.iconBg;
+    const subtitle = m.parentTitle ? '<span style="font-size:0.68rem;color:var(--light);font-weight:400"> — ' + m.parentTitle + '</span>' : '';
 
     return '<div class="module-card' + disabledClass + '"' + onclick + '>' +
-      '<div class="module-card-icon" style="background:' + m.iconBg + '">' + m.icon + '</div>' +
+      '<div class="module-card-icon" style="background:' + (m.iconBg || parentIconBg) + '">' + parentIcon + '</div>' +
       '<div class="module-card-body">' +
-        '<h3>' + m.title + '</h3>' +
+        '<h3>' + m.title + subtitle + '</h3>' +
         '<p>' + m.desc + '</p>' +
       '</div>' +
       '<span class="module-card-badge ' + badgeClass + '">' + badgeText + '</span>' +
