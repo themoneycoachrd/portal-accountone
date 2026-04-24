@@ -169,67 +169,10 @@ body {
 .nav-item.active .nav-icon { background: rgba(255,255,255,0.15); }
 .nav-label { flex: 1; }
 
-/* ─── Section headers (expandable) ─── */
-.nav-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 10px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  margin-bottom: 2px;
-  transition: all 0.12s;
-}
-.nav-section:hover { background: #f5f7fa; color: var(--text); }
-.nav-section.has-active { color: var(--navy); }
-.nav-section.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
-.nav-section-arrow {
-  font-size: 10px;
-  color: var(--light);
-  transition: transform 0.2s;
-  margin-left: auto;
-}
-.nav-section-arrow.open { transform: rotate(90deg); }
-
-/* ─── Sub-items (children of sections) ─── */
-.nav-children { overflow: hidden; max-height: 0; transition: max-height 0.25s ease; }
-.nav-children.open { max-height: 200px; }
-.nav-child {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 12px 7px 50px;
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-  font-family: inherit;
-  margin-bottom: 1px;
-  transition: all 0.12s;
-}
-.nav-child:hover { background: #f5f7fa; color: var(--text); }
-.nav-child.active { background: var(--navy); color: white; }
-.nav-child.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
-.nav-child-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--light);
-  flex-shrink: 0;
-}
-.nav-child.active .nav-child-dot { background: rgba(255,255,255,0.5); }
+/* ─── Section landing page ─── */
+.section-landing { padding: 32px; flex: 1; }
+.section-landing-title { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.section-landing-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
 
 .nav-badge {
   font-size: 0.58rem;
@@ -445,6 +388,13 @@ body {
       <div class="modules-grid" id="modules-grid"></div>
     </div>
 
+    <!-- Section landing (sub-module picker) -->
+    <div class="section-landing hidden" id="section-landing">
+      <div class="section-landing-title" id="section-title"></div>
+      <div class="section-landing-desc" id="section-desc"></div>
+      <div class="modules-grid" id="section-grid"></div>
+    </div>
+
     <!-- Module iframe -->
     <div class="module-view" id="module-view">
       <iframe class="module-iframe" id="module-iframe"></iframe>
@@ -462,7 +412,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let userRole = null;
 let userName = '';
 let activeModule = null;
-let openSections = {};
+let activeSection = null;
 
 const ROLE_LABELS = {
   admin: 'Administrador',
@@ -598,11 +548,52 @@ function formatToday() {
   return dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()] + ', ' + d.getFullYear();
 }
 
-function goHome() {
-  activeModule = null;
-  document.getElementById('home-view').style.display = '';
+function hideAllViews() {
+  document.getElementById('home-view').style.display = 'none';
+  document.getElementById('section-landing').classList.add('hidden');
   document.getElementById('module-view').classList.remove('active');
   document.getElementById('module-iframe').src = '';
+}
+
+function goHome() {
+  activeModule = null;
+  activeSection = null;
+  hideAllViews();
+  document.getElementById('home-view').style.display = '';
+  renderSidebar();
+}
+
+function openSection(sectionId) {
+  const section = MENU.find(s => s.id === sectionId);
+  if (!section || !section.children) return;
+
+  activeModule = null;
+  activeSection = sectionId;
+  hideAllViews();
+
+  // Mostrar landing con las tarjetas de sub-modulos
+  const landing = document.getElementById('section-landing');
+  landing.classList.remove('hidden');
+  document.getElementById('section-title').textContent = section.title;
+  document.getElementById('section-desc').textContent = 'Selecciona un modulo para continuar.';
+
+  const grid = document.getElementById('section-grid');
+  grid.innerHTML = section.children.map(child => {
+    const badgeClass = child.active ? 'badge-active' : 'badge-pending';
+    const badgeText = child.active ? 'Activo' : 'Pendiente';
+    const disabledClass = child.active ? '' : ' disabled';
+    const onclick = child.active ? ' onclick="openModule(\'' + child.id + '\')"' : '';
+
+    return '<div class="module-card' + disabledClass + '"' + onclick + '>' +
+      '<div class="module-card-icon" style="background:' + section.iconBg + '">' + section.icon + '</div>' +
+      '<div class="module-card-body">' +
+        '<h3>' + child.title + '</h3>' +
+        '<p>' + child.desc + '</p>' +
+      '</div>' +
+      '<span class="module-card-badge ' + badgeClass + '">' + badgeText + '</span>' +
+    '</div>';
+  }).join('');
+
   renderSidebar();
 }
 
@@ -612,18 +603,13 @@ function openModule(moduleId) {
 
   activeModule = moduleId;
 
-  // Auto-abrir la seccion padre en el sidebar
+  // Detectar si pertenece a una seccion padre
   const parent = findParentSection(moduleId);
-  if (parent) openSections[parent.id] = true;
+  activeSection = parent ? parent.id : null;
 
-  document.getElementById('home-view').style.display = 'none';
+  hideAllViews();
   document.getElementById('module-view').classList.add('active');
   document.getElementById('module-iframe').src = m.href + '?embed=1';
-  renderSidebar();
-}
-
-function toggleSection(sectionId) {
-  openSections[sectionId] = !openSections[sectionId];
   renderSidebar();
 }
 
@@ -634,9 +620,10 @@ function renderSidebar() {
   let html = '';
 
   // Home
-  html += '<button class="nav-item' + (activeModule === null ? ' active' : '') + '" onclick="goHome()">';
-  html += '<div class="nav-icon" style="background:' + (activeModule === null ? 'rgba(255,255,255,0.15)' : '#f5f7fa') + '">';
-  html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="' + (activeModule === null ? 'white' : '#7c8495') + '" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  const isHome = activeModule === null && activeSection === null;
+  html += '<button class="nav-item' + (isHome ? ' active' : '') + '" onclick="goHome()">';
+  html += '<div class="nav-icon" style="background:' + (isHome ? 'rgba(255,255,255,0.15)' : '#f5f7fa') + '">';
+  html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="' + (isHome ? 'white' : '#7c8495') + '" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
   html += '</div>';
   html += '<span class="nav-label">Inicio</span>';
   html += '</button>';
@@ -645,31 +632,17 @@ function renderSidebar() {
 
   visible.forEach(section => {
     if (section.children) {
-      // Seccion expandible con hijos
-      const isOpen = openSections[section.id] || false;
-      const hasActiveChild = section.children.some(c => c.id === activeModule);
+      // Seccion con hijos: clic abre landing page
+      const isActive = activeSection === section.id;
       const allDisabled = section.children.every(c => !c.active);
 
-      html += '<button class="nav-section' + (hasActiveChild ? ' has-active' : '') + (allDisabled ? ' disabled' : '') + '" onclick="toggleSection(\'' + section.id + '\')">';
-      html += '<div class="nav-icon" style="background:' + (hasActiveChild ? '#e8ecf1' : section.iconBg) + '">' + section.icon + '</div>';
+      html += '<button class="nav-item' + (isActive ? ' active' : '') + (allDisabled ? ' disabled' : '') + '" onclick="openSection(\'' + section.id + '\')">';
+      html += '<div class="nav-icon" style="background:' + (isActive ? 'rgba(255,255,255,0.15)' : section.iconBg) + '">' + section.icon + '</div>';
       html += '<span class="nav-label">' + section.title + '</span>';
-      html += '<span class="nav-section-arrow' + (isOpen ? ' open' : '') + '">\u25B6</span>';
       html += '</button>';
 
-      html += '<div class="nav-children' + (isOpen ? ' open' : '') + '">';
-      section.children.forEach(child => {
-        const isActive = activeModule === child.id;
-        const disabledClass = child.active ? '' : ' disabled';
-
-        html += '<button class="nav-child' + (isActive ? ' active' : '') + disabledClass + '" onclick="openModule(\'' + child.id + '\')">';
-        html += '<span class="nav-child-dot"></span>';
-        html += '<span>' + child.title + '</span>';
-        html += '</button>';
-      });
-      html += '</div>';
-
     } else {
-      // Modulo directo (sin hijos)
+      // Modulo directo
       const isActive = activeModule === section.id;
       const disabledClass = section.active ? '' : ' disabled';
 
@@ -760,6 +733,7 @@ async function handleLogout() {
   userRole = null;
   userName = '';
   activeModule = null;
+  activeSection = null;
   document.getElementById('app-wrapper').classList.add('hidden');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-password').value = '';
