@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPI Scorecard — Account One 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #1a2332;
+  --navy-mid: #2a3a4e;
+  --blue: #4361ee;
+  --green: #10b981;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --purple: #8b5cf6;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --border: #e8ecf1;
+  --text: #1a2332;
+  --muted: #7c8495;
+  --light: #a3aab8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+/* ─── Login ─── */
+.login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid var(--border); }
+.login-box h2 { font-size:1.4rem; color:var(--navy); margin-bottom:4px; }
+.login-box .subtitle { font-size:0.85rem; color:var(--muted); margin-bottom:24px; }
+.login-box .field { margin-bottom:16px; }
+.login-box .field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+.login-box .field input { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.9rem; font-family:inherit; background:#fafbfc; }
+.login-box .field input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+.login-btn { width:100%; padding:11px; background:var(--navy); color:white; border:none; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; margin-top:8px; }
+.login-btn:hover { background:var(--navy-mid); }
+.login-btn:disabled { opacity:0.6; cursor:not-allowed; }
+.login-error { color:var(--red); font-size:0.8rem; margin-top:12px; display:none; }
+
+/* ─── Header ─── */
+.header { background:var(--navy); color:white; padding:20px 24px; }
+.header-inner { display:flex; justify-content:space-between; align-items:center; }
+.header h1 { font-size:1.3rem; font-weight:700; }
+.header p { font-size:0.85rem; opacity:0.6; margin-top:2px; }
+.user-bar { display:flex; align-items:center; gap:12px; }
+.user-bar .user-name { font-size:0.8rem; opacity:0.9; background:rgba(255,255,255,0.15); padding:4px 12px; border-radius:20px; }
+.btn-logout { font-size:0.75rem; padding:4px 12px; background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); border-radius:6px; cursor:pointer; }
+.btn-logout:hover { background:rgba(255,255,255,0.25); }
+
+/* ─── Breadcrumb ─── */
+.breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; }
+.breadcrumb-bar a { color:var(--muted); text-decoration:none; font-weight:500; }
+.breadcrumb-bar a:hover { color:var(--navy); text-decoration:underline; }
+.breadcrumb-bar .sep { color:var(--light); font-size:11px; }
+.breadcrumb-bar .current { color:var(--text); font-weight:600; }
+
+/* ─── Tabs ─── */
+.main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
+.main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
+.main-tab:hover { color:var(--text); }
+.main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+
+.sub-tabs { display:flex; gap:4px; padding:10px 24px; background:var(--bg); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.sub-tab { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.sub-tab:hover { background:#eef0f4; }
+.sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+/* ─── Content ─── */
+.content { padding:24px; max-width:1100px; margin:0 auto; }
+
+/* ─── Stats ─── */
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+.stat { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); }
+.stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); font-weight:600; }
+.stat-value { font-size:1.6rem; font-weight:800; margin-top:4px; }
+.stat-sub { font-size:0.7rem; color:var(--light); margin-top:4px; }
+
+/* ─── Cards ─── */
+.card { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); margin-bottom:16px; }
+.card h3 { font-size:0.85rem; font-weight:700; color:var(--muted); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.3px; }
+
+/* ─── KPI Card ─── */
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:14px; overflow:hidden; }
+.kpi-header { display:flex; align-items:center; gap:12px; padding:16px 20px; cursor:pointer; transition:background 0.12s; }
+.kpi-header:hover { background:#fafbfc; }
+.kpi-header.expanded { background:#f5f7fa; border-bottom:1px solid var(--border); }
+.kpi-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:white; flex-shrink:0; }
+.kpi-info { flex:1; }
+.kpi-name { font-size:0.95rem; font-weight:700; }
+.kpi-tier { font-size:0.72rem; color:var(--light); }
+.kpi-score-pill { font-size:0.85rem; font-weight:800; padding:4px 14px; border-radius:10px; }
+.kpi-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; }
+.kpi-arrow.open { transform:rotate(180deg); }
+.kpi-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease; }
+.kpi-body.open { max-height:600px; padding:20px; }
+
+.kpi-components { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+.kpi-comp { background:var(--bg); border-radius:10px; padding:14px; text-align:center; }
+.kpi-comp-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.3px; color:var(--light); font-weight:600; }
+.kpi-comp-weight { font-size:0.6rem; color:var(--light); margin-top:1px; }
+.kpi-comp-value { font-size:1.3rem; font-weight:800; margin-top:6px; }
+.kpi-comp-input { width:70px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:1rem; font-weight:700; text-align:center; font-family:inherit; background:white; }
+.kpi-comp-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); }
+.kpi-comp-weighted { font-size:0.7rem; color:var(--muted); margin-top:4px; }
+
+.kpi-total-bar { height:8px; background:#e8ecf1; border-radius:4px; overflow:hidden; margin-bottom:8px; }
+.kpi-total-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.kpi-total-row { display:flex; justify-content:space-between; align-items:center; }
+.kpi-total-label { font-size:0.78rem; color:var(--muted); }
+.kpi-total-score { font-size:1.1rem; font-weight:800; }
+
+.kpi-actions { display:flex; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.btn { padding:8px 18px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.12s; }
+.btn-primary { background:var(--navy); color:white; }
+.btn-primary:hover { background:var(--navy-mid); }
+.btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+.btn-ghost:hover { background:#f5f7fa; }
+
+/* ─── Trimestral table ─── */
+.tri-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.tri-table th { text-align:left; padding:10px 12px; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); border-bottom:2px solid var(--border); }
+.tri-table th.center { text-align:center; }
+.tri-table td { padding:10px 12px; border-bottom:1px solid #f1f3f7; }
+.tri-table td.center { text-align:center; }
+.tri-table tr:hover td { background:#fafbfc; }
+.tri-table .total-row td { border-top:2px solid var(--navy); font-weight:700; background:#f8f9fb; }
+
+.score-badge { display:inline-block; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.78rem; min-width:42px; text-align:center; }
+.score-excelente { background:#ecfdf5; color:#059669; }
+.score-bueno { background:#eef2ff; color:#4361ee; }
+.score-aceptable { background:#fffbeb; color:#d97706; }
+.score-sinbono { background:#fef2f2; color:#dc2626; }
+.score-empty { background:#f5f7fa; color:var(--light); }
+
+.bono-pill { display:inline-block; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.78rem; }
+.bono-100 { background:#ecfdf5; color:#059669; }
+.bono-75 { background:#eef2ff; color:#4361ee; }
+.bono-50 { background:#fffbeb; color:#d97706; }
+.bono-0 { background:#fef2f2; color:#dc2626; }
+
+/* ─── Misc ─── */
+.hidden { display:none; }
+.footer { text-align:center; font-size:0.75rem; color:var(--light); padding:20px; }
+.empty { text-align:center; padding:40px; color:var(--light); font-size:0.88rem; }
+.note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:0.78rem; color:#92400e; margin-bottom:16px; }
+
+/* ─── Embed ─── */
+body.embed .login-overlay { display:none !important; }
+body.embed .header { display:none !important; }
+body.embed .breadcrumb-bar { display:none !important; }
+body.embed #app-wrapper { display:block !important; }
+body.embed .footer { display:none !important; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>Account One</h2>
+    <p class="subtitle">Inicia sesion para continuar</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@accountone.do">
+    </div>
+    <div class="field">
+      <label>Contrasena</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>KPI Scorecard</h1>
+      <p>Evaluacion trimestral — 2026</p>
+    </div>
+    <div class="user-bar">
+      <span class="user-name" id="user-display-name"></span>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<div class="breadcrumb-bar">
+  <a href="index.html">Account One</a>
+  <span class="sep">›</span>
+  <span class="current">KPI Scorecard</span>
+</div>
+
+<div class="main-tabs" id="mainTabs"></div>
+<div class="sub-tabs" id="subTabs"></div>
+<div class="content" id="content"></div>
+<div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
+
+</div>
+
+<script>
+// ==================== CONFIG ====================
+const SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZXR1c3N0cXZweWpleWNmZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDcwNzksImV4cCI6MjA5MjIyMzA3OX0.Bsys947JLGEuf3zdBF2GPFdbJVJtaZdC4YEmyBU5Bow';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MESES_LABEL = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+const QUARTERS = [
+  { id:'Q1', label:'Q1 (Ene-Mar)', meses:['enero','febrero','marzo'] },
+  { id:'Q2', label:'Q2 (Abr-Jun)', meses:['abril','mayo','junio'] },
+  { id:'Q3', label:'Q3 (Jul-Sep)', meses:['julio','agosto','septiembre'] },
+  { id:'Q4', label:'Q4 (Oct-Dic)', meses:['octubre','noviembre','diciembre'] }
+];
+
+// Meses de video vs reunion dentro de cada trimestre
+// Posicion 0,1 = video; posicion 2 = reunion
+function getVideoReunionLabel(mes) {
+  const idx = MESES.indexOf(mes);
+  const posInQ = idx % 3;
+  return posInQ === 2 ? 'Reunion' : 'Video';
+}
+
+const KPI_CONTADORAS = [
+  { nombre:'Beliani', tier:'Contadora I', objetivo:1000, salario:45000, bono:15000, color:'#8b5cf6' },
+  { nombre:'Yessica', tier:'Contadora I', objetivo:1000, salario:45000, bono:15000, color:'#f59e0b' },
+  { nombre:'Taina', tier:'Contadora II', objetivo:500, salario:60000, bono:20000, color:'#4361ee' },
+  { nombre:'Victoria', tier:'Pendiente', objetivo:500, salario:45000, bono:15000, color:'#ec4899' }
+];
+
+const COMPONENTES = [
+  { id:'digitacion', label:'Digitacion', peso:50, max:10 },
+  { id:'resumenes', label:'Resumenes', peso:30, max:10 },
+  { id:'video_reunion', label:'Video / Reunion', peso:20, max:10 }
+];
+
+function getCategoria(total) {
+  if (total >= 90) return { label:'Excelente', css:'score-excelente', pctBono:100, bonoCss:'bono-100' };
+  if (total >= 80) return { label:'Bueno', css:'score-bueno', pctBono:75, bonoCss:'bono-75' };
+  if (total >= 70) return { label:'Aceptable', css:'score-aceptable', pctBono:50, bonoCss:'bono-50' };
+  return { label:'Sin bono', css:'score-sinbono', pctBono:0, bonoCss:'bono-0' };
+}
+
+function calcTotal(scores) {
+  const d = (scores.digitacion || 0);
+  const r = (scores.resumenes || 0);
+  const v = (scores.video_reunion || 0);
+  return (d * 5) + (r * 3) + (v * 2);
+}
+
+function getCategoriaColor(total) {
+  if (total >= 90) return '#10b981';
+  if (total >= 80) return '#4361ee';
+  if (total >= 70) return '#f59e0b';
+  return '#ef4444';
+}
+
+// ==================== STATE ====================
+let userRole = null;
+let userName = '';
+let KPI_DATA = {};
+let activeTab = 'trimestral';
+let activeQuarter = 'Q2';
+let activeMonth = 'abril';
+let openCards = {};
+
+// ==================== SUPABASE ====================
+
+async function loadKpiData() {
+  const { data, error } = await sb.from('kpi_scores').select('*').eq('anio', 2026);
+  if (error) console.error('Error cargando KPI:', error);
+  const kpi = {};
+  (data || []).forEach(r => {
+    const key = r.contadora + '_' + r.mes;
+    kpi[key] = {
+      _id: r.id,
+      contadora: r.contadora,
+      mes: r.mes,
+      digitacion: parseFloat(r.digitacion) || 0,
+      resumenes: parseFloat(r.resumenes) || 0,
+      video_reunion: parseFloat(r.video_reunion) || 0,
+      total: parseFloat(r.total) || 0
+    };
+  });
+  return kpi;
+}
+
+async function saveKpi(contadora, mes, scores) {
+  const total = calcTotal(scores);
+  const key = contadora + '_' + mes;
+  const existing = KPI_DATA[key];
+
+  if (existing && existing._id) {
+    const { error } = await sb.from('kpi_scores').update({
+      digitacion: scores.digitacion,
+      resumenes: scores.resumenes,
+      video_reunion: scores.video_reunion,
+      total: total
+    }).eq('id', existing._id);
+    if (error) { console.error('Error actualizando KPI:', error); alert('Error guardando. Verifica tus permisos.'); return false; }
+    existing.digitacion = scores.digitacion;
+    existing.resumenes = scores.resumenes;
+    existing.video_reunion = scores.video_reunion;
+    existing.total = total;
+  } else {
+    const { data, error } = await sb.from('kpi_scores').insert({
+      contadora: contadora,
+      mes: mes,
+      anio: 2026,
+      digitacion: scores.digitacion,
+      resumenes: scores.resumenes,
+      video_reunion: scores.video_reunion,
+      total: total
+    }).select();
+    if (error) { console.error('Error insertando KPI:', error); alert('Error guardando. Verifica tus permisos.'); return false; }
+    if (data && data[0]) {
+      KPI_DATA[key] = {
+        _id: data[0].id,
+        contadora, mes,
+        digitacion: scores.digitacion,
+        resumenes: scores.resumenes,
+        video_reunion: scores.video_reunion,
+        total
+      };
+    }
+  }
+  return true;
+}
+
+// ==================== UTILS ====================
+
+function getScore(contadora, mes) {
+  const key = contadora + '_' + mes;
+  return KPI_DATA[key] || null;
+}
+
+function getScoreValue(contadora, mes, field) {
+  const s = getScore(contadora, mes);
+  return s ? (s[field] || 0) : 0;
+}
+
+function getTotalScore(contadora, mes) {
+  const s = getScore(contadora, mes);
+  return s ? s.total : 0;
+}
+
+function getQuarterAvg(contadora, qMeses) {
+  const scores = qMeses.map(m => getTotalScore(contadora, m));
+  const filled = scores.filter(s => s > 0);
+  if (filled.length === 0) return 0;
+  return Math.round(filled.reduce((a,b) => a + b, 0) / filled.length);
+}
+
+function getVisibleContadoras() {
+  if (userRole === 'admin') return KPI_CONTADORAS;
+  return KPI_CONTADORAS.filter(c => c.nombre === userName.split(' ')[0] || userName.includes(c.nombre));
+}
+
+function canEdit(contadoraNombre) {
+  if (userRole === 'admin') return true;
+  return userName.includes(contadoraNombre);
+}
+
+function getInitials(name) {
+  const parts = name.trim().split(/\s+/);
+  return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
+}
+
+function getCurrentQuarter() {
+  const m = new Date().getMonth();
+  if (m < 3) return 'Q1';
+  if (m < 6) return 'Q2';
+  if (m < 9) return 'Q3';
+  return 'Q4';
+}
+
+// ==================== RENDERING ====================
+
+function renderMainTabs() {
+  const el = document.getElementById('mainTabs');
+  const tabs = [
+    { id:'trimestral', label:'Resumen Trimestral' },
+    { id:'detalle', label:'Detalle por Contadora' }
+  ];
+  el.innerHTML = tabs.map(t =>
+    '<button class="main-tab ' + (activeTab === t.id ? 'active' : '') + '" onclick="switchTab(\'' + t.id + '\')">' + t.label + '</button>'
+  ).join('');
+}
+
+function renderSubTabs() {
+  const el = document.getElementById('subTabs');
+
+  if (activeTab === 'trimestral') {
+    el.innerHTML = QUARTERS.map(q =>
+      '<button class="sub-tab ' + (activeQuarter === q.id ? 'active' : '') + '" onclick="switchQuarter(\'' + q.id + '\')">' + q.label + '</button>'
+    ).join('');
+  } else {
+    el.innerHTML = MESES.map((m, i) =>
+      '<button class="sub-tab ' + (activeMonth === m ? 'active' : '') + '" onclick="switchMonth(\'' + m + '\')">' + MESES_LABEL[i] + '</button>'
+    ).join('');
+  }
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  renderAll();
+}
+function switchQuarter(q) {
+  activeQuarter = q;
+  renderSubTabs();
+  renderContent();
+}
+function switchMonth(m) {
+  activeMonth = m;
+  renderSubTabs();
+  renderContent();
+}
+
+function renderAll() {
+  renderMainTabs();
+  renderSubTabs();
+  renderContent();
+}
+
+function renderContent() {
+  const el = document.getElementById('content');
+  if (activeTab === 'trimestral') renderTrimestral(el);
+  else renderDetalle(el);
+}
+
+// ==================== TAB 1: RESUMEN TRIMESTRAL ====================
+
+function renderTrimestral(el) {
+  const q = QUARTERS.find(q => q.id === activeQuarter);
+  const contadoras = getVisibleContadoras();
+
+  // Stats
+  const allAvgs = contadoras.map(c => getQuarterAvg(c.nombre, q.meses));
+  const filledAvgs = allAvgs.filter(a => a > 0);
+  const teamAvg = filledAvgs.length > 0 ? Math.round(filledAvgs.reduce((a,b) => a+b, 0) / filledAvgs.length) : 0;
+  const excelentes = filledAvgs.filter(a => a >= 90).length;
+  const sinBono = filledAvgs.filter(a => a > 0 && a < 70).length;
+  const totalBonoPool = contadoras.reduce((s, c) => {
+    const avg = getQuarterAvg(c.nombre, q.meses);
+    const cat = getCategoria(avg);
+    return s + Math.round(c.bono * cat.pctBono / 100);
+  }, 0);
+
+  let html = '';
+
+  html += '<div class="stats">';
+  html += '<div class="stat"><div class="stat-label">Promedio equipo</div><div class="stat-value" style="color:' + getCategoriaColor(teamAvg) + '">' + teamAvg + '</div><div class="stat-sub">' + q.label + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Excelentes</div><div class="stat-value" style="color:var(--green)">' + excelentes + '</div><div class="stat-sub">de ' + contadoras.length + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Sin bono</div><div class="stat-value" style="color:var(--red)">' + sinBono + '</div><div class="stat-sub">&lt; 70 pts</div></div>';
+  html += '<div class="stat"><div class="stat-label">Bono total ' + q.id + '</div><div class="stat-value" style="color:var(--navy)">RD$ ' + totalBonoPool.toLocaleString() + '</div><div class="stat-sub">del pool disponible</div></div>';
+  html += '</div>';
+
+  // Table
+  html += '<div class="card"><h3>Scores ' + q.label + '</h3>';
+  html += '<div style="overflow-x:auto"><table class="tri-table">';
+  html += '<thead><tr>';
+  html += '<th>Contadora</th><th>Tier</th>';
+  q.meses.forEach((m, i) => {
+    html += '<th class="center">' + MESES_FULL[MESES.indexOf(m)] + '</th>';
+  });
+  html += '<th class="center">Promedio</th><th class="center">Categoria</th><th class="center">Bono</th>';
+  html += '</tr></thead><tbody>';
+
+  contadoras.forEach(c => {
+    const avg = getQuarterAvg(c.nombre, q.meses);
+    const cat = getCategoria(avg);
+    const bonoMonto = Math.round(c.bono * cat.pctBono / 100);
+
+    html += '<tr>';
+    html += '<td><div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:' + c.color + '"></div><strong>' + c.nombre + '</strong></div></td>';
+    html += '<td style="color:var(--muted);font-size:0.78rem">' + c.tier + '</td>';
+
+    q.meses.forEach(m => {
+      const total = getTotalScore(c.nombre, m);
+      if (total > 0) {
+        const mCat = getCategoria(total);
+        html += '<td class="center"><span class="score-badge ' + mCat.css + '">' + total + '</span></td>';
+      } else {
+        html += '<td class="center"><span class="score-badge score-empty">—</span></td>';
+      }
+    });
+
+    if (avg > 0) {
+      html += '<td class="center"><span class="score-badge ' + cat.css + '" style="font-size:0.88rem">' + avg + '</span></td>';
+      html += '<td class="center"><span style="font-size:0.78rem;color:' + getCategoriaColor(avg) + ';font-weight:600">' + cat.label + '</span></td>';
+      html += '<td class="center"><span class="bono-pill ' + cat.bonoCss + '">RD$ ' + bonoMonto.toLocaleString() + '</span></td>';
+    } else {
+      html += '<td class="center"><span class="score-badge score-empty">—</span></td>';
+      html += '<td class="center">—</td>';
+      html += '<td class="center">—</td>';
+    }
+
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div></div>';
+
+  // Escala de referencia
+  html += '<div class="card"><h3>Escala de evaluacion</h3>';
+  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
+  html += '<div style="background:#ecfdf5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#059669;font-weight:600">EXCELENTE</div><div style="font-size:1.1rem;font-weight:800;color:#059669;margin-top:2px">90-100</div><div style="font-size:0.7rem;color:#059669;margin-top:2px">100% del bono</div></div>';
+  html += '<div style="background:#eef2ff;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#4361ee;font-weight:600">BUENO</div><div style="font-size:1.1rem;font-weight:800;color:#4361ee;margin-top:2px">80-89</div><div style="font-size:0.7rem;color:#4361ee;margin-top:2px">75% del bono</div></div>';
+  html += '<div style="background:#fffbeb;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#d97706;font-weight:600">ACEPTABLE</div><div style="font-size:1.1rem;font-weight:800;color:#d97706;margin-top:2px">70-79</div><div style="font-size:0.7rem;color:#d97706;margin-top:2px">50% del bono</div></div>';
+  html += '<div style="background:#fef2f2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#dc2626;font-weight:600">SIN BONO</div><div style="font-size:1.1rem;font-weight:800;color:#dc2626;margin-top:2px">0-69</div><div style="font-size:0.7rem;color:#dc2626;margin-top:2px">Conversacion de mejora</div></div>';
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
+// ==================== TAB 2: DETALLE POR CONTADORA ====================
+
+function toggleCard(nombre) {
+  openCards[nombre] = !openCards[nombre];
+  renderContent();
+}
+
+function renderDetalle(el) {
+  const contadoras = getVisibleContadoras();
+  const mesIdx = MESES.indexOf(activeMonth);
+  const vrLabel = getVideoReunionLabel(activeMonth);
+
+  let html = '';
+
+  // Note about the current month's video/reunion
+  html += '<div class="note">En ' + MESES_FULL[mesIdx] + ' el componente de Video/Reunion es: <strong>' + vrLabel + '</strong>. ';
+  html += 'Fecha limite digitacion: dia 5 del mes siguiente. Resumenes: dia 25 del mes siguiente.</div>';
+
+  contadoras.forEach(c => {
+    const score = getScore(c.nombre, activeMonth);
+    const d = score ? score.digitacion : 0;
+    const r = score ? score.resumenes : 0;
+    const v = score ? score.video_reunion : 0;
+    const total = score ? score.total : 0;
+    const cat = getCategoria(total);
+    const isOpen = openCards[c.nombre] || false;
+    const editable = canEdit(c.nombre);
+
+    html += '<div class="kpi-card">';
+
+    // Header
+    html += '<div class="kpi-header ' + (isOpen ? 'expanded' : '') + '" onclick="toggleCard(\'' + c.nombre + '\')">';
+    html += '<div class="kpi-avatar" style="background:' + c.color + '">' + c.nombre.substring(0,2).toUpperCase() + '</div>';
+    html += '<div class="kpi-info"><div class="kpi-name">' + c.nombre + '</div><div class="kpi-tier">' + c.tier + ' — Objetivo: ' + c.objetivo.toLocaleString() + ' tx</div></div>';
+    if (total > 0) {
+      html += '<span class="kpi-score-pill ' + cat.css + '">' + total + ' pts</span>';
+    } else {
+      html += '<span class="kpi-score-pill score-empty">Sin datos</span>';
+    }
+    html += '<span class="kpi-arrow ' + (isOpen ? 'open' : '') + '">\u25BC</span>';
+    html += '</div>';
+
+    // Body
+    html += '<div class="kpi-body ' + (isOpen ? 'open' : '') + '">';
+
+    // Components
+    html += '<div class="kpi-components">';
+    COMPONENTES.forEach(comp => {
+      const rawValue = comp.id === 'digitacion' ? d : comp.id === 'resumenes' ? r : v;
+      const weighted = rawValue * (comp.peso / 10);
+      const label = comp.id === 'video_reunion' ? vrLabel : comp.label;
+
+      html += '<div class="kpi-comp">';
+      html += '<div class="kpi-comp-label">' + label + '</div>';
+      html += '<div class="kpi-comp-weight">Peso: ' + comp.peso + '%</div>';
+
+      if (editable) {
+        if (comp.id === 'video_reunion') {
+          // Binary toggle for video/reunion
+          html += '<div style="margin-top:8px">';
+          html += '<select class="kpi-comp-input" id="input-' + c.nombre + '-' + comp.id + '" style="width:auto;padding:6px 12px">';
+          html += '<option value="0"' + (rawValue === 0 ? ' selected' : '') + '>No (0)</option>';
+          html += '<option value="10"' + (rawValue === 10 ? ' selected' : '') + '>Si (10)</option>';
+          html += '</select>';
+          html += '</div>';
+        } else {
+          html += '<div style="margin-top:8px"><input type="number" class="kpi-comp-input" id="input-' + c.nombre + '-' + comp.id + '" value="' + rawValue + '" min="0" max="10" step="0.1"></div>';
+        }
+      } else {
+        html += '<div class="kpi-comp-value">' + rawValue + '<span style="font-size:0.7rem;color:var(--light)"> / 10</span></div>';
+      }
+
+      html += '<div class="kpi-comp-weighted">' + weighted.toFixed(0) + ' de ' + comp.peso + ' pts</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Total bar
+    const barColor = total > 0 ? getCategoriaColor(total) : '#e8ecf1';
+    html += '<div class="kpi-total-bar"><div class="kpi-total-fill" style="width:' + total + '%;background:' + barColor + '"></div></div>';
+    html += '<div class="kpi-total-row">';
+    html += '<span class="kpi-total-label">Total ponderado</span>';
+    if (total > 0) {
+      html += '<span class="kpi-total-score" style="color:' + getCategoriaColor(total) + '">' + total + ' / 100 — ' + cat.label + '</span>';
+    } else {
+      html += '<span class="kpi-total-score" style="color:var(--light)">Sin datos</span>';
+    }
+    html += '</div>';
+
+    // Actions
+    if (editable) {
+      html += '<div class="kpi-actions">';
+      html += '<button class="btn btn-primary" onclick="event.stopPropagation();handleSave(\'' + c.nombre + '\')">Guardar</button>';
+      html += '<button class="btn btn-ghost" onclick="event.stopPropagation();toggleCard(\'' + c.nombre + '\')">Cerrar</button>';
+      html += '</div>';
+    }
+
+    html += '</div>'; // kpi-body
+    html += '</div>'; // kpi-card
+  });
+
+  if (contadoras.length === 0) {
+    html += '<div class="empty">No tienes KPIs asignados.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ==================== ACTIONS ====================
+
+async function handleSave(nombre) {
+  const dEl = document.getElementById('input-' + nombre + '-digitacion');
+  const rEl = document.getElementById('input-' + nombre + '-resumenes');
+  const vEl = document.getElementById('input-' + nombre + '-video_reunion');
+
+  const scores = {
+    digitacion: Math.min(10, Math.max(0, parseFloat(dEl.value) || 0)),
+    resumenes: Math.min(10, Math.max(0, parseFloat(rEl.value) || 0)),
+    video_reunion: parseFloat(vEl.value) || 0
+  };
+
+  const ok = await saveKpi(nombre, activeMonth, scores);
+  if (ok) {
+    renderContent();
+  }
+}
+
+// ==================== AUTH ====================
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Ingresa email y contrasena.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errorEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = 'Email o contrasena incorrectos.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  await loadUserProfile();
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  userRole = null;
+  userName = '';
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function loadUserProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await sb.from('profiles')
+    .select('nombre, rol')
+    .eq('id', user.id)
+    .single();
+
+  if (profile) {
+    userRole = profile.rol;
+    userName = profile.nombre || user.email;
+  } else {
+    userRole = 'contadora';
+    userName = user.email;
+  }
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  document.getElementById('user-display-name').textContent = userName;
+
+  activeQuarter = getCurrentQuarter();
+  const qObj = QUARTERS.find(q => q.id === activeQuarter);
+  activeMonth = qObj.meses[0];
+
+  KPI_DATA = await loadKpiData();
+  renderAll();
+}
+
+const loginPwdEl = document.getElementById('login-password');
+const loginEmailEl = document.getElementById('login-email');
+if (loginPwdEl) loginPwdEl.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+if (loginEmailEl) loginEmailEl.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+
+// Embed mode
+const isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+if (isEmbed) document.body.classList.add('embed');
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile();
+    showApp();
+  } else if (isEmbed) {
+    document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#7c8495;">Sesion no encontrada. Recarga la pagina principal.</div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
