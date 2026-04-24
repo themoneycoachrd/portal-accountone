@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist Mensual — Account One</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #1a2332; --navy-mid: #2a3a4e; --blue: #4361ee; --green: #10b981;
+  --red: #ef4444; --amber: #f59e0b; --purple: #8b5cf6;
+  --bg: #f4f6f9; --card: #ffffff; --border: #e8ecf1;
+  --text: #1a2332; --muted: #7c8495; --light: #a3aab8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+/* ─── Login ─── */
+.login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:1000; }
+.login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid var(--border); }
+.login-box h2 { font-size:1.4rem; color:var(--navy); margin-bottom:4px; }
+.login-box .subtitle { font-size:0.85rem; color:var(--muted); margin-bottom:24px; }
+.login-box .field { margin-bottom:16px; }
+.login-box .field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+.login-box .field input { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.9rem; font-family:inherit; background:#fafbfc; }
+.login-box .field input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+.login-btn { width:100%; padding:11px; background:var(--navy); color:white; border:none; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; margin-top:8px; }
+.login-btn:hover { background:var(--navy-mid); }
+.login-btn:disabled { opacity:0.6; cursor:not-allowed; }
+.login-error { color:var(--red); font-size:0.8rem; margin-top:12px; display:none; }
+
+/* ─── Header ─── */
+.header { background:var(--navy); color:white; padding:20px 24px; }
+.header-inner { display:flex; justify-content:space-between; align-items:center; }
+.header h1 { font-size:1.3rem; font-weight:700; }
+.header p { font-size:0.85rem; opacity:0.6; margin-top:2px; }
+.user-bar { display:flex; align-items:center; gap:12px; }
+.user-bar .user-name { font-size:0.8rem; opacity:0.9; background:rgba(255,255,255,0.15); padding:4px 12px; border-radius:20px; }
+.btn-logout { font-size:0.75rem; padding:4px 12px; background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); border-radius:6px; cursor:pointer; }
+.btn-logout:hover { background:rgba(255,255,255,0.25); }
+
+/* ─── Breadcrumb ─── */
+.breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; flex-wrap:wrap; }
+.breadcrumb-bar a, .breadcrumb-bar span.link { color:var(--muted); text-decoration:none; font-weight:500; cursor:pointer; }
+.breadcrumb-bar a:hover, .breadcrumb-bar span.link:hover { color:var(--navy); text-decoration:underline; }
+.breadcrumb-bar .sep { color:var(--light); font-size:11px; }
+.breadcrumb-bar .current { color:var(--text); font-weight:600; }
+
+/* ─── Tabs ─── */
+.main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
+.main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
+.main-tab:hover { color:var(--text); }
+.main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+
+.sub-tabs { display:flex; gap:4px; padding:10px 24px; background:var(--bg); border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.sub-tab { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.sub-tab:hover { background:#eef0f4; }
+.sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+/* ─── Content ─── */
+.content { padding:24px; max-width:1100px; margin:0 auto; }
+
+/* ─── Contadora grid ─── */
+.contadora-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px; }
+.contadora-card { background:var(--card); border-radius:14px; padding:24px 20px; border:1px solid var(--border); cursor:pointer; text-align:center; transition:all 0.15s; }
+.contadora-card:hover { border-color:var(--blue); box-shadow:0 4px 16px rgba(67,97,238,0.1); transform:translateY(-2px); }
+.contadora-avatar { width:56px; height:56px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:1.3rem; font-weight:700; color:white; margin-bottom:10px; }
+.contadora-name { font-size:1rem; font-weight:700; }
+.contadora-count { font-size:0.78rem; color:var(--muted); margin-top:2px; }
+
+/* ─── Client list ─── */
+.client-list { display:flex; flex-direction:column; gap:8px; }
+.client-row { display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 18px; cursor:pointer; transition:all 0.12s; }
+.client-row:hover { border-color:var(--blue); background:#fafbff; }
+.client-row .client-name { flex:1; font-weight:600; font-size:0.92rem; }
+.client-row .client-contadora { font-size:0.75rem; color:var(--muted); }
+
+/* ─── Progress bars ─── */
+.progress-mini { width:120px; height:8px; background:#e8ecf1; border-radius:4px; overflow:hidden; flex-shrink:0; }
+.progress-mini-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.progress-pct { font-size:0.78rem; font-weight:700; min-width:36px; text-align:right; }
+
+.progress-bar { height:10px; background:#e8ecf1; border-radius:5px; overflow:hidden; margin-top:8px; }
+.progress-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+
+/* ─── Group header ─── */
+.group-header { display:flex; align-items:center; gap:10px; padding:14px 18px; border-radius:12px; cursor:pointer; margin-bottom:4px; color:white; font-weight:700; font-size:0.95rem; transition:all 0.12s; user-select:none; }
+.group-header:hover { opacity:0.9; }
+.group-header .group-icon { font-size:1.1rem; }
+.group-header .group-info { flex:1; }
+.group-header .group-name { font-size:0.95rem; }
+.group-header .group-deadline { font-size:0.7rem; opacity:0.8; font-weight:500; }
+.group-header .group-progress { font-size:0.78rem; opacity:0.9; }
+.group-header .group-arrow { font-size:14px; transition:transform 0.2s; }
+.group-header .group-arrow.open { transform:rotate(180deg); }
+
+.group-body { overflow:hidden; transition:max-height 0.3s ease; }
+.group-body.collapsed { max-height:0 !important; }
+
+/* ─── Task card ─── */
+.task-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin:8px 0; overflow:hidden; }
+.task-header { display:flex; align-items:center; gap:10px; padding:14px 18px; cursor:pointer; transition:background 0.12s; }
+.task-header:hover { background:#fafbfc; }
+.task-header .task-icon { font-size:1.1rem; }
+.task-header .task-info { flex:1; }
+.task-header .task-title { font-size:0.9rem; font-weight:700; }
+.task-header .task-desc { font-size:0.72rem; color:var(--muted); }
+.task-header .task-status { font-size:0.75rem; font-weight:700; padding:3px 10px; border-radius:8px; }
+.task-header .task-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; }
+.task-header .task-arrow.open { transform:rotate(180deg); }
+.task-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; padding:0 18px; }
+.task-body.open { max-height:2000px; padding:16px 18px; border-top:1px solid var(--border); }
+
+/* ─── Form elements inside tasks ─── */
+.q-block { margin-bottom:16px; }
+.q-label { font-size:0.85rem; font-weight:600; margin-bottom:8px; }
+.q-buttons { display:flex; gap:8px; margin-bottom:8px; }
+.q-btn { padding:7px 20px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.q-btn.selected-si { background:var(--green); color:white; border-color:var(--green); }
+.q-btn.selected-no { background:var(--red); color:white; border-color:var(--red); }
+.q-btn:hover { background:#eef0f4; }
+.q-btn.selected-si:hover, .q-btn.selected-no:hover { opacity:0.9; }
+
+.q-textarea { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.85rem; font-family:inherit; resize:vertical; min-height:60px; background:#fafbfc; }
+.q-textarea:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+
+.q-input { padding:8px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.85rem; font-family:inherit; background:#fafbfc; width:180px; }
+.q-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+.q-input-sm { width:80px; }
+
+.q-field-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.q-field-label { font-size:0.78rem; color:var(--muted); font-weight:500; min-width:100px; }
+
+/* ─── Upload zone ─── */
+.upload-zone { border:2px dashed var(--border); border-radius:12px; padding:20px; text-align:center; cursor:pointer; transition:all 0.15s; margin-bottom:12px; }
+.upload-zone:hover { border-color:var(--blue); background:#f8f9ff; }
+.upload-zone.uploaded { border-color:var(--green); background:#f0fdf4; border-style:solid; }
+.upload-zone .upload-icon { font-size:1.5rem; margin-bottom:4px; }
+.upload-zone .upload-text { font-size:0.82rem; color:var(--muted); }
+.upload-zone.uploaded .upload-text { color:var(--green); font-weight:600; }
+
+/* ─── Info banner ─── */
+.info-banner { background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:14px 18px; font-size:0.82rem; color:#4338ca; margin-bottom:14px; }
+.warning-banner { background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px 18px; font-size:0.82rem; color:#92400e; margin-bottom:14px; }
+
+/* ─── Summary ─── */
+.summary-toggle { background:var(--navy); color:white; border:none; border-radius:12px; padding:14px 20px; width:100%; text-align:left; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:10px; font-family:inherit; margin-top:20px; }
+.summary-toggle:hover { background:var(--navy-mid); }
+.summary-body { background:var(--card); border:1px solid var(--border); border-radius:0 0 12px 12px; overflow:hidden; transition:max-height 0.3s ease; }
+.summary-body.collapsed { max-height:0 !important; border:none; }
+.summary-content { padding:20px; }
+.summary-step { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f1f3f7; font-size:0.85rem; }
+.summary-step:last-child { border-bottom:none; }
+.summary-step .step-num { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:white; flex-shrink:0; }
+.summary-step .step-done { background:var(--green); }
+.summary-step .step-pending { background:var(--light); }
+
+/* ─── Overall progress ─── */
+.overall-progress { background:var(--card); border-radius:14px; padding:20px; border:1px solid var(--border); margin-bottom:20px; }
+.overall-progress h3 { font-size:0.85rem; font-weight:700; color:var(--muted); margin-bottom:10px; text-transform:uppercase; letter-spacing:0.3px; }
+.overall-pct { font-size:2rem; font-weight:800; }
+
+/* ─── Week inputs grid ─── */
+.week-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:8px; margin-bottom:12px; }
+.week-item { text-align:center; }
+.week-item label { display:block; font-size:0.7rem; color:var(--muted); font-weight:600; margin-bottom:4px; }
+.week-item input { width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; text-align:center; font-size:0.9rem; font-family:inherit; }
+.week-item input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); }
+.week-total { font-size:0.85rem; font-weight:700; color:var(--navy); }
+
+/* ─── Date stamp ─── */
+.date-stamp { font-size:0.7rem; color:var(--light); margin-left:8px; }
+
+/* ─── Misc ─── */
+.hidden { display:none; }
+.footer { text-align:center; font-size:0.75rem; color:var(--light); padding:20px; }
+.empty { text-align:center; padding:40px; color:var(--light); font-size:0.88rem; }
+
+/* ─── Embed ─── */
+body.embed .login-overlay { display:none !important; }
+body.embed .header { display:none !important; }
+body.embed .breadcrumb-bar { display:none !important; }
+body.embed #app-wrapper { display:block !important; }
+body.embed .footer { display:none !important; }
+
+/* ─── Responsive ─── */
+@media (max-width:600px) {
+  .contadora-grid { grid-template-columns:repeat(2,1fr); }
+  .progress-mini { width:80px; }
+  .q-field-row { flex-direction:column; align-items:flex-start; }
+  .week-grid { grid-template-columns:repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>Account One</h2>
+    <p class="subtitle">Inicia sesion para continuar</p>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@accountone.do">
+    </div>
+    <div class="field">
+      <label>Contrasena</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Checklist Mensual</h1>
+      <p>Cierre contable mensual — 2026</p>
+    </div>
+    <div class="user-bar">
+      <span class="user-name" id="user-display-name"></span>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<div class="breadcrumb-bar" id="breadcrumb"></div>
+
+<div class="main-tabs" id="mainTabs"></div>
+<div class="sub-tabs" id="subTabs"></div>
+<div class="content" id="content"></div>
+<div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
+
+</div>
+
+<script>
+// ==================== CONFIG ====================
+var SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZXR1c3N0cXZweWpleWNmZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDcwNzksImV4cCI6MjA5MjIyMzA3OX0.Bsys947JLGEuf3zdBF2GPFdbJVJtaZdC4YEmyBU5Bow';
+var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+var MESES_LABEL = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var MESES_KEY = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function mesKeyToIndex(key) {
+  var idx = MESES_KEY.indexOf(key);
+  return idx >= 0 ? idx : 0;
+}
+function mesIndexToKey(idx) {
+  return MESES_KEY[idx] || 'enero';
+}
+
+var CONTADORA_COLORS = {
+  Taina: '#4361ee', Beliani: '#8b5cf6', Yessica: '#f59e0b',
+  Karina: '#10b981', Victoria: '#ec4899'
+};
+
+var GROUPS = [
+  { id:'tss', name:'TSS', deadline:'Dia 1', deadlineDay:1, color:'#10b981', icon:'👥',
+    tasks:[
+      {id:'cargar_nomina', title:'Cargar nomina', desc:'Responder preguntas y subir Excel de nomina', icon:'📄', mod:'nomina'},
+      {id:'cargar_volantes', title:'Cargar volantes de pago', desc:'Comprobantes de pago de cada empleado', icon:'🧾', mod:'volantes'}
+    ]},
+  { id:'ir3_ir17', name:'IR3 e IR17', deadline:'Dia 10', deadlineDay:10, color:'#ef4444', icon:'🏛️',
+    tasks:[
+      {id:'ir3', title:'IR3 (Impuesto al salario)', desc:'Se calcula desde los datos de nomina', icon:'🏛️', mod:'ir3'},
+      {id:'ir17_informales', title:'IR17 / Pagos a informales', desc:'Retenciones y pagos a proveedores informales', icon:'👤', mod:'ir17'}
+    ]},
+  { id:'itbis', name:'ITBIS', deadline:'Dia 15', deadlineDay:15, color:'#f59e0b', icon:'🧾',
+    tasks:[
+      {id:'control_facturas', title:'Control de facturas recibidas', desc:'Cuantas facturas recibio, cuantas cargo, cuantas faltan', icon:'📊', mod:'control_facturas'},
+      {id:'cxp', title:'Comprobantes de pago (CxP)', desc:'Volantes de pago de facturas del mes y meses anteriores', icon:'🧾', mod:'cxp'}
+    ]},
+  { id:'anticipo', name:'Anticipo', deadline:'Dia 15', deadlineDay:15, color:'#8b5cf6', icon:'💵',
+    tasks:[{id:'anticipo_pago', title:'Pago de anticipo', desc:'Recordatorio de pago de anticipo del periodo', icon:'💵', mod:'anticipo'}]},
+  { id:'cierre', name:'Cierre Mensual y Conciliacion', deadline:'Dia 20', deadlineDay:20, color:'#4361ee', icon:'📊',
+    tasks:[
+      {id:'conciliacion', title:'Preguntas de cierre', desc:'Transferencias, retiros, prestamos y gastos personales', icon:'🔍', mod:'conciliacion'},
+      {id:'cxc', title:'Recibos de ingreso (CxC)', desc:'Recibos pagando facturas de este mes y meses anteriores', icon:'💰', mod:'cxc'}
+    ]}
+];
+
+var MODULE_CHECKS = {
+  nomina: ['cambios_respondido','nomina_cargada'],
+  volantes: ['volantes_cargados'],
+  ir3: ['ir3_confirmado'],
+  ir17: ['informales_respondido'],
+  control_facturas: ['control_respondido','nsf_respondido'],
+  cxp: ['volantes_mes_cargados','volantes_ant_cargados'],
+  anticipo: ['anticipo_respondido'],
+  conciliacion: ['transferencias_respondido','retiros_respondido','prestamos_respondido','gastos_tc_respondido'],
+  cxc: ['recibos_ant_cargados','recibos_mes_cargados']
+};
+
+// ==================== STATE ====================
+var userRole = null;
+var userName = '';
+var contadorasMap = {}; // { contadora: [cliente,...] }
+var allClients = [];
+var activeMainTab = 'contadoras';
+var currentView = 'contadoras'; // contadoras | clients | checklist
+var selectedContadora = null;
+var selectedCliente = null;
+var selectedMes = null;
+var checklistData = {};
+var openGroups = {};
+var openTasks = {};
+var saveTimer = null;
+var summaryOpen = false;
+var isEmbed = false;
+
+// ==================== UTILS ====================
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function getContadoraColor(name) {
+  if (!name) return '#7c8495';
+  var first = name.split(' ')[0];
+  return CONTADORA_COLORS[first] || '#7c8495';
+}
+
+function getInitial(name) {
+  return name ? name.charAt(0).toUpperCase() : '?';
+}
+
+function getCurrentMonthKey() {
+  var now = new Date();
+  var m = now.getMonth(); // 0-indexed
+  // Previous month (cierre is always for the prior month)
+  var prev = m === 0 ? 11 : m - 1;
+  return MESES_KEY[prev];
+}
+
+function progressColor(pct) {
+  if (pct >= 100) return 'var(--green)';
+  if (pct >= 60) return 'var(--amber)';
+  if (pct > 0) return 'var(--blue)';
+  return 'var(--light)';
+}
+
+function dateStamp() {
+  var d = new Date();
+  return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+}
+
+// ==================== PROGRESS ====================
+function taskProgress(mod, data) {
+  var checks = MODULE_CHECKS[mod];
+  if (!checks || checks.length === 0) return 100;
+  var done = 0;
+  var taskData = data[mod] || {};
+  for (var i = 0; i < checks.length; i++) {
+    if (taskData[checks[i]]) done++;
+  }
+  return Math.round((done / checks.length) * 100);
+}
+
+function groupProgress(group, data) {
+  var total = 0;
+  var sum = 0;
+  for (var i = 0; i < group.tasks.length; i++) {
+    sum += taskProgress(group.tasks[i].mod, data);
+    total++;
+  }
+  return total > 0 ? Math.round(sum / total) : 0;
+}
+
+function totalProgress(data) {
+  var allChecks = 0;
+  var allDone = 0;
+  for (var mod in MODULE_CHECKS) {
+    var checks = MODULE_CHECKS[mod];
+    var taskData = data[mod] || {};
+    for (var i = 0; i < checks.length; i++) {
+      allChecks++;
+      if (taskData[checks[i]]) allDone++;
+    }
+  }
+  // Add the summary checkbox
+  allChecks++;
+  if (data._resumen_leido) allDone++;
+  return allChecks > 0 ? Math.round((allDone / allChecks) * 100) : 0;
+}
+
+// ==================== SUPABASE DATA ====================
+async function loadContadoras() {
+  // Load all assignments for 2026
+  var result = await sb.from('asignaciones')
+    .select('contadora, cliente, mes')
+    .eq('anio', 2026)
+    .order('contadora');
+
+  var data = result.data || [];
+  var map = {};
+  var clients = [];
+
+  // Find the latest month (by index, not alphabetically)
+  var maxIdx = -1;
+  var maxMes = '';
+  for (var i = 0; i < data.length; i++) {
+    var idx = mesKeyToIndex(data[i].mes);
+    if (idx > maxIdx) { maxIdx = idx; maxMes = data[i].mes; }
+  }
+  if (!maxMes) maxMes = getCurrentMonthKey();
+
+  // Filter to latest month and group by contadora
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    if (row.mes !== maxMes) continue;
+    if (!map[row.contadora]) map[row.contadora] = [];
+    if (map[row.contadora].indexOf(row.cliente) === -1) {
+      map[row.contadora].push(row.cliente);
+    }
+    if (clients.indexOf(row.cliente) === -1) {
+      clients.push(row.cliente);
+    }
+  }
+
+  contadorasMap = map;
+  allClients = clients.sort();
+}
+
+async function loadChecklistData(cliente, mesKey) {
+  var result = await sb.from('checklist_mensual')
+    .select('*').eq('cliente', cliente).eq('mes', mesKey).eq('anio', 2026).maybeSingle();
+  return (result.data && result.data.data) ? result.data.data : {};
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(function() {
+    saveChecklistData(selectedCliente, selectedMes, checklistData);
+  }, 500);
+}
+
+async function saveChecklistData(cliente, mes, data) {
+  var result = await sb.from('checklist_mensual').upsert({
+    cliente: cliente,
+    mes: mes,
+    anio: 2026,
+    data: data,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'cliente,mes,anio' });
+  if (result.error) console.error('Error guardando checklist:', result.error);
+}
+
+// Load progress for all clients (for the list views)
+async function loadAllProgress(clientes, mes) {
+  var progressMap = {};
+  if (!clientes || clientes.length === 0) return progressMap;
+
+  var result = await sb.from('checklist_mensual')
+    .select('cliente, data')
+    .eq('mes', mes)
+    .eq('anio', 2026)
+    .in('cliente', clientes);
+
+  var rows = result.data || [];
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    progressMap[row.cliente] = totalProgress(row.data || {});
+  }
+  return progressMap;
+}
+
+// ==================== DATA HELPERS ====================
+function getVal(mod, field) {
+  if (!checklistData[mod]) return null;
+  return checklistData[mod][field] || null;
+}
+
+function setVal(mod, field, value) {
+  if (!checklistData[mod]) checklistData[mod] = {};
+  checklistData[mod][field] = value;
+  scheduleSave();
+}
+
+function toggleUpload(mod, field) {
+  var current = getVal(mod, field);
+  setVal(mod, field, !current);
+  renderChecklist();
+}
+
+function answerQuestion(mod, field, value) {
+  setVal(mod, field, value);
+  if (!getVal(mod, field + '_date')) {
+    setVal(mod, field + '_date', dateStamp());
+  }
+  renderChecklist();
+}
+
+function updateField(mod, field, el) {
+  setVal(mod, field, el.value);
+}
+
+function updateWeek(mod, idx, el) {
+  var weeks = getVal(mod, 'facturas_semanas') || [0,0,0,0,0];
+  weeks[idx] = parseInt(el.value) || 0;
+  setVal(mod, 'facturas_semanas', weeks);
+  renderChecklist();
+}
+
+function toggleResumen() {
+  checklistData._resumen_leido = !checklistData._resumen_leido;
+  scheduleSave();
+  renderChecklist();
+}
+
+// ==================== NAVIGATION ====================
+function navigateTo(view, contadora, cliente) {
+  if (view === 'contadoras') {
+    currentView = 'contadoras';
+    selectedContadora = null;
+    selectedCliente = null;
+    selectedMes = null;
+    renderAll();
+  } else if (view === 'clients') {
+    currentView = 'clients';
+    selectedContadora = contadora || null;
+    selectedCliente = null;
+    selectedMes = null;
+    renderAll();
+  } else if (view === 'checklist') {
+    currentView = 'checklist';
+    selectedContadora = contadora || selectedContadora;
+    selectedCliente = cliente;
+    selectedMes = selectedMes || getCurrentMonthKey();
+    openGroups = {};
+    openTasks = {};
+    summaryOpen = false;
+    loadAndRenderChecklist();
+  }
+}
+
+async function loadAndRenderChecklist() {
+  checklistData = await loadChecklistData(selectedCliente, selectedMes);
+  renderAll();
+}
+
+function switchMonth(mes) {
+  selectedMes = mes;
+  loadAndRenderChecklist();
+}
+
+function switchMainTab(tab) {
+  activeMainTab = tab;
+  if (tab === 'contadoras') {
+    navigateTo('contadoras');
+  } else {
+    currentView = 'all-clients';
+    selectedContadora = null;
+    selectedCliente = null;
+    renderAll();
+  }
+}
+
+function toggleGroup(gid) {
+  openGroups[gid] = !openGroups[gid];
+  renderChecklist();
+}
+
+function toggleTask(tid) {
+  openTasks[tid] = !openTasks[tid];
+  renderChecklist();
+}
+
+function toggleSummary() {
+  summaryOpen = !summaryOpen;
+  renderChecklist();
+}
+
+// ==================== RENDER ====================
+function renderAll() {
+  renderBreadcrumb();
+  renderMainTabs();
+  renderSubTabs();
+  renderContent();
+}
+
+function renderBreadcrumb() {
+  var bc = document.getElementById('breadcrumb');
+  var parts = [];
+
+  if (isEmbed) {
+    parts.push('<span class="link" onclick="navigateTo(\'contadoras\')">Account One</span>');
+  } else {
+    parts.push('<a href="index.html">Account One</a>');
+  }
+  parts.push('<span class="sep">›</span>');
+
+  if (currentView === 'checklist' && selectedCliente) {
+    if (isEmbed) {
+      parts.push('<span class="link" onclick="navigateTo(\'contadoras\')">Checklist Mensual</span>');
+    } else {
+      parts.push('<span class="link" onclick="navigateTo(\'contadoras\')">Checklist Mensual</span>');
+    }
+    if (selectedContadora) {
+      parts.push('<span class="sep">›</span>');
+      parts.push('<span class="link" onclick="navigateTo(\'clients\', \'' + esc(selectedContadora) + '\')">' + selectedContadora + '</span>');
+    }
+    parts.push('<span class="sep">›</span>');
+    parts.push('<span class="current">' + selectedCliente + ' — ' + MESES_FULL[mesKeyToIndex(selectedMes)] + '</span>');
+  } else if (currentView === 'clients' && selectedContadora) {
+    parts.push('<span class="link" onclick="navigateTo(\'contadoras\')">Checklist Mensual</span>');
+    parts.push('<span class="sep">›</span>');
+    parts.push('<span class="current">' + selectedContadora + '</span>');
+  } else {
+    parts.push('<span class="current">Checklist Mensual</span>');
+  }
+
+  bc.innerHTML = parts.join('');
+}
+
+function renderMainTabs() {
+  var el = document.getElementById('mainTabs');
+  if (currentView === 'checklist') {
+    el.innerHTML = '';
+    return;
+  }
+  var tabs = [
+    { id: 'contadoras', label: 'Contadoras' },
+    { id: 'all-clients', label: 'Clientes' }
+  ];
+  var html = '';
+  for (var i = 0; i < tabs.length; i++) {
+    var t = tabs[i];
+    var active = (activeMainTab === 'contadoras' && t.id === 'contadoras') ||
+                 (activeMainTab !== 'contadoras' && t.id === 'all-clients');
+    if (currentView === 'all-clients' && t.id === 'all-clients') active = true;
+    if (currentView === 'all-clients' && t.id === 'contadoras') active = false;
+    html += '<button class="main-tab' + (active ? ' active' : '') + '" onclick="switchMainTab(\'' + t.id + '\')">' + t.label + '</button>';
+  }
+  el.innerHTML = html;
+}
+
+function renderSubTabs() {
+  var el = document.getElementById('subTabs');
+  if (currentView !== 'checklist') {
+    el.innerHTML = '';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < 12; i++) {
+    var active = selectedMes === MESES_KEY[i];
+    html += '<button class="sub-tab' + (active ? ' active' : '') + '" onclick="switchMonth(\'' + MESES_KEY[i] + '\')">' + MESES_LABEL[i] + '</button>';
+  }
+  el.innerHTML = html;
+}
+
+function renderContent() {
+  if (currentView === 'contadoras') {
+    renderContadoraGrid();
+  } else if (currentView === 'clients') {
+    renderClientList(selectedContadora);
+  } else if (currentView === 'all-clients') {
+    renderAllClients();
+  } else if (currentView === 'checklist') {
+    renderChecklist();
+  }
+}
+
+// ─── Contadora Grid ───
+async function renderContadoraGrid() {
+  var el = document.getElementById('content');
+  var names = Object.keys(contadorasMap).sort();
+
+  if (names.length === 0) {
+    el.innerHTML = '<div class="empty">No hay contadoras asignadas para este periodo.</div>';
+    return;
+  }
+
+  var html = '<div class="contadora-grid">';
+  for (var i = 0; i < names.length; i++) {
+    var name = names[i];
+    var color = getContadoraColor(name);
+    var count = contadorasMap[name].length;
+    html += '<div class="contadora-card" onclick="navigateTo(\'clients\', \'' + esc(name) + '\')">';
+    html += '<div class="contadora-avatar" style="background:' + color + '">' + getInitial(name) + '</div>';
+    html += '<div class="contadora-name">' + name + '</div>';
+    html += '<div class="contadora-count">' + count + ' cliente' + (count !== 1 ? 's' : '') + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ─── Client List (for one contadora) ───
+async function renderClientList(contadora) {
+  var el = document.getElementById('content');
+  var clients = contadorasMap[contadora] || [];
+  if (clients.length === 0) {
+    el.innerHTML = '<div class="empty">No hay clientes asignados a ' + contadora + '.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="empty">Cargando...</div>';
+  var mes = getCurrentMonthKey();
+  var progressMap = await loadAllProgress(clients, mes);
+
+  var html = '<div class="client-list">';
+  var sorted = clients.slice().sort();
+  for (var i = 0; i < sorted.length; i++) {
+    var c = sorted[i];
+    var pct = progressMap[c] || 0;
+    var pColor = progressColor(pct);
+    html += '<div class="client-row" onclick="navigateTo(\'checklist\', \'' + esc(contadora) + '\', \'' + esc(c) + '\')">';
+    html += '<span class="client-name">' + c + '</span>';
+    html += '<div class="progress-mini"><div class="progress-mini-fill" style="width:' + pct + '%;background:' + pColor + '"></div></div>';
+    html += '<span class="progress-pct" style="color:' + pColor + '">' + pct + '%</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+// ─── All Clients (flat list grouped by contadora) ───
+async function renderAllClients() {
+  var el = document.getElementById('content');
+  var names = Object.keys(contadorasMap).sort();
+  if (names.length === 0) {
+    el.innerHTML = '<div class="empty">No hay clientes en este periodo.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="empty">Cargando...</div>';
+  var mes = getCurrentMonthKey();
+  var progressMap = await loadAllProgress(allClients, mes);
+
+  var html = '';
+  for (var n = 0; n < names.length; n++) {
+    var contadora = names[n];
+    var color = getContadoraColor(contadora);
+    var clients = (contadorasMap[contadora] || []).slice().sort();
+
+    html += '<div style="margin-bottom:20px">';
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+    html += '<div style="width:28px;height:28px;border-radius:50%;background:' + color + ';display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.75rem;">' + getInitial(contadora) + '</div>';
+    html += '<span style="font-weight:700;font-size:0.95rem;">' + contadora + '</span>';
+    html += '<span style="font-size:0.78rem;color:var(--muted);">(' + clients.length + ')</span>';
+    html += '</div>';
+    html += '<div class="client-list">';
+
+    for (var i = 0; i < clients.length; i++) {
+      var c = clients[i];
+      var pct = progressMap[c] || 0;
+      var pColor = progressColor(pct);
+      html += '<div class="client-row" onclick="navigateTo(\'checklist\', \'' + esc(contadora) + '\', \'' + esc(c) + '\')">';
+      html += '<span class="client-name">' + c + '</span>';
+      html += '<span class="client-contadora">' + contadora + '</span>';
+      html += '<div class="progress-mini"><div class="progress-mini-fill" style="width:' + pct + '%;background:' + pColor + '"></div></div>';
+      html += '<span class="progress-pct" style="color:' + pColor + '">' + pct + '%</span>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  }
+  el.innerHTML = html;
+}
+
+// ==================== CHECKLIST RENDER ====================
+function renderChecklist() {
+  var el = document.getElementById('content');
+  var tp = totalProgress(checklistData);
+  var tpColor = progressColor(tp);
+
+  var html = '';
+
+  // Overall progress
+  html += '<div class="overall-progress">';
+  html += '<h3>Progreso — ' + MESES_FULL[mesKeyToIndex(selectedMes)] + ' 2026</h3>';
+  html += '<div style="display:flex;align-items:center;gap:14px;">';
+  html += '<span class="overall-pct" style="color:' + tpColor + '">' + tp + '%</span>';
+  html += '<div style="flex:1"><div class="progress-bar"><div class="progress-fill" style="width:' + tp + '%;background:' + tpColor + '"></div></div></div>';
+  html += '</div></div>';
+
+  // Groups
+  for (var g = 0; g < GROUPS.length; g++) {
+    var group = GROUPS[g];
+    var gp = groupProgress(group, checklistData);
+    var gpColor = progressColor(gp);
+    var gOpen = openGroups[group.id] !== false; // default open
+
+    html += '<div style="margin-bottom:12px;">';
+    // Group header
+    html += '<div class="group-header" style="background:' + group.color + '" onclick="toggleGroup(\'' + group.id + '\')">';
+    html += '<span class="group-icon">' + group.icon + '</span>';
+    html += '<div class="group-info"><div class="group-name">' + group.name + '</div>';
+    html += '<div class="group-deadline">' + group.deadline + '</div></div>';
+    html += '<span class="group-progress">' + gp + '%</span>';
+    html += '<span class="group-arrow' + (gOpen ? ' open' : '') + '">▼</span>';
+    html += '</div>';
+
+    // Group body
+    html += '<div class="group-body" style="max-height:5000px"' + (!gOpen ? ' class="group-body collapsed"' : '') + '>';
+    if (!gOpen) {
+      html += '<div class="group-body collapsed">';
+    } else {
+      html += '<div>';
+    }
+
+    for (var t = 0; t < group.tasks.length; t++) {
+      var task = group.tasks[t];
+      var tp2 = taskProgress(task.mod, checklistData);
+      var tOpen = openTasks[task.id] || false;
+
+      var statusCss, statusLabel;
+      if (tp2 >= 100) {
+        statusCss = 'background:#ecfdf5;color:#059669;';
+        statusLabel = 'Completo';
+      } else if (tp2 > 0) {
+        statusCss = 'background:#fffbeb;color:#d97706;';
+        statusLabel = tp2 + '%';
+      } else {
+        statusCss = 'background:#f5f7fa;color:var(--light);';
+        statusLabel = 'Pendiente';
+      }
+
+      html += '<div class="task-card">';
+      html += '<div class="task-header" onclick="toggleTask(\'' + task.id + '\')">';
+      html += '<span class="task-icon">' + task.icon + '</span>';
+      html += '<div class="task-info"><div class="task-title">' + task.title + '</div>';
+      html += '<div class="task-desc">' + task.desc + '</div></div>';
+      html += '<span class="task-status" style="' + statusCss + '">' + statusLabel + '</span>';
+      html += '<span class="task-arrow' + (tOpen ? ' open' : '') + '">▼</span>';
+      html += '</div>';
+      html += '<div class="task-body' + (tOpen ? ' open' : '') + '">';
+      if (tOpen) {
+        html += renderModule(task.mod);
+      }
+      html += '</div></div>';
+    }
+
+    html += '</div></div></div>';
+  }
+
+  // Summary
+  html += renderSummary();
+
+  el.innerHTML = html;
+}
+
+// ==================== MODULE RENDERERS ====================
+function renderModule(mod) {
+  switch(mod) {
+    case 'nomina': return renderNomina();
+    case 'volantes': return renderVolantes();
+    case 'ir3': return renderIR3();
+    case 'ir17': return renderIR17();
+    case 'control_facturas': return renderControlFacturas();
+    case 'cxp': return renderCxP();
+    case 'anticipo': return renderAnticipo();
+    case 'conciliacion': return renderConciliacion();
+    case 'cxc': return renderCxC();
+    default: return '<div class="empty">Modulo no encontrado.</div>';
+  }
+}
+
+function renderNomina() {
+  var cambios = getVal('nomina', 'cambios_respondido');
+  var cambiosResp = getVal('nomina', 'cambios');
+  var cargada = getVal('nomina', 'nomina_cargada');
+  var html = '';
+
+  // Question
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Hubo cambios o novedades en la nomina este mes?</div>';
+  html += '<div class="q-buttons">';
+  html += '<button class="q-btn' + (cambiosResp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'nomina\',\'cambios\',\'si\');setVal(\'nomina\',\'cambios_respondido\',true)">Si</button>';
+  html += '<button class="q-btn' + (cambiosResp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'nomina\',\'cambios\',\'no\');setVal(\'nomina\',\'cambios_respondido\',true)">No</button>';
+  if (cambios) {
+    var dt = getVal('nomina', 'cambios_date') || '';
+    html += '<span class="date-stamp">' + dt + '</span>';
+  }
+  html += '</div>';
+
+  if (cambiosResp === 'si') {
+    html += '<textarea class="q-textarea" placeholder="Detalla los cambios..." oninput="updateField(\'nomina\',\'detalle_cambios\',this)">' + (getVal('nomina','detalle_cambios') || '') + '</textarea>';
+  }
+  html += '</div>';
+
+  // Upload
+  html += renderUploadZone('nomina', 'nomina_cargada', 'Subir Excel de nomina', 'Nomina cargada');
+
+  if (cargada) {
+    html += '<div class="q-field-row"><span class="q-field-label">Total nomina</span>';
+    html += '<input class="q-input" type="text" value="' + (getVal('nomina','total_nomina') || '') + '" oninput="updateField(\'nomina\',\'total_nomina\',this)" placeholder="RD$"></div>';
+    html += '<div class="q-field-row"><span class="q-field-label">TSS monto</span>';
+    html += '<input class="q-input" type="text" value="' + (getVal('nomina','tss_monto') || '') + '" oninput="updateField(\'nomina\',\'tss_monto\',this)" placeholder="RD$"></div>';
+    html += '<div class="q-field-row"><span class="q-field-label">AFP</span>';
+    html += '<input class="q-input" type="text" value="' + (getVal('nomina','afp') || '') + '" oninput="updateField(\'nomina\',\'afp\',this)" placeholder="RD$"></div>';
+    html += '<div class="q-field-row"><span class="q-field-label">Seguro</span>';
+    html += '<input class="q-input" type="text" value="' + (getVal('nomina','seguro') || '') + '" oninput="updateField(\'nomina\',\'seguro\',this)" placeholder="RD$"></div>';
+  }
+
+  return html;
+}
+
+function renderVolantes() {
+  var cargados = getVal('volantes', 'volantes_cargados');
+  var html = '';
+
+  html += renderUploadZone('volantes', 'volantes_cargados', 'Subir volantes de pago', 'Volantes cargados');
+
+  if (cargados) {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad de volantes</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('volantes','cant_volantes') || '') + '" oninput="updateField(\'volantes\',\'cant_volantes\',this)" placeholder="0"></div>';
+  }
+
+  return html;
+}
+
+function renderIR3() {
+  var confirmado = getVal('ir3', 'ir3_confirmado');
+  var html = '';
+
+  html += '<div class="info-banner">No requiere accion del cliente. La informacion viene desde la nomina.</div>';
+  html += '<div class="q-block">';
+  html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;">';
+  html += '<input type="checkbox"' + (confirmado ? ' checked' : '') + ' onchange="setVal(\'ir3\',\'ir3_confirmado\',this.checked);renderChecklist()"> Entendido, la nomina ya fue cargada</label>';
+  html += '</div>';
+
+  return html;
+}
+
+function renderIR17() {
+  var respondido = getVal('ir17', 'informales_respondido');
+  var resp = getVal('ir17', 'informales');
+  var html = '';
+
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Hubo pagos a proveedores informales?</div>';
+  html += '<div class="q-buttons">';
+  html += '<button class="q-btn' + (resp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'ir17\',\'informales\',\'si\');setVal(\'ir17\',\'informales_respondido\',true)">Si</button>';
+  html += '<button class="q-btn' + (resp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'ir17\',\'informales\',\'no\');setVal(\'ir17\',\'informales_respondido\',true)">No</button>';
+  if (respondido) {
+    var dt = getVal('ir17', 'informales_date') || '';
+    html += '<span class="date-stamp">' + dt + '</span>';
+  }
+  html += '</div></div>';
+
+  if (resp === 'si') {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad informales</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('ir17','cant_informales') || '') + '" oninput="updateField(\'ir17\',\'cant_informales\',this)" placeholder="0"></div>';
+    html += renderUploadZone('ir17', 'excel_informales', 'Subir Excel de informales', 'Excel cargado');
+    html += renderUploadZone('ir17', 'volantes_informales', 'Subir volantes de pago', 'Volantes cargados');
+  }
+
+  return html;
+}
+
+function renderControlFacturas() {
+  var weeks = getVal('control_facturas', 'facturas_semanas') || [0,0,0,0,0];
+  var total = 0;
+  for (var i = 0; i < weeks.length; i++) total += (parseInt(weeks[i]) || 0);
+
+  var controlResp = getVal('control_facturas', 'control');
+  var controlRespondido = getVal('control_facturas', 'control_respondido');
+  var nsfResp = getVal('control_facturas', 'nsf');
+  var nsfRespondido = getVal('control_facturas', 'nsf_respondido');
+
+  var html = '';
+
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Facturas recibidas por semana</div>';
+  html += '<div class="week-grid">';
+  for (var i = 0; i < 5; i++) {
+    html += '<div class="week-item"><label>Semana ' + (i+1) + '</label>';
+    html += '<input type="number" value="' + (weeks[i] || 0) + '" onchange="updateWeek(\'control_facturas\',' + i + ',this)"></div>';
+  }
+  html += '</div>';
+  html += '<div class="week-total">Total: ' + total + ' facturas</div>';
+  html += '</div>';
+
+  // Question: control
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Entiendes que faltan mas facturas?</div>';
+  html += '<div class="q-buttons">';
+  html += '<button class="q-btn' + (controlResp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'control_facturas\',\'control\',\'si\');setVal(\'control_facturas\',\'control_respondido\',true)">Si</button>';
+  html += '<button class="q-btn' + (controlResp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'control_facturas\',\'control\',\'no\');setVal(\'control_facturas\',\'control_respondido\',true)">No</button>';
+  if (controlRespondido) {
+    var dt = getVal('control_facturas', 'control_date') || '';
+    html += '<span class="date-stamp">' + dt + '</span>';
+  }
+  html += '</div></div>';
+
+  // Question: NSF
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Se cargaron los NCF de los bancos?</div>';
+  html += '<div class="q-buttons">';
+  html += '<button class="q-btn' + (nsfResp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'control_facturas\',\'nsf\',\'si\');setVal(\'control_facturas\',\'nsf_respondido\',true)">Si</button>';
+  html += '<button class="q-btn' + (nsfResp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'control_facturas\',\'nsf\',\'no\');setVal(\'control_facturas\',\'nsf_respondido\',true)">No</button>';
+  if (nsfRespondido) {
+    var dt = getVal('control_facturas', 'nsf_date') || '';
+    html += '<span class="date-stamp">' + dt + '</span>';
+  }
+  html += '</div></div>';
+
+  return html;
+}
+
+function renderCxP() {
+  var mesCargado = getVal('cxp', 'volantes_mes_cargados');
+  var antCargado = getVal('cxp', 'volantes_ant_cargados');
+  var html = '';
+
+  html += '<div class="q-label" style="margin-bottom:12px">Comprobantes de pago del mes</div>';
+  html += renderUploadZone('cxp', 'volantes_mes_cargados', 'Subir comprobantes del mes', 'Comprobantes del mes cargados');
+  if (mesCargado) {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('cxp','cant_volantes_mes') || '') + '" oninput="updateField(\'cxp\',\'cant_volantes_mes\',this)" placeholder="0"></div>';
+  }
+
+  html += '<div class="q-label" style="margin-bottom:12px;margin-top:16px">Comprobantes de meses anteriores</div>';
+  html += renderUploadZone('cxp', 'volantes_ant_cargados', 'Subir comprobantes anteriores', 'Comprobantes anteriores cargados');
+  if (antCargado) {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('cxp','cant_volantes_ant') || '') + '" oninput="updateField(\'cxp\',\'cant_volantes_ant\',this)" placeholder="0"></div>';
+  }
+
+  return html;
+}
+
+function renderAnticipo() {
+  var resp = getVal('anticipo', 'anticipo');
+  var respondido = getVal('anticipo', 'anticipo_respondido');
+  var html = '';
+
+  html += '<div class="info-banner">Recuerda pagar el anticipo del periodo antes de la fecha limite. El monto se calcula automaticamente desde los datos fiscales.</div>';
+
+  html += '<div class="q-block">';
+  html += '<div class="q-label">Pagaste el anticipo?</div>';
+  html += '<div class="q-buttons">';
+  html += '<button class="q-btn' + (resp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'anticipo\',\'anticipo\',\'si\');setVal(\'anticipo\',\'anticipo_respondido\',true)">Si</button>';
+  html += '<button class="q-btn' + (resp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'anticipo\',\'anticipo\',\'no\');setVal(\'anticipo\',\'anticipo_respondido\',true)">No</button>';
+  if (respondido) {
+    var dt = getVal('anticipo', 'anticipo_date') || '';
+    html += '<span class="date-stamp">' + dt + '</span>';
+  }
+  html += '</div></div>';
+
+  if (resp === 'no') {
+    html += '<div class="warning-banner">Pendiente: el anticipo no ha sido pagado. Contacta a tu contadora si necesitas ayuda.</div>';
+  }
+
+  return html;
+}
+
+function renderConciliacion() {
+  var questions = [
+    { key: 'transferencias', label: 'Hubo transferencias entre cuentas de la empresa?', check: 'transferencias_respondido' },
+    { key: 'retiros', label: 'Hubo retiros personales desde cuentas de la empresa?', check: 'retiros_respondido' },
+    { key: 'prestamos', label: 'Hubo prestamos o abonos a prestamos?', check: 'prestamos_respondido' },
+    { key: 'gastos_tc', label: 'Hubo gastos personales en tarjeta de credito de la empresa?', check: 'gastos_tc_respondido' }
+  ];
+
+  var html = '';
+
+  for (var i = 0; i < questions.length; i++) {
+    var q = questions[i];
+    var resp = getVal('conciliacion', q.key);
+    var respondido = getVal('conciliacion', q.check);
+
+    html += '<div class="q-block">';
+    html += '<div class="q-label">' + q.label + '</div>';
+    html += '<div class="q-buttons">';
+    html += '<button class="q-btn' + (resp === 'si' ? ' selected-si' : '') + '" onclick="answerQuestion(\'conciliacion\',\'' + q.key + '\',\'si\');setVal(\'conciliacion\',\'' + q.check + '\',true)">Si</button>';
+    html += '<button class="q-btn' + (resp === 'no' ? ' selected-no' : '') + '" onclick="answerQuestion(\'conciliacion\',\'' + q.key + '\',\'no\');setVal(\'conciliacion\',\'' + q.check + '\',true)">No</button>';
+    if (respondido) {
+      var dt = getVal('conciliacion', q.key + '_date') || '';
+      html += '<span class="date-stamp">' + dt + '</span>';
+    }
+    html += '</div>';
+
+    if (resp === 'si') {
+      html += renderUploadZone('conciliacion', q.key + '_doc', 'Subir soporte de ' + q.key.replace('_',' '), 'Soporte cargado');
+      html += '<textarea class="q-textarea" placeholder="Detalla aqui..." oninput="updateField(\'conciliacion\',\'' + q.key + '_detalle\',this)">' + (getVal('conciliacion', q.key + '_detalle') || '') + '</textarea>';
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+function renderCxC() {
+  var antCargados = getVal('cxc', 'recibos_ant_cargados');
+  var mesCargados = getVal('cxc', 'recibos_mes_cargados');
+  var html = '';
+
+  html += '<div class="q-label" style="margin-bottom:12px">Recibos de meses anteriores</div>';
+  html += renderUploadZone('cxc', 'recibos_ant_cargados', 'Subir recibos anteriores', 'Recibos anteriores cargados');
+  if (antCargados) {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('cxc','cant_recibos_ant') || '') + '" oninput="updateField(\'cxc\',\'cant_recibos_ant\',this)" placeholder="0"></div>';
+  }
+
+  html += '<div class="q-label" style="margin-bottom:12px;margin-top:16px">Recibos del mes</div>';
+  html += renderUploadZone('cxc', 'recibos_mes_cargados', 'Subir recibos del mes', 'Recibos del mes cargados');
+  if (mesCargados) {
+    html += '<div class="q-field-row"><span class="q-field-label">Cantidad</span>';
+    html += '<input class="q-input q-input-sm" type="number" value="' + (getVal('cxc','cant_recibos_mes') || '') + '" oninput="updateField(\'cxc\',\'cant_recibos_mes\',this)" placeholder="0"></div>';
+    html += '<div class="q-field-row"><span class="q-field-label">Total recibos mes</span>';
+    html += '<input class="q-input" type="text" value="' + (getVal('cxc','total_recibos_mes') || '') + '" oninput="updateField(\'cxc\',\'total_recibos_mes\',this)" placeholder="RD$"></div>';
+  }
+
+  return html;
+}
+
+// ─── Upload zone helper ───
+function renderUploadZone(mod, field, labelPending, labelDone) {
+  var val = getVal(mod, field);
+  var cls = val ? 'upload-zone uploaded' : 'upload-zone';
+  var icon = val ? '✅' : '📁';
+  var text = val ? labelDone : labelPending;
+  return '<div class="' + cls + '" onclick="toggleUpload(\'' + mod + '\',\'' + field + '\')">' +
+    '<div class="upload-icon">' + icon + '</div>' +
+    '<div class="upload-text">' + text + '</div></div>';
+}
+
+// ==================== SUMMARY ====================
+function renderSummary() {
+  var steps = [
+    { num: 1, label: 'Nomina cargada', mod: 'nomina', checks: ['cambios_respondido','nomina_cargada'] },
+    { num: 2, label: 'Volantes de pago cargados', mod: 'volantes', checks: ['volantes_cargados'] },
+    { num: 3, label: 'IR3 confirmado', mod: 'ir3', checks: ['ir3_confirmado'] },
+    { num: 4, label: 'IR17 respondido', mod: 'ir17', checks: ['informales_respondido'] },
+    { num: 5, label: 'Control de facturas completo', mod: 'control_facturas', checks: ['control_respondido','nsf_respondido'] },
+    { num: 6, label: 'Comprobantes de pago cargados', mod: 'cxp', checks: ['volantes_mes_cargados','volantes_ant_cargados'] },
+    { num: 7, label: 'Anticipo respondido', mod: 'anticipo', checks: ['anticipo_respondido'] },
+    { num: 8, label: 'Preguntas de cierre completas', mod: 'conciliacion', checks: ['transferencias_respondido','retiros_respondido','prestamos_respondido','gastos_tc_respondido'] },
+    { num: 9, label: 'Recibos de ingreso cargados', mod: 'cxc', checks: ['recibos_ant_cargados','recibos_mes_cargados'] },
+    { num: 10, label: 'Resumen leido', mod: null, checks: [] }
+  ];
+
+  var html = '';
+  html += '<button class="summary-toggle" onclick="toggleSummary()">';
+  html += '<span>📋</span> Resumen del cierre';
+  html += '<span style="margin-left:auto;font-size:14px;transition:transform 0.2s;' + (summaryOpen ? 'transform:rotate(180deg)' : '') + '">▼</span>';
+  html += '</button>';
+
+  html += '<div class="summary-body' + (summaryOpen ? '' : ' collapsed') + '" style="max-height:2000px">';
+  html += '<div class="summary-content">';
+
+  for (var i = 0; i < steps.length; i++) {
+    var step = steps[i];
+    var done = false;
+
+    if (step.num === 10) {
+      done = !!checklistData._resumen_leido;
+    } else {
+      done = true;
+      var taskData = checklistData[step.mod] || {};
+      for (var c = 0; c < step.checks.length; c++) {
+        if (!taskData[step.checks[c]]) { done = false; break; }
+      }
+    }
+
+    html += '<div class="summary-step">';
+    html += '<div class="step-num ' + (done ? 'step-done' : 'step-pending') + '">' + step.num + '</div>';
+    html += '<span style="flex:1">' + step.label + '</span>';
+    html += '<span style="font-size:0.85rem">' + (done ? '✅' : '⬜') + '</span>';
+    html += '</div>';
+  }
+
+  // Final checkbox
+  html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">';
+  html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem;font-weight:600;">';
+  html += '<input type="checkbox"' + (checklistData._resumen_leido ? ' checked' : '') + ' onchange="toggleResumen()"> Leiste el resumen de declaracion mensual</label>';
+  html += '</div>';
+
+  html += '</div></div>';
+
+  return html;
+}
+
+// ==================== AUTH ====================
+async function handleLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value;
+  var errorEl = document.getElementById('login-error');
+  var btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Ingresa email y contrasena.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errorEl.style.display = 'none';
+
+  var result = await sb.auth.signInWithPassword({ email: email, password: password });
+
+  if (result.error) {
+    errorEl.textContent = 'Email o contrasena incorrectos.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  await loadUserProfile();
+  await showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  userRole = null;
+  userName = '';
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function loadUserProfile() {
+  var result = await sb.auth.getUser();
+  var user = result.data ? result.data.user : null;
+  if (!user) return;
+
+  var profileResult = await sb.from('profiles')
+    .select('nombre, rol')
+    .eq('id', user.id)
+    .single();
+
+  var profile = profileResult.data;
+  if (profile) {
+    userRole = profile.rol;
+    userName = profile.nombre || user.email;
+  } else {
+    userRole = 'contadora';
+    userName = user.email;
+  }
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  document.getElementById('user-display-name').textContent = userName;
+
+  await loadContadoras();
+
+  // Filter for contadora role
+  if (userRole === 'contadora') {
+    var myName = userName.split(' ')[0];
+    var filtered = {};
+    for (var key in contadorasMap) {
+      if (key === myName || key === userName) {
+        filtered[key] = contadorasMap[key];
+      }
+    }
+    // If we found their assignments, go straight to client list
+    var keys = Object.keys(filtered);
+    if (keys.length > 0) {
+      contadorasMap = filtered;
+      allClients = filtered[keys[0]] || [];
+      navigateTo('clients', keys[0]);
+      return;
+    }
+  }
+
+  // Admin or fallback: show contadora grid
+  selectedMes = getCurrentMonthKey();
+  renderAll();
+}
+
+// ==================== INIT ====================
+var loginPwdEl = document.getElementById('login-password');
+var loginEmailEl = document.getElementById('login-email');
+if (loginPwdEl) loginPwdEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+if (loginEmailEl) loginEmailEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+
+isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+if (isEmbed) document.body.classList.add('embed');
+
+async function init() {
+  var result = await sb.auth.getSession();
+  var session = result.data ? result.data.session : null;
+  if (session) {
+    await loadUserProfile();
+    await showApp();
+  } else if (isEmbed) {
+    document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#7c8495;">Sesion no encontrada. Recarga la pagina principal.</div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
