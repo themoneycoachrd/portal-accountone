@@ -489,6 +489,17 @@ const MENU = [
     href: 'portal-clientes.html',
     active: false,
     desc: 'Portal externo para clientes de la firma.'
+  },
+  {
+    id: 'configuracion',
+    title: 'Configuraci\u00f3n',
+    icon: '\u2699\ufe0f',
+    iconBg: '#f1f5f9',
+    roles: ['admin'],
+    children: [
+      { id: 'usuarios', title: 'Usuarios y Permisos', href: 'usuarios.html', active: true,
+        desc: 'Gestiona accesos, habilidades y pantallas por usuario.' }
+    ]
   }
 ];
 
