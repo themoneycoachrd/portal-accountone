@@ -1,9 +1,789 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta http-equiv="refresh" content="0;url=Pantalla de Inicio/index.html">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account One — Portal Interno</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --navy: #1a2332;
+  --navy-mid: #2a3a4e;
+  --blue: #4361ee;
+  --blue-light: #eef2ff;
+  --green: #10b981;
+  --green-light: #ecfdf5;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --amber-light: #fffbeb;
+  --purple: #8b5cf6;
+  --purple-light: #f5f3ff;
+  --orange-light: #fff7ed;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --border: #e8ecf1;
+  --text: #1a2332;
+  --muted: #7c8495;
+  --light: #a3aab8;
+  --sidebar-w: 240px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ==================== LOGIN ==================== */
+.login-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  border: 1px solid var(--border);
+}
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+.login-logo-icon {
+  width: 36px; height: 36px;
+  background: var(--navy);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.login-logo-icon svg { width: 18px; height: 18px; }
+.login-logo h2 { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+.login-logo p { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.login-box .field { margin-bottom: 16px; }
+.login-box .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.login-box .field input {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 10px; font-size: 0.9rem; font-family: inherit;
+  background: #fafbfc;
+}
+.login-box .field input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(67,97,238,0.1); background: white; }
+.login-btn {
+  width: 100%; padding: 11px; background: var(--navy); color: white; border: none;
+  border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 8px;
+  transition: background 0.15s;
+}
+.login-btn:hover { background: var(--navy-mid); }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.login-error { color: var(--red); font-size: 0.8rem; margin-top: 12px; display: none; }
+
+/* ==================== APP LAYOUT ==================== */
+.app-layout { display: flex; min-height: 100vh; }
+
+/* ==================== SIDEBAR ==================== */
+.sidebar {
+  width: var(--sidebar-w);
+  background: white;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 20px 18px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.brand-icon {
+  width: 34px; height: 34px;
+  background: var(--navy);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brand-icon svg { width: 16px; height: 16px; }
+.brand-text h1 { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.brand-text p { font-size: 0.6rem; color: var(--light); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; }
+
+.sidebar-divider { height: 1px; background: var(--border); margin: 0 16px; }
+
+.sidebar-nav { flex: 1; padding: 12px 10px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.12s;
+  margin-bottom: 2px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.nav-item:hover {
+  background: #f5f7fa;
+  color: var(--text);
+}
+.nav-item.active {
+  background: var(--navy);
+  color: white;
+}
+.nav-item.disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+.nav-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  transition: background 0.12s;
+}
+.nav-item.active .nav-icon { background: rgba(255,255,255,0.15); }
+.nav-label { flex: 1; }
+
+/* ─── Section landing page ─── */
+.section-landing { padding: 32px; flex: 1; }
+.section-landing-title { font-size: 1.2rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.section-landing-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
+
+.nav-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.nav-badge-active { background: rgba(16,185,129,0.12); color: #059669; }
+.nav-item.active .nav-badge-active { background: rgba(16,185,129,0.25); color: #6ee7b7; }
+.nav-badge-pending { background: rgba(245,158,11,0.1); color: #d97706; }
+.nav-item.active .nav-badge-pending { background: rgba(245,158,11,0.2); color: #fcd34d; }
+
+/* ─── User section ─── */
+.sidebar-user {
+  padding: 14px 14px 16px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.user-meta { flex: 1; min-width: 0; }
+.user-meta-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-meta-role {
+  font-size: 0.68rem;
+  color: var(--light);
+  text-transform: capitalize;
+}
+.btn-logout-small {
+  background: none; border: none; cursor: pointer;
+  color: var(--light); font-size: 0.72rem; font-weight: 500;
+  padding: 4px 0; font-family: inherit;
+  transition: color 0.15s;
+}
+.btn-logout-small:hover { color: var(--red); }
+
+/* ==================== MAIN CONTENT ==================== */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* ─── Welcome / Home view ─── */
+.home-view { padding: 32px; flex: 1; }
+
+.welcome-banner {
+  background: var(--navy);
+  border-radius: 14px;
+  padding: 28px 32px;
+  color: white;
+  margin-bottom: 28px;
+}
+.welcome-banner h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.welcome-banner p {
+  font-size: 0.88rem;
+  opacity: 0.6;
+}
+.welcome-date {
+  font-size: 0.75rem;
+  opacity: 0.35;
+  margin-top: 10px;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.module-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 2px 12px rgba(67,97,238,0.08);
+}
+.module-card.disabled { opacity: 0.4; cursor: default; pointer-events: none; }
+.module-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.module-card-body h3 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.module-card-body p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+.module-card-badge {
+  margin-left: auto;
+  font-size: 0.6rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+  white-space: nowrap; flex-shrink: 0; align-self: center;
+}
+.badge-active { background: #ecfdf5; color: #059669; }
+.badge-pending { background: #fef3c7; color: #d97706; }
+
+/* ─── Module iframe view ─── */
+.module-view {
+  flex: 1;
+  display: none;
+}
+.module-view.active { display: flex; flex-direction: column; }
+.module-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  min-height: 100vh;
+}
+
+.hidden { display: none; }
+</style>
 </head>
 <body>
-<a href="Pantalla de Inicio/index.html">Ir al portal</a>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div>
+        <h2>Account One</h2>
+        <p>Portal Interno</p>
+      </div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="tu@accountone.do">
+    </div>
+    <div class="field">
+      <label>Contrasena</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand" onclick="goHome()">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="brand-text">
+        <h1>Account One</h1>
+        <p>Portal Interno</p>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-info">
+        <div class="user-avatar" id="user-avatar"></div>
+        <div class="user-meta">
+          <div class="user-meta-name" id="user-display-name"></div>
+          <div class="user-meta-role" id="user-display-role"></div>
+        </div>
+        <button class="btn-logout-small" onclick="handleLogout()">Salir</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <!-- Home / Welcome -->
+    <div class="home-view" id="home-view">
+      <div class="welcome-banner" id="welcome-banner"></div>
+      <div class="modules-grid" id="modules-grid"></div>
+    </div>
+
+    <!-- Section landing (sub-module picker) -->
+    <div class="section-landing hidden" id="section-landing">
+      <div class="section-landing-title" id="section-title"></div>
+      <div class="section-landing-desc" id="section-desc"></div>
+      <div class="modules-grid" id="section-grid"></div>
+    </div>
+
+    <!-- Module iframe -->
+    <div class="module-view" id="module-view">
+      <iframe class="module-iframe" id="module-iframe"></iframe>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZXR1c3N0cXZweWpleWNmZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDcwNzksImV4cCI6MjA5MjIyMzA3OX0.Bsys947JLGEuf3zdBF2GPFdbJVJtaZdC4YEmyBU5Bow';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let userRole = null;
+let userName = '';
+let activeModule = null;
+let activeSection = null;
+
+const ROLE_LABELS = {
+  admin: 'Administrador',
+  ventas: 'Ventas',
+  contadora: 'Contadora',
+  implementadora: 'Implementadora',
+  analista: 'Analista'
+};
+
+// Estructura del menu: secciones con hijos (expandibles) o modulos directos
+const MENU = [
+  {
+    id: 'gerencia',
+    title: 'Gerencia',
+    icon: '\ud83c\udfe2',
+    iconBg: '#ecfdf5',
+    roles: ['admin'],
+    children: [
+      { id: 'control-clientes', title: 'Control de Clientes', href: 'contadores.html', active: true,
+        desc: 'Clientes por contadora, carga de trabajo e implementaciones.' },
+      { id: 'control-contadoras', title: 'Control de Contadoras', href: 'control-contadoras.html', active: false,
+        desc: 'Vista consolidada del equipo de contadoras.' }
+    ]
+  },
+  {
+    id: 'comercial',
+    title: 'Comercial',
+    icon: '\ud83d\udcc8',
+    iconBg: '#eef2ff',
+    roles: ['admin', 'ventas'],
+    href: 'ventas.html',
+    active: true,
+    desc: 'Leads, funnel de ventas, ROAS y seguimiento del pipeline comercial.'
+  },
+  {
+    id: 'contadoras',
+    title: 'Contadoras',
+    icon: '\ud83c\udfaf',
+    iconBg: '#f5f3ff',
+    roles: ['admin', 'contadora'],
+    children: [
+      { id: 'checklist', title: 'Checklist Mensual', href: 'checklist.html', active: true,
+        desc: 'Checklist mensual de tareas por cliente y porcentaje completado.' },
+      { id: 'kpi', title: 'KPI', href: 'kpi.html', active: true,
+        desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.' }
+    ]
+  },
+  {
+    id: 'impuestos',
+    title: 'Impuestos',
+    icon: '\ud83d\udccb',
+    iconBg: '#fffbeb',
+    roles: ['admin', 'contadora'],
+    href: 'impuestos.html',
+    active: false,
+    desc: 'Calendario fiscal, declaraciones y cumplimiento tributario.'
+  },
+  {
+    id: 'implementaciones',
+    title: 'Implementaciones',
+    icon: '\ud83d\ude80',
+    iconBg: '#fff7ed',
+    roles: ['admin', 'implementadora'],
+    href: 'implementaciones.html',
+    active: false,
+    desc: 'Onboarding, fechas y estado de cada implementacion.'
+  },
+  {
+    id: 'portal-clientes',
+    title: 'Portal de Clientes',
+    icon: '\ud83c\udf10',
+    iconBg: '#fef2f2',
+    roles: ['admin'],
+    href: 'portal-clientes.html',
+    active: false,
+    desc: 'Portal externo para clientes de la firma.'
+  }
+];
+
+// Helpers para buscar modulos en la estructura plana
+function findModule(moduleId) {
+  for (const section of MENU) {
+    if (section.children) {
+      const child = section.children.find(c => c.id === moduleId);
+      if (child) return child;
+    } else if (section.id === moduleId) {
+      return section;
+    }
+  }
+  return null;
+}
+
+function findParentSection(moduleId) {
+  for (const section of MENU) {
+    if (section.children && section.children.some(c => c.id === moduleId)) {
+      return section;
+    }
+  }
+  return null;
+}
+
+function getAllModulesFlat() {
+  const flat = [];
+  MENU.forEach(section => {
+    if (section.children) {
+      section.children.forEach(child => {
+        flat.push({ ...child, parentTitle: section.title, parentIcon: section.icon, parentIconBg: section.iconBg, roles: section.roles });
+      });
+    } else {
+      flat.push(section);
+    }
+  });
+  return flat;
+}
+
+function getInitials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
+}
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Buenos dias';
+  if (h < 18) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+function formatToday() {
+  const d = new Date();
+  const dias = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()] + ', ' + d.getFullYear();
+}
+
+function hideAllViews() {
+  document.getElementById('home-view').style.display = 'none';
+  document.getElementById('section-landing').classList.add('hidden');
+  document.getElementById('module-view').classList.remove('active');
+  document.getElementById('module-iframe').src = '';
+}
+
+function goHome() {
+  activeModule = null;
+  activeSection = null;
+  hideAllViews();
+  document.getElementById('home-view').style.display = '';
+  renderSidebar();
+}
+
+function openSection(sectionId) {
+  const section = MENU.find(s => s.id === sectionId);
+  if (!section || !section.children) return;
+
+  activeModule = null;
+  activeSection = sectionId;
+  hideAllViews();
+
+  // Mostrar landing con las tarjetas de sub-modulos
+  const landing = document.getElementById('section-landing');
+  landing.classList.remove('hidden');
+  document.getElementById('section-title').textContent = section.title;
+  document.getElementById('section-desc').textContent = 'Selecciona un modulo para continuar.';
+
+  const grid = document.getElementById('section-grid');
+  grid.innerHTML = section.children.map(child => {
+    const badgeClass = child.active ? 'badge-active' : 'badge-pending';
+    const badgeText = child.active ? 'Activo' : 'Pendiente';
+    const disabledClass = child.active ? '' : ' disabled';
+    const onclick = child.active ? ' onclick="openModule(\'' + child.id + '\')"' : '';
+
+    return '<div class="module-card' + disabledClass + '"' + onclick + '>' +
+      '<div class="module-card-icon" style="background:' + section.iconBg + '">' + section.icon + '</div>' +
+      '<div class="module-card-body">' +
+        '<h3>' + child.title + '</h3>' +
+        '<p>' + child.desc + '</p>' +
+      '</div>' +
+      '<span class="module-card-badge ' + badgeClass + '">' + badgeText + '</span>' +
+    '</div>';
+  }).join('');
+
+  renderSidebar();
+}
+
+function openModule(moduleId) {
+  const m = findModule(moduleId);
+  if (!m || !m.active) return;
+
+  activeModule = moduleId;
+
+  // Detectar si pertenece a una seccion padre
+  const parent = findParentSection(moduleId);
+  activeSection = parent ? parent.id : null;
+
+  hideAllViews();
+  document.getElementById('module-view').classList.add('active');
+  document.getElementById('module-iframe').src = m.href + '?embed=1';
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  const visible = MENU.filter(s => s.roles.includes(userRole));
+
+  let html = '';
+
+  // Home
+  const isHome = activeModule === null && activeSection === null;
+  html += '<button class="nav-item' + (isHome ? ' active' : '') + '" onclick="goHome()">';
+  html += '<div class="nav-icon" style="background:' + (isHome ? 'rgba(255,255,255,0.15)' : '#f5f7fa') + '">';
+  html += '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="' + (isHome ? 'white' : '#7c8495') + '" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  html += '</div>';
+  html += '<span class="nav-label">Inicio</span>';
+  html += '</button>';
+
+  html += '<div style="height:6px"></div>';
+
+  visible.forEach(section => {
+    if (section.children) {
+      // Seccion con hijos: clic abre landing page
+      const isActive = activeSection === section.id;
+      const allDisabled = section.children.every(c => !c.active);
+
+      html += '<button class="nav-item' + (isActive ? ' active' : '') + (allDisabled ? ' disabled' : '') + '" onclick="openSection(\'' + section.id + '\')">';
+      html += '<div class="nav-icon" style="background:' + (isActive ? 'rgba(255,255,255,0.15)' : section.iconBg) + '">' + section.icon + '</div>';
+      html += '<span class="nav-label">' + section.title + '</span>';
+      html += '</button>';
+
+    } else {
+      // Modulo directo
+      const isActive = activeModule === section.id;
+      const disabledClass = section.active ? '' : ' disabled';
+
+      html += '<button class="nav-item' + (isActive ? ' active' : '') + disabledClass + '" onclick="openModule(\'' + section.id + '\')">';
+      html += '<div class="nav-icon" style="background:' + (isActive ? 'rgba(255,255,255,0.15)' : section.iconBg) + '">' + section.icon + '</div>';
+      html += '<span class="nav-label">' + section.title + '</span>';
+      html += '</button>';
+    }
+  });
+
+  nav.innerHTML = html;
+}
+
+function renderModules() {
+  const grid = document.getElementById('modules-grid');
+  const allFlat = getAllModulesFlat().filter(m => m.roles.includes(userRole));
+
+  grid.innerHTML = allFlat.map(m => {
+    const badgeClass = m.active ? 'badge-active' : 'badge-pending';
+    const badgeText = m.active ? 'Activo' : 'Pendiente';
+    const disabledClass = m.active ? '' : ' disabled';
+    const onclick = m.active ? ' onclick="openModule(\'' + m.id + '\')"' : '';
+    const parentIcon = m.parentIcon || m.icon;
+    const parentIconBg = m.parentIconBg || m.iconBg;
+    const subtitle = m.parentTitle ? '<span style="font-size:0.68rem;color:var(--light);font-weight:400"> — ' + m.parentTitle + '</span>' : '';
+
+    return '<div class="module-card' + disabledClass + '"' + onclick + '>' +
+      '<div class="module-card-icon" style="background:' + (m.iconBg || parentIconBg) + '">' + parentIcon + '</div>' +
+      '<div class="module-card-body">' +
+        '<h3>' + m.title + subtitle + '</h3>' +
+        '<p>' + m.desc + '</p>' +
+      '</div>' +
+      '<span class="module-card-badge ' + badgeClass + '">' + badgeText + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderWelcome() {
+  const el = document.getElementById('welcome-banner');
+  const firstName = userName.split(' ')[0];
+
+  el.innerHTML =
+    '<h2>' + getGreeting() + ', ' + firstName + '</h2>' +
+    '<p>Selecciona un modulo para comenzar.</p>' +
+    '<div class="welcome-date">' + formatToday() + '</div>';
+}
+
+function renderUserInfo() {
+  document.getElementById('user-avatar').textContent = getInitials(userName);
+  document.getElementById('user-display-name').textContent = userName;
+  document.getElementById('user-display-role').textContent = ROLE_LABELS[userRole] || userRole;
+}
+
+// ==================== AUTH ====================
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl = document.getElementById('login-error');
+  const btn = document.getElementById('btn-login');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Ingresa email y contrasena.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Entrando...';
+  errorEl.style.display = 'none';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorEl.textContent = 'Email o contrasena incorrectos.';
+    errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  await loadUserProfile();
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  userRole = null;
+  userName = '';
+  activeModule = null;
+  activeSection = null;
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+  document.getElementById('module-iframe').src = '';
+}
+
+async function loadUserProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await sb.from('profiles')
+    .select('nombre, rol')
+    .eq('id', user.id)
+    .single();
+
+  if (profile) {
+    userRole = profile.rol;
+    userName = profile.nombre || user.email;
+  } else {
+    userRole = 'contadora';
+    userName = user.email;
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+
+  renderUserInfo();
+  renderSidebar();
+  renderWelcome();
+  renderModules();
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await loadUserProfile();
+    showApp();
+  }
+}
+
+init();
+</script>
 </body>
 </html>
