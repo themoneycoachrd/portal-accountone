@@ -433,8 +433,8 @@ const MENU = [
     children: [
       { id: 'control-clientes', title: 'Control de Clientes', href: 'contadores.html', active: true,
         desc: 'Clientes por contadora, carga de trabajo e implementaciones.' },
-      { id: 'control-contadoras', title: 'Control de Contadoras', href: 'control-contadoras.html', active: false,
-        desc: 'Vista consolidada del equipo de contadoras.' }
+      { id: 'control-contadoras', title: 'Control de Contadoras', href: 'control-contadoras.html', active: true,
+        desc: 'Reporte mensual por contadora: facturas, presupuesto, proyeccion, resumen, video.' }
     ]
   },
   {
@@ -454,7 +454,7 @@ const MENU = [
     iconBg: '#f5f3ff',
     roles: ['admin', 'contadora'],
     children: [
-      { id: 'checklist', title: 'Checklist Mensual', href: 'checklist.html', active: true,
+      { id: 'checklist', title: 'Checklist Mensual', href: 'checklist-mensual.html', active: false,
         desc: 'Checklist mensual de tareas por cliente y porcentaje completado.' },
       { id: 'kpi', title: 'KPI', href: 'kpi.html', active: true,
         desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.' }
