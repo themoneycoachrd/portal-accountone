@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerencia — Account One 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --navy: #1a2332;
+    --navy-mid: #2a3a4e;
+    --blue: #4361ee;
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --purple: #8b5cf6;
+    --pink: #ec4899;
+    --orange: #f97316;
+    --indigo: #6366f1;
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --border: #e8ecf1;
+    --text: #1a2332;
+    --muted: #7c8495;
+    --light: #a3aab8;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
+
+  /* ─── Header ─── */
+  .header { background:var(--navy); color:white; padding:20px 24px; }
+  .header-inner { display:flex; justify-content:space-between; align-items:center; }
+  .header h1 { font-size:1.3rem; font-weight:700; }
+  .header p { font-size:0.85rem; opacity:0.6; margin-top:2px; }
+
+  /* ─── Breadcrumb ─── */
+  .breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; }
+  .breadcrumb-bar a { color:var(--muted); text-decoration:none; font-weight:500; }
+  .breadcrumb-bar a:hover { color:var(--navy); text-decoration:underline; }
+  .breadcrumb-bar .sep { color:var(--light); font-size:11px; }
+  .breadcrumb-bar .current { color:var(--text); font-weight:600; }
+
+  /* ─── Main tabs (gerencia level) ─── */
+  .main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
+  .main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.95rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; }
+  .main-tab:hover { color:var(--text); }
+  .main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+
+  /* ─── CC sub-tabs (Dashboard/Impl/Software/Perfiles) ─── */
+  .sub-tabs { display:flex; gap:4px; padding:10px 24px; background:#f4f6f9; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .sub-tab { padding:6px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); white-space:nowrap; transition:all 0.15s; }
+  .sub-tab:hover { background:#e2e8f0; }
+  .sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .sub-tab.disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* ─── Content ─── */
+  .content { padding:20px 24px; max-width:1200px; margin:0 auto; }
+
+  /* ─── Stats (CC) ─── */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-bottom:20px; }
+  .stat { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); }
+  .stat-label { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); }
+  .stat-value { font-size:28px; font-weight:800; margin-top:4px; }
+  .stat-sub { font-size:11px; color:var(--light); margin-top:4px; }
+  .stat-green { color:var(--green); }
+  .stat-red { color:var(--red); }
+
+  /* ─── Cards ─── */
+  .card { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); margin-bottom:16px; }
+  .card h3 { font-size:13px; font-weight:700; color:var(--muted); margin-bottom:12px; }
+
+  .note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:16px; }
+
+  /* ─── Bar rows (CC) ─── */
+  .bar-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
+  .bar-name { font-size:13px; font-weight:600; width:100px; min-width:100px; color:var(--text); }
+  .bar-track { flex:1; height:24px; background:#f1f5f9; border-radius:6px; overflow:hidden; position:relative; }
+  .bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding-left:8px; transition:width 0.4s ease; min-width:30px; }
+  .bar-fill span { font-size:11px; font-weight:700; color:white; }
+  .bar-extra { font-size:11px; color:var(--muted); width:60px; text-align:right; }
+
+  /* ─── Client groups (CC) ─── */
+  .client-group { margin-bottom:16px; }
+  .client-group-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .client-dot { width:10px; height:10px; border-radius:50%; }
+  .client-group-name { font-size:13px; font-weight:600; }
+  .client-group-count { font-size:11px; color:var(--light); }
+  .badges { display:flex; flex-wrap:wrap; gap:5px; margin-left:16px; }
+  .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:500; border:1px solid; }
+  .badge-neutral { background:#f9fafb; color:#4b5563; border-color:#e5e7eb; }
+  .badge-new { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+  .badge-churn { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+  /* ─── Charts (CC) ─── */
+  .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media (max-width:768px) { .charts-grid { grid-template-columns:1fr; } }
+
+  /* ─── Tables ─── */
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { text-align:left; padding:8px 10px; background:#f8fafc; border-bottom:2px solid var(--border); font-weight:700; color:var(--muted); text-transform:uppercase; font-size:10px; letter-spacing:0.5px; }
+  td { padding:8px 10px; border-bottom:1px solid #f1f5f9; }
+  tr:hover td { background:#fafbfc; }
+
+  .empty { text-align:center; padding:60px 20px; color:var(--light); font-size:14px; }
+  .footer { text-align:center; font-size:11px; color:var(--light); padding:20px; }
+
+  /* ─── Toggle / contadora cards (CC) ─── */
+  .toggle-row { display:flex; gap:8px; margin-bottom:12px; }
+  .toggle-btn { padding:6px 12px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); }
+  .toggle-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  .contadora-card { border:1px solid var(--border); border-radius:10px; margin-bottom:10px; overflow:hidden; transition:all 0.2s; }
+  .contadora-card:hover { border-color:#cbd5e1; }
+  .cc-contadora-header { display:flex; align-items:center; gap:10px; padding:12px 16px; cursor:pointer; background:white; transition:background 0.15s; }
+  .cc-contadora-header:hover { background:#fafbfc; }
+  .cc-contadora-header.expanded { background:#f1f5f9; border-bottom:1px solid var(--border); }
+  .contadora-color { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .contadora-info { flex:1; }
+  .contadora-name-row { display:flex; align-items:center; gap:8px; }
+  .contadora-title { font-size:14px; font-weight:700; }
+  .contadora-pills { display:flex; gap:6px; flex-wrap:wrap; }
+  .pill { font-size:10px; padding:2px 8px; border-radius:10px; font-weight:600; }
+  .pill-blue { background:#eff6ff; color:#1d4ed8; }
+  .pill-amber { background:#fffbeb; color:#b45309; }
+  .pill-green { background:#ecfdf5; color:#065f46; }
+  .pill-red { background:#fef2f2; color:#991b1b; }
+  .contadora-arrow { font-size:16px; color:var(--light); transition:transform 0.2s; }
+  .contadora-arrow.open { transform:rotate(180deg); }
+  .contadora-detail { padding:0; max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease; background:#fafbfc; }
+  .contadora-detail.open { max-height:800px; padding:16px; }
+  .detail-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  .detail-stat { background:white; border-radius:8px; padding:10px; border:1px solid #f1f5f9; text-align:center; }
+  .detail-stat-label { font-size:10px; text-transform:uppercase; color:var(--light); letter-spacing:0.3px; }
+  .detail-stat-value { font-size:18px; font-weight:800; margin-top:2px; }
+  .detail-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .detail-table th { text-align:left; padding:6px 10px; background:#f1f5f9; font-size:10px; text-transform:uppercase; color:var(--muted); letter-spacing:0.3px; border:none; }
+  .detail-table td { padding:6px 10px; border-bottom:1px solid #f1f5f9; }
+  .gap-positive { color:var(--green); }
+  .gap-negative { color:var(--red); }
+  .utilization-bar { width:60px; height:6px; background:#f1f5f9; border-radius:3px; display:inline-block; overflow:hidden; vertical-align:middle; margin-left:4px; }
+  .utilization-fill { height:100%; border-radius:3px; }
+
+  /* ─── Implementacion cards (CC) ─── */
+  .impl-card { background:white; border-radius:12px; border:1px solid var(--border); padding:20px; margin-bottom:14px; }
+  .impl-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .impl-name { font-size:16px; font-weight:800; }
+  .impl-status { padding:4px 12px; border-radius:8px; font-size:12px; font-weight:700; }
+  .impl-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+  .impl-item { background:#f8fafc; border-radius:8px; padding:10px; text-align:center; }
+  .impl-item-label { font-size:10px; text-transform:uppercase; color:var(--light); letter-spacing:0.3px; }
+  .impl-item-value { font-size:14px; font-weight:700; margin-top:2px; }
+  .impl-progress { width:100%; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden; }
+  .impl-progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+  .impl-timeline { display:flex; justify-content:space-between; margin-top:6px; }
+  .impl-timeline span { font-size:10px; color:var(--light); }
+  @media (max-width:600px) { .impl-grid { grid-template-columns:repeat(2,1fr); } }
+
+  /* ─── Perfiles (CC) ─── */
+  .perfil-card { background:white; border-radius:12px; border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
+  .perfil-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; cursor:pointer; transition:background 0.15s; }
+  .perfil-header:hover { background:#fafbfc; }
+  .perfil-header.expanded { background:#f1f5f9; border-bottom:1px solid var(--border); }
+  .perfil-name { font-size:15px; font-weight:700; }
+  .perfil-status { padding:3px 10px; border-radius:8px; font-size:11px; font-weight:600; }
+  .perfil-arrow { font-size:16px; color:var(--light); transition:transform 0.2s; }
+  .perfil-arrow.open { transform:rotate(180deg); }
+  .perfil-body { padding:0; max-height:0; overflow:hidden; transition:max-height 0.4s ease, padding 0.4s ease; }
+  .perfil-body.open { max-height:1200px; padding:20px; }
+  .perfil-section { margin-bottom:16px; }
+  .perfil-section-title { font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); font-weight:700; margin-bottom:8px; }
+  .perfil-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:600px) { .perfil-grid { grid-template-columns:1fr; } }
+  .perfil-field { background:#f8fafc; border-radius:8px; padding:10px 14px; }
+  .perfil-field-label { font-size:10px; text-transform:uppercase; letter-spacing:0.3px; color:var(--light); font-weight:600; margin-bottom:3px; }
+  .perfil-field-value { font-size:14px; font-weight:600; color:var(--text); }
+  .perfil-field-input { width:100%; border:1px solid var(--border); border-radius:6px; padding:6px 10px; font-size:13px; font-family:inherit; background:white; }
+  .perfil-field-input:focus { outline:none; border-color:var(--blue); }
+  .perfil-actions { display:flex; gap:8px; margin-top:10px; }
+  .perfil-btn { padding:8px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; }
+  .perfil-btn:hover { background:#f1f5f9; }
+  .perfil-btn-primary { background:var(--navy); color:white; border-color:var(--navy); }
+  .perfil-btn-primary:hover { background:var(--navy-mid); }
+  .perfil-btn-danger { color:var(--red); border-color:#fecaca; }
+  .perfil-btn-danger:hover { background:#fef2f2; }
+  .perfil-empty { text-align:center; padding:40px 20px; color:var(--light); }
+  .perfil-empty p { font-size:14px; margin-bottom:16px; }
+
+  /* ─── CTD: Month tabs (pill style) ─── */
+  .month-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:16px; }
+  .month-tab { padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:500; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
+  .month-tab:hover { border-color:var(--blue); color:var(--blue); }
+  .month-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  /* ─── CTD: Contadora filter pills ─── */
+  .ctd-contadora-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
+  .contadora-pill { padding:6px 16px; border-radius:20px; cursor:pointer; font-size:0.82rem; font-weight:600; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
+  .contadora-pill:hover { border-color:var(--navy); color:var(--navy); }
+  .contadora-pill.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  /* ─── CTD: KPI Dashboard ─── */
+  .kpi-dashboard { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:24px; }
+  .kpi-card { background:white; border-radius:12px; border:1px solid var(--border); padding:18px 20px; }
+  .kpi-card-title { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); font-weight:700; margin-bottom:10px; }
+  .kpi-card-value { font-size:1.6rem; font-weight:800; margin-bottom:6px; }
+  .kpi-card-sub { font-size:0.72rem; color:var(--light); margin-bottom:10px; }
+  .kpi-bar-bg { height:8px; background:#f1f3f7; border-radius:4px; overflow:hidden; }
+  .kpi-bar-fill { height:100%; border-radius:4px; transition:width 0.4s ease; }
+
+  /* ─── CTD: Mini KPI bars ─── */
+  .mini-kpis { display:flex; gap:16px; padding:0 20px 14px; flex-wrap:wrap; }
+  .mini-kpi { flex:1; min-width:120px; }
+  .mini-kpi-label { font-size:0.68rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:4px; }
+  .mini-kpi-row { display:flex; align-items:center; gap:8px; }
+  .mini-kpi-bar-bg { flex:1; height:6px; background:#f1f3f7; border-radius:3px; overflow:hidden; }
+  .mini-kpi-bar-fill { height:100%; border-radius:3px; transition:width 0.4s ease; }
+  .mini-kpi-pct { font-size:0.75rem; font-weight:700; min-width:36px; text-align:right; }
+
+  /* ─── CTD: Contadora expandable section ─── */
+  .contadora-section { background:white; border-radius:12px; border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
+  .ctd-contadora-header { display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; transition:background 0.12s; }
+  .ctd-contadora-header:hover { background:#fafbfc; }
+  .ctd-contadora-header.expanded { background:#f5f7fa; border-bottom:1px solid var(--border); }
+  .contadora-header-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.9rem; flex-shrink:0; }
+  .contadora-header-info { flex:1; }
+  .contadora-header-name { font-size:0.95rem; font-weight:700; }
+  .contadora-header-count { font-size:0.75rem; color:var(--muted); }
+  .contadora-header-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; }
+  .contadora-header-arrow.open { transform:rotate(180deg); }
+  .contadora-body { max-height:0; overflow:hidden; transition:max-height 0.35s ease; }
+  .contadora-body.open { max-height:5000px; }
+
+  /* ─── CTD: Semaforo table ─── */
+  .report-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  .report-table thead th { text-align:left; padding:12px 14px; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); background:#f8f9fb; border-bottom:2px solid var(--border); font-weight:700; }
+  .report-table thead th.center { text-align:center; }
+  .report-table tbody td { padding:12px 14px; border-bottom:1px solid #f1f3f7; vertical-align:middle; }
+  .report-table tbody td.center { text-align:center; }
+  .report-table tbody tr:hover td { background:#fafbfc; }
+  .report-table tbody tr:last-child td { border-bottom:none; }
+  .client-name-cell { font-weight:600; font-size:0.85rem; }
+
+  /* ─── CTD: Semaforo dots ─── */
+  .semaforo { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; font-size:12px; font-weight:700; }
+  .sem-green { background:#ecfdf5; color:#059669; }
+  .sem-yellow { background:#fffbeb; color:#d97706; }
+  .sem-red { background:#fef2f2; color:#dc2626; }
+  .sem-gray { background:#f5f7fa; color:var(--light); }
+  .sem-link { font-size:11px; color:var(--blue); text-decoration:none; display:block; margin-top:2px; }
+  .sem-link:hover { text-decoration:underline; }
+  .sem-date { font-size:10px; color:var(--light); display:block; margin-top:1px; }
+
+  /* ─── CTD: Contadora edit view ─── */
+  .edit-card { background:white; border-radius:12px; border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
+  .edit-header { display:flex; align-items:center; gap:12px; padding:16px 20px; cursor:pointer; transition:background 0.12s; }
+  .edit-header:hover { background:#fafbfc; }
+  .edit-header.expanded { background:#f5f7fa; border-bottom:1px solid var(--border); }
+  .edit-client-name { font-size:0.95rem; font-weight:700; flex:1; }
+  .edit-status { font-size:0.72rem; font-weight:600; padding:3px 10px; border-radius:8px; }
+  .edit-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; }
+  .edit-arrow.open { transform:rotate(180deg); }
+  .edit-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .edit-body.open { max-height:800px; padding:20px; }
+  .edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .edit-field { background:var(--bg); border-radius:10px; padding:14px; }
+  .edit-field-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.3px; color:var(--muted); font-weight:700; margin-bottom:8px; }
+  .edit-field input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.85rem; font-family:inherit; background:white; }
+  .edit-field input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); }
+  .edit-field-row { display:flex; gap:8px; }
+  .edit-field-row input { flex:1; }
+  .edit-field-hint { font-size:0.68rem; color:var(--light); margin-top:4px; }
+  .edit-save { margin-top:16px; display:flex; gap:8px; }
+  .btn { padding:8px 18px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.12s; }
+  .btn-primary { background:var(--navy); color:white; }
+  .btn-primary:hover { background:var(--navy-mid); }
+  .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+
+  /* ─── Misc ─── */
+  .hidden { display:none; }
+  .saving-indicator { font-size:0.72rem; color:var(--green); font-weight:600; margin-left:auto; }
+
+  /* ─── User bar ─── */
+  .user-bar { display:flex; align-items:center; gap:12px; }
+  .user-bar .user-name { font-size:0.8rem; opacity:0.9; background:rgba(255,255,255,0.15); padding:4px 12px; border-radius:20px; }
+  .btn-logout { font-size:0.75rem; padding:4px 12px; background:rgba(255,255,255,0.15); color:white; border:1px solid rgba(255,255,255,0.3); border-radius:6px; cursor:pointer; transition:background 0.2s; }
+  .btn-logout:hover { background:rgba(255,255,255,0.25); }
+
+  /* ─── Login ─── */
+  .login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:1000; }
+  .login-box { background:white; border-radius:16px; padding:40px; width:100%; max-width:400px; box-shadow:0 4px 24px rgba(0,0,0,0.08); border:1px solid var(--border); }
+  .login-box h2 { font-size:1.4rem; color:var(--navy); margin-bottom:4px; }
+  .login-box .subtitle { font-size:0.85rem; color:var(--muted); margin-bottom:24px; }
+  .login-box .field { margin-bottom:16px; }
+  .login-box .field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .login-box .field input { width:100%; padding:10px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.9rem; font-family:inherit; background:#fafbfc; }
+  .login-box .field input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+  .login-btn { width:100%; padding:11px; background:var(--navy); color:white; border:none; border-radius:10px; font-size:0.9rem; font-weight:600; cursor:pointer; margin-top:8px; }
+  .login-btn:hover { background:var(--navy-mid); }
+  .login-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .login-error { color:var(--red); font-size:0.8rem; margin-top:12px; display:none; }
+
+  /* ─── Embed ─── */
+  body.embed .login-overlay { display:none !important; }
+  body.embed .header { display:none !important; }
+  body.embed .breadcrumb-bar { display:none !important; }
+  body.embed #app-wrapper { display:block !important; }
+  body.embed .footer { display:none !important; }
+
+  /* ─── Responsive ─── */
+  @media (max-width:768px) {
+    .kpi-dashboard { grid-template-columns:1fr; }
+    .mini-kpis { flex-direction:column; }
+    .edit-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-screen">
+  <div class="login-box">
+    <h2>Account One</h2>
+    <p class="subtitle">Inicia sesion para continuar</p>
+    <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="tu@accountone.do"></div>
+    <div class="field"><label>Contrasena</label><input type="password" id="login-password" placeholder="••••••••"></div>
+    <button class="login-btn" id="btn-login" onclick="handleLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrapper" class="hidden">
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>Gerencia</h1>
+      <p>Account One — 2026</p>
+    </div>
+    <div class="user-bar">
+      <span class="user-name" id="user-display-name"></span>
+      <button class="btn-logout" onclick="handleLogout()">Salir</button>
+    </div>
+  </div>
+</div>
+
+<div class="breadcrumb-bar">
+  <a href="index.html">Account One</a>
+  <span class="sep">›</span>
+  <span class="current">Gerencia</span>
+</div>
+
+<div class="main-tabs" id="mainTabs"></div>
+
+<div id="cc-area">
+  <div class="sub-tabs" id="ccMainTabs"></div>
+  <div class="sub-tabs" id="ccSubTabs" style="display:none"></div>
+  <div class="content" id="cc-content"></div>
+</div>
+
+<div id="ctd-area" class="hidden">
+  <div class="content" id="ctd-content"></div>
+</div>
+
+<div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
+
+</div><!-- /app-wrapper -->
+
+<script>
+// ==================== SUPABASE ====================
+const SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im91ZXR1c3N0cXZweWpleWNmZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NDcwNzksImV4cCI6MjA5MjIyMzA3OX0.Bsys947JLGEuf3zdBF2GPFdbJVJtaZdC4YEmyBU5Bow';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ==================== SHARED STATE ====================
+let userRole = null;
+let userName = '';
+
+// ==================== SHARED CONSTANTS ====================
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const MESES_LABEL = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const MESES_FULL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+// ==================== SHARED UTILS ====================
+function todayStr() {
+  const hoy = new Date();
+  return hoy.getDate() + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][hoy.getMonth()] + ' ' + hoy.getFullYear();
+}
+
+function esc(str) { return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ==================== GERENCIA MAIN TAB STATE ====================
+let gerMainTab = 'clientes';
+
+function renderGerMainTabs() {
+  const el = document.getElementById('mainTabs');
+  el.innerHTML = [
+    { id:'clientes', label:'Control de Clientes' },
+    { id:'contadoras', label:'Control de Contadoras' }
+  ].map(t => '<button class="main-tab ' + (gerMainTab === t.id ? 'active' : '') + '" onclick="switchGerTab(\'' + t.id + '\')">' + t.label + '</button>').join('');
+}
+
+function switchGerTab(tab) {
+  gerMainTab = tab;
+  renderGerMainTabs();
+  if (tab === 'clientes') {
+    document.getElementById('cc-area').classList.remove('hidden');
+    document.getElementById('ctd-area').classList.add('hidden');
+    ccRenderAll();
+  } else {
+    document.getElementById('cc-area').classList.add('hidden');
+    document.getElementById('ctd-area').classList.remove('hidden');
+    ctdRenderApp();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ██  CONTROL DE CLIENTES (CC) MODULE
+// ══════════════════════════════════════════════════════════════
+
+// ─── CC Constants ───
+const ccCOLORS = {
+  Taina:"#4361ee", Beliani:"#8b5cf6", Yessica:"#f59e0b",
+  "Karina":"#10b981", Victoria:"#ec4899", Yolenny:"#f97316",
+  Milka:"#6366f1", "Milka (freelance)":"#6366f1", "Sin asignar":"#a3aab8"
+};
+
+const ccCAPACIDAD = { Taina:500, Beliani:1000, Yessica:1000 };
+const ccMESES_CON_CAPACIDAD = ["abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+// ─── CC State ───
+let ccDATA = {};
+let ccIMPLEMENTACIONES = [];
+let ccSOLO_IMPLEMENTACION = [];
+let ccIMPLEMENTACIONES_RIESGO = [];
+let ccSOFTWARE_CLIENTES = [];
+let ccPERFILES = [];
+let ccKPI_DATA = {};
+
+let ccActiveMainTab = "dashboard";
+let ccActiveSubTab = null;
+let ccCharts = [];
+
+let ccPerfilOpen = {};
+let ccPerfilEditing = {};
+
+// ─── CC Supabase Data Loading ───
+async function ccLoadData() {
+  const data = {};
+  MESES.forEach(m => { data[m] = null; });
+  const { data: resumen } = await sb.from('meses_resumen').select('*').eq('anio', 2026);
+  const { data: asig } = await sb.from('asignaciones').select('*').eq('anio', 2026);
+  if (resumen) {
+    resumen.forEach(r => {
+      const asigMes = (asig || []).filter(a => a.mes === r.mes);
+      const asignaciones = {};
+      asigMes.forEach(a => {
+        if (!asignaciones[a.contadora]) asignaciones[a.contadora] = [];
+        asignaciones[a.contadora].push({ n: a.cliente, s: parseFloat(a.serv) || 0, a: parseFloat(a.adm) || 0 });
+      });
+      data[r.mes] = {
+        total: r.total_clientes,
+        nuevos: r.nuevos || [],
+        churn: r.churn || [],
+        notas: r.notas || '',
+        txTotal: { serv: parseFloat(r.serv_total) || 0, adm: parseFloat(r.adm_total) || 0 },
+        asignaciones
+      };
+    });
+  }
+  ccDATA = data;
+}
+
+async function ccLoadImplementaciones() {
+  const { data } = await sb.from('implementaciones').select('*');
+  const normal = [], soloImpl = [], riesgo = [];
+  (data || []).forEach(r => {
+    const impl = {
+      cliente: r.cliente,
+      implInicio: r.impl_inicio,
+      implFin: r.impl_fin,
+      primerMes: r.primer_mes,
+      contadora: r.contadora,
+      notas: r.notas || ''
+    };
+    if (r.tipo === 'solo_impl') soloImpl.push(impl);
+    else if (r.tipo === 'riesgo') riesgo.push(impl);
+    else normal.push(impl);
+  });
+  ccIMPLEMENTACIONES = normal;
+  ccSOLO_IMPLEMENTACION = soloImpl;
+  ccIMPLEMENTACIONES_RIESGO = riesgo;
+}
+
+async function ccLoadSoftwareClientes() {
+  const { data } = await sb.from('software_clientes').select('*');
+  ccSOFTWARE_CLIENTES = (data || []).map(r => ({ n: r.cliente, licencia: r.licencia, monto: parseFloat(r.monto) || 0, periodo: r.periodo }));
+}
+
+async function ccLoadPerfilesFromDB() {
+  const { data } = await sb.from('perfiles_clientes').select('*');
+  ccPERFILES = (data || []).map(r => ({
+    _id: r.id, _nombre: r.nombre,
+    nombre_empresa: r.nombre_empresa || '', rnc: r.rnc || '', tipo_empresa: r.tipo_empresa || '',
+    contacto: r.contacto || '', telefono: r.telefono || '', email: r.email || '',
+    software: r.software || '', servicio_impl: r.servicio_impl || '', servicio_recurrente: r.servicio_recurrente || '',
+    inicio_impl: r.inicio_impl || '', inicio_fiscal: r.inicio_fiscal || '',
+    estado_contabilidad: r.estado_contabilidad || '', contadora_asignada: r.contadora_asignada || '', notas: r.notas || ''
+  }));
+}
+
+async function ccSavePerfilToDB(perfil) {
+  if (perfil._id) {
+    await sb.from('perfiles_clientes').update({
+      nombre: perfil._nombre, nombre_empresa: perfil.nombre_empresa,
+      rnc: perfil.rnc, tipo_empresa: perfil.tipo_empresa,
+      contacto: perfil.contacto, telefono: perfil.telefono, email: perfil.email,
+      software: perfil.software, servicio_impl: perfil.servicio_impl,
+      servicio_recurrente: perfil.servicio_recurrente, inicio_impl: perfil.inicio_impl,
+      inicio_fiscal: perfil.inicio_fiscal, estado_contabilidad: perfil.estado_contabilidad,
+      contadora_asignada: perfil.contadora_asignada, notas: perfil.notas
+    }).eq('id', perfil._id);
+  }
+}
+
+async function ccInsertPerfilToDB(perfil) {
+  const { data } = await sb.from('perfiles_clientes').insert({
+    nombre: perfil._nombre, nombre_empresa: perfil.nombre_empresa || '',
+    rnc: perfil.rnc || '', tipo_empresa: perfil.tipo_empresa || '',
+    contacto: perfil.contacto || '', telefono: perfil.telefono || '', email: perfil.email || '',
+    software: perfil.software || '', servicio_impl: perfil.servicio_impl || '',
+    servicio_recurrente: perfil.servicio_recurrente || '', inicio_impl: perfil.inicio_impl || '',
+    inicio_fiscal: perfil.inicio_fiscal || '', estado_contabilidad: perfil.estado_contabilidad || '',
+    contadora_asignada: perfil.contadora_asignada || '', notas: perfil.notas || ''
+  }).select();
+  return data && data[0] ? data[0].id : null;
+}
+
+async function ccDeletePerfilFromDB(id) {
+  await sb.from('perfiles_clientes').delete().eq('id', id);
+}
+
+async function ccLoadKpiFromDB() {
+  const { data } = await sb.from('kpi_scores').select('*').eq('anio', 2026);
+  const kpi = {};
+  (data || []).forEach(r => {
+    const key = r.contadora + '_' + r.mes;
+    kpi[key] = { _id: r.id, contadora: r.contadora, mes: r.mes,
+      digitacion: r.digitacion, resumenes: r.resumenes, video_reunion: r.video_reunion, total: r.total };
+  });
+  ccKPI_DATA = kpi;
+}
+
+async function ccSaveKpiToDB(contadora, mes, scores) {
+  const { data: existing } = await sb.from('kpi_scores')
+    .select('id').eq('contadora', contadora).eq('mes', mes).eq('anio', 2026).maybeSingle();
+  const total = (scores.digitacion || 0) + (scores.resumenes || 0) + (scores.video_reunion || 0);
+  if (existing) {
+    await sb.from('kpi_scores').update({ digitacion: scores.digitacion, resumenes: scores.resumenes, video_reunion: scores.video_reunion, total: total }).eq('id', existing.id);
+  } else {
+    await sb.from('kpi_scores').insert({ contadora: contadora, mes: mes, anio: 2026, digitacion: scores.digitacion, resumenes: scores.resumenes, video_reunion: scores.video_reunion, total: total });
+  }
+}
+
+// ─── CC Software Stats ───
+function ccGetSoftwareStats() {
+  const base = ccSOFTWARE_CLIENTES.filter(c => c.periodo === "2025");
+  const baseMonto = base.reduce((s,c) => s + c.monto, 0);
+  const mesesActivos = ["enero","febrero","marzo","abril"];
+  let acumClientes = base.length;
+  let acumMonto = baseMonto;
+  const rows = mesesActivos.map(m => {
+    const nuevos = ccSOFTWARE_CLIENTES.filter(c => c.periodo === m);
+    const nuevosMonto = nuevos.reduce((s,c) => s + c.monto, 0);
+    const prevTotal = acumClientes;
+    acumClientes += nuevos.length;
+    acumMonto += nuevosMonto;
+    const neto = nuevos.length;
+    const pct = prevTotal > 0 ? (neto / prevTotal * 100) : 0;
+    return { mes: m, total: acumClientes, nuevos: nuevos, churn: [], neto, pct, monto: acumMonto };
+  });
+  return { base, baseMonto, baseCount: base.length, rows };
+}
+
+// ─── CC Utils ───
+function ccSumClients(asig) { return Object.values(asig).reduce((s,arr)=>s+arr.length,0); }
+function ccSumServ(asig) { return Object.values(asig).reduce((s,arr)=>s+arr.reduce((a,c)=>a+c.s,0),0); }
+function ccSumAdm(asig) { return Object.values(asig).reduce((s,arr)=>s+arr.reduce((a,c)=>a+c.a,0),0); }
+function ccContadoraServ(asig, name) { return (asig[name]||[]).reduce((s,c)=>s+c.s,0); }
+function ccContadoraAdm(asig, name) { return (asig[name]||[]).reduce((s,c)=>s+c.a,0); }
+
+function ccGetImplStatus(impl) {
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  if (!impl.implInicio) return { label:"Pendiente", color:"#a3aab8", bg:"#f1f5f9", icon:"⏳", pct:0 };
+  const inicio = ccParseLocalDate(impl.implInicio);
+  const fin = ccParseLocalDate(impl.implFin);
+  if (hoy < inicio) return { label:"Por iniciar", color:"#4361ee", bg:"#eff6ff", icon:"📅", pct:0 };
+  if (hoy > fin) return { label:"Completada", color:"#10b981", bg:"#ecfdf5", icon:"✓", pct:100 };
+  const total = fin - inicio;
+  const avance = hoy - inicio;
+  const pct = total > 0 ? Math.round(avance / total * 100) : 0;
+  return { label:"En progreso", color:"#f59e0b", bg:"#fffbeb", icon:"⚡", pct:pct };
+}
+
+function ccParseLocalDate(dateStr) {
+  const parts = dateStr.split('-');
+  return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+}
+
+function ccFormatFecha(dateStr) {
+  if (!dateStr) return "—";
+  const d = ccParseLocalDate(dateStr);
+  const dia = d.getDate();
+  const mesLabel = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][d.getMonth()];
+  return dia + ' ' + mesLabel + ' ' + d.getFullYear();
+}
+
+function ccDiasRestantes(dateStr) {
+  if (!dateStr) return null;
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const fin = ccParseLocalDate(dateStr);
+  const diff = Math.ceil((fin - hoy) / (1000*60*60*24));
+  return diff;
+}
+
+function ccGetAllMonths() { return MESES.filter(m=>ccDATA[m]); }
+
+function ccGetPrevMonth(mes) {
+  const idx = MESES.indexOf(mes);
+  if (idx <= 0) return null;
+  const prev = MESES[idx-1];
+  return ccDATA[prev] ? prev : null;
+}
+
+function ccGetGrowth(mes, d) {
+  const prev = ccGetPrevMonth(mes);
+  if (!prev) {
+    const prevTotal = d.total - d.nuevos.length + d.churn.length;
+    if (prevTotal === 0) return {neto: d.nuevos.length - d.churn.length, pct: 0, prevTotal: 0};
+    const neto = d.nuevos.length - d.churn.length;
+    return {neto, pct: (neto/prevTotal*100), prevTotal};
+  }
+  const prevTotal = ccDATA[prev].total;
+  const neto = d.nuevos.length - d.churn.length;
+  return {neto, pct: prevTotal>0?(neto/prevTotal*100):0, prevTotal};
+}
+
+function ccTieneCapacidad(mes, nombre) {
+  return ccMESES_CON_CAPACIDAD.includes(mes) && ccCAPACIDAD[nombre] !== undefined;
+}
+function ccGetCapacidad(nombre) { return ccCAPACIDAD[nombre] || null; }
+function ccGetUtilCapacidad(mes, nombre, admTotal) {
+  if (!ccTieneCapacidad(mes, nombre)) return null;
+  const cap = ccCAPACIDAD[nombre];
+  return cap > 0 ? Math.round(admTotal / cap * 100) : 0;
+}
+
+// ─── CC Hooks ───
+function ccDestroyCharts() { ccCharts.forEach(c=>c.destroy()); ccCharts=[]; }
+
+function ccNavigateMain(tab) {
+  ccActiveMainTab = tab;
+  ccActiveSubTab = null;
+  ccRenderAll();
+}
+
+function ccNavigateSub(month) {
+  ccActiveSubTab = month;
+  ccRenderSubTabs();
+  ccRenderContent();
+}
+
+function ccToggleDashDetail(mes) {
+  const row = document.getElementById('dash-detail-'+mes);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+function ccToggleCargaDetail(rowId) {
+  const row = document.getElementById(rowId);
+  if (row) row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+
+function ccToggleContadora(id) {
+  const detail = document.getElementById('cc-detail-'+id);
+  const arrow = document.getElementById('cc-arrow-'+id);
+  const header = document.getElementById('cc-header-'+id);
+  if (detail.classList.contains('open')) {
+    detail.classList.remove('open');
+    arrow.classList.remove('open');
+    header.classList.remove('expanded');
+  } else {
+    detail.classList.add('open');
+    arrow.classList.add('open');
+    header.classList.add('expanded');
+  }
+}
+
+function ccToggleSwDetail(mes) {
+  const detail = document.getElementById('sw-detail-' + mes);
+  if (detail) detail.style.display = detail.style.display === 'none' ? '' : 'none';
+}
+
+function ccToggleSwLic(id, headerEl) {
+  const detail = document.getElementById(id);
+  const arrow = headerEl.querySelector('.contadora-arrow');
+  if (detail) {
+    detail.classList.toggle('open');
+    headerEl.classList.toggle('expanded');
+    if (arrow) arrow.classList.toggle('open');
+  }
+}
+
+// ─── CC Services ───
+function ccGetMonthData(mes) { return ccDATA[mes]; }
+
+function ccGetLastMonth() {
+  const months = ccGetAllMonths();
+  return months[months.length-1];
+}
+
+function ccGetDashboardStats() {
+  const months = ccGetAllMonths();
+  const last = ccDATA[months[months.length-1]];
+  const first = ccDATA[months[0]];
+  const totalNuevos = months.reduce((s,m)=>s+ccDATA[m].nuevos.length,0);
+  const totalChurn = months.reduce((s,m)=>s+ccDATA[m].churn.length,0);
+  const baseLine = first.total - first.nuevos.length + first.churn.length;
+  const ytdGrowth = baseLine > 0 ? ((last.total - baseLine) / baseLine * 100) : 0;
+  const ytdNeto = last.total - baseLine;
+  const growthData = months.map((m,i)=>{
+    if (i===0) { const prev=ccDATA[m].total-ccDATA[m].nuevos.length+ccDATA[m].churn.length; return prev>0?((ccDATA[m].nuevos.length-ccDATA[m].churn.length)/prev*100):0; }
+    const prev=ccDATA[months[i-1]].total;
+    return prev>0?((ccDATA[m].nuevos.length-ccDATA[m].churn.length)/prev*100):0;
+  });
+  return { months, last, first, totalNuevos, totalChurn, growthData, ytdGrowth, ytdNeto, baseLine };
+}
+
+function ccGetMonthViewData(mes) {
+  const d = ccDATA[mes];
+  const idx = MESES.indexOf(mes);
+  const asig = d.asignaciones;
+  const names = Object.keys(asig).sort((a,b)=>{
+    if (a==="Sin asignar") return 1;
+    if (b==="Sin asignar") return -1;
+    return asig[b].length - asig[a].length;
+  });
+  const maxC = Math.max(...names.map(n=>asig[n].length),1);
+  const growth = ccGetGrowth(mes, d);
+  const growthSign = growth.neto >= 0 ? '+' : '';
+  const growthColor = growth.neto >= 0 ? 'stat-green' : 'stat-red';
+  const pctStr = growth.pct >= 0 ? '+'+growth.pct.toFixed(1)+'%' : growth.pct.toFixed(1)+'%';
+  const nuevosHtml = d.nuevos.length > 0
+    ? d.nuevos.map(n=>'<span class="badge badge-new" style="margin:1px 2px">'+n+'</span>').join('')
+    : '<span style="color:#94a3b8;font-size:13px">Ninguno</span>';
+  const churnHtml = d.churn.length > 0
+    ? d.churn.map(n=>'<span class="badge badge-churn" style="margin:1px 2px">'+n+'</span>').join('')
+    : '<span style="color:#94a3b8;font-size:13px">Ninguno</span>';
+  return { d, idx, asig, names, maxC, growth, growthSign, growthColor, pctStr, nuevosHtml, churnHtml };
+}
+
+// ─── CC Render ───
+function ccRenderMainTabs() {
+  const el = document.getElementById("ccMainTabs");
+  const tabs = [
+    {id:'dashboard', label:'Dashboard'},
+    {id:'implementacion', label:'Implementaciones'},
+    {id:'software', label:'Software'},
+    {id:'perfiles', label:'Perfiles'}
+  ];
+  el.innerHTML = tabs.map(t =>
+    `<button class="sub-tab ${ccActiveMainTab===t.id?'active':''}" onclick="ccNavigateMain('${t.id}')">${t.label}</button>`
+  ).join('');
+}
+
+function ccRenderSubTabs() {
+  const el = document.getElementById("ccSubTabs");
+  if (ccActiveMainTab !== 'dashboard') { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  let html = `<div class="sub-tab ${ccActiveSubTab===null?'active':''}" onclick="ccNavigateSub(null)">Resumen</div>`;
+  MESES.forEach((m,i) => {
+    const has = ccDATA[m] !== null && ccDATA[m] !== undefined;
+    html += `<div class="sub-tab ${ccActiveSubTab===m?'active':''} ${has?'':'disabled'}" onclick="${has?`ccNavigateSub('${m}')`:''}">
+      ${MESES_LABEL[i]}</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function ccRenderAll() {
+  ccRenderMainTabs();
+  ccRenderSubTabs();
+  ccRenderContent();
+}
+
+function ccRenderContent() {
+  ccDestroyCharts();
+  const el = document.getElementById("cc-content");
+  if (ccActiveMainTab === "implementacion") return ccRenderImplementacion(el);
+  if (ccActiveMainTab === "perfiles") return ccRenderPerfiles(el);
+  if (ccActiveMainTab === "software") return ccRenderSoftware(el);
+  if (ccActiveSubTab === null) return ccRenderDashboard(el);
+  const d = ccGetMonthData(ccActiveSubTab);
+  if (!d) { el.innerHTML = '<div class="empty">Sin datos para este mes todavia.</div>'; return; }
+  ccRenderMonth(el, ccActiveSubTab, d);
+}
+
+function ccRenderDashboard(el) {
+  const { months, last, totalNuevos, totalChurn, growthData, ytdGrowth, ytdNeto, baseLine } = ccGetDashboardStats();
+  const fechaHoy = todayStr();
+  const ytdSign = ytdNeto >= 0 ? '+' : '';
+  const ytdColor = ytdNeto >= 0 ? 'stat-green' : 'stat-red';
+  const ytdPctStr = (ytdGrowth >= 0 ? '+' : '') + ytdGrowth.toFixed(1) + '%';
+
+  let html = `
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Clientes actuales · ${fechaHoy}</div><div class="stat-value">${last.total}</div><div class="stat-sub">Base inicio de año: ${baseLine}</div></div>
+      <div class="stat"><div class="stat-label">Nuevos en 2026</div><div class="stat-value stat-green">${totalNuevos}</div><div class="stat-sub">${baseLine > 0 ? (totalNuevos / baseLine * 100).toFixed(1) : 0}% de crecimiento</div></div>
+      <div class="stat"><div class="stat-label">Churn en 2026</div><div class="stat-value stat-red">${totalChurn}</div><div class="stat-sub">${baseLine > 0 ? (totalChurn / baseLine * 100).toFixed(1) : 0}% de churn</div></div>
+      <div class="stat"><div class="stat-label">Crecimiento 2026</div><div class="stat-value ${ytdColor}">${ytdPctStr}</div><div class="stat-sub">${ytdSign}${ytdNeto} clientes neto vs inicio de año</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="card"><h3>Evolucion de clientes</h3><canvas id="chartEvo"></canvas></div>
+      <div class="card"><h3>Crecimiento neto mensual (%)</h3><canvas id="chartGrowth"></canvas></div>
+    </div>
+    <div class="charts-grid">
+      <div class="card"><h3>Transacciones mensuales (Serv. Contratado)</h3><canvas id="chartTx"></canvas></div>
+      <div class="card"><h3>Resumen mensual</h3>
+        <div class="table-wrap"><table>
+          <tr><th>Mes</th><th>Inicio</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Cierre</th><th>Crecimiento</th><th>Fact.</th></tr>
+          ${months.map((m,i)=>{
+            const d=ccDATA[m];
+            const inicio=d.total-d.nuevos.length+d.churn.length;
+            const neto=d.nuevos.length-d.churn.length;
+            const pct=growthData[i];
+            const pctStr=(pct>=0?'+':'')+pct.toFixed(1)+'%';
+            const detailId='dash-detail-'+m;
+            const nuevosHtml=d.nuevos.length>0?d.nuevos.map(n=>'<span class="badge badge-new" style="margin:1px 2px">'+n+'</span>').join(''):'—';
+            const churnHtml=d.churn.length>0?d.churn.map(n=>'<span class="badge badge-churn" style="margin:1px 2px">'+n+'</span>').join(''):'—';
+            return `<tr style="cursor:pointer" onclick="ccToggleDashDetail('${m}')">
+            <td><strong>${MESES_FULL[MESES.indexOf(m)]}</strong></td><td>${inicio}</td>
+            <td style="color:var(--green)">${d.nuevos.length}</td><td style="color:var(--red)">${d.churn.length}</td>
+            <td style="color:${neto>=0?'var(--green)':'var(--red)'}">${neto>=0?'+':''}${neto}</td>
+            <td><strong>${d.total}</strong></td>
+            <td style="color:${pct>=0?'var(--green)':'var(--red)'}">${pctStr}</td>
+            <td>${d.txTotal.serv.toLocaleString()}</td></tr>
+            <tr id="${detailId}" style="display:none"><td colspan="8" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">
+              <div style="display:flex;gap:20px;flex-wrap:wrap">
+                <div><span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.3px">Entraron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${nuevosHtml}</div></div>
+                <div><span style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.3px">Salieron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">${churnHtml}</div></div>
+              </div>
+            </td></tr>`;
+          }).join('')}
+        </table></div>
+      </div>
+    </div>
+  `;
+  el.innerHTML = html;
+
+  const labels = months.map(m=>MESES_LABEL[MESES.indexOf(m)]);
+  ccCharts.push(new Chart(document.getElementById("chartEvo"),{
+    type:"bar", data:{labels, datasets:[{label:"Clientes",data:months.map(m=>ccDATA[m].total),backgroundColor:"#4361ee",borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false,min:Math.min(...months.map(m=>ccDATA[m].total))-3}}}
+  }));
+  ccCharts.push(new Chart(document.getElementById("chartGrowth"),{
+    type:"bar", data:{labels, datasets:[{
+      label:"Crecimiento %",
+      data:growthData,
+      backgroundColor:growthData.map(v=>v>=0?'rgba(16,185,129,0.7)':'rgba(239,68,68,0.7)'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'}}}}
+  }));
+  ccCharts.push(new Chart(document.getElementById("chartTx"),{
+    type:"line", data:{labels, datasets:[
+      {label:"Serv. Contratado",data:months.map(m=>ccDATA[m].txTotal.serv),borderColor:"#4361ee",backgroundColor:"rgba(67,97,238,0.1)",fill:true,tension:0.3,pointRadius:5,pointBackgroundColor:"#4361ee"}
+    ]}, options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:false}}}
+  }));
+}
+
+function ccRenderImplCard(impl, opts) {
+  const st = ccGetImplStatus(impl);
+  const dias = ccDiasRestantes(impl.implFin);
+  let diasLabel = '';
+  if (st.label === 'En progreso' && dias !== null) {
+    diasLabel = dias > 0 ? dias + ' dias restantes' : dias === 0 ? 'Termina hoy' : Math.abs(dias) + ' dias de atraso';
+  } else if (st.label === 'Por iniciar' && impl.implInicio) {
+    const diasInicio = ccDiasRestantes(impl.implInicio);
+    diasLabel = diasInicio > 0 ? 'Inicia en ' + diasInicio + ' dias' : 'Inicia hoy';
+  } else if (st.label === 'Completada') {
+    diasLabel = opts.completedLabel || 'Lista para asignar';
+  }
+  const borderStyle = opts.borderColor ? 'border-left:3px solid ' + opts.borderColor + ';' : '';
+  const statusBg = opts.statusBg || st.bg;
+  const statusColor = opts.statusColor || st.color;
+  const statusLabel = opts.statusLabel || st.label;
+
+  return `<div class="impl-card" style="${borderStyle}">
+    <div class="impl-header">
+      <div class="impl-name">${st.icon} ${impl.cliente}</div>
+      <span class="impl-status" style="background:${statusBg};color:${statusColor}">${statusLabel}</span>
+    </div>
+    <div class="impl-grid">
+      <div class="impl-item"><div class="impl-item-label">Inicio implementacion</div><div class="impl-item-value">${ccFormatFecha(impl.implInicio)}</div></div>
+      <div class="impl-item"><div class="impl-item-label">Fin implementacion</div><div class="impl-item-value">${impl.implFin ? ccFormatFecha(impl.implFin) : '—'}</div></div>
+      <div class="impl-item"><div class="impl-item-label">Primer mes fiscal</div><div class="impl-item-value" style="color:var(--navy)">${impl.primerMes || '—'}</div></div>
+      <div class="impl-item"><div class="impl-item-label">Asignada a</div><div class="impl-item-value">${impl.contadora || 'Por definir'}</div></div>
+    </div>
+    ${impl.implInicio ? `
+      <div class="impl-progress"><div class="impl-progress-fill" style="width:${st.pct}%;background:${statusColor}"></div></div>
+      <div class="impl-timeline"><span>${ccFormatFecha(impl.implInicio)}</span><span style="font-weight:600;color:${statusColor}">${diasLabel}</span><span>${ccFormatFecha(impl.implFin)}</span></div>
+    ` : `<div style="text-align:center;padding:8px;color:var(--light);font-size:12px">${impl.notas || 'Sin fechas definidas'}</div>`}
+  </div>`;
+}
+
+function ccRenderImplementacion(el) {
+  const allImpl = ccIMPLEMENTACIONES.concat(ccSOLO_IMPLEMENTACION);
+  const enProgreso = allImpl.filter(i => { const s=ccGetImplStatus(i); return s.label==="En progreso"; }).length;
+  const porIniciar = allImpl.filter(i => { const s=ccGetImplStatus(i); return s.label==="Por iniciar"; }).length;
+  const completadas = allImpl.filter(i => { const s=ccGetImplStatus(i); return s.label==="Completada"; }).length;
+
+  let html = `
+    <div class="stats" style="grid-template-columns:repeat(5,1fr);">
+      <div class="stat"><div class="stat-label" style="font-size:10px;">Impl. activas</div><div class="stat-value">${ccIMPLEMENTACIONES.length + ccSOLO_IMPLEMENTACION.length}</div></div>
+      <div class="stat"><div class="stat-label">En progreso</div><div class="stat-value" style="color:var(--amber)">${enProgreso}</div></div>
+      <div class="stat"><div class="stat-label">Por iniciar</div><div class="stat-value" style="color:var(--blue)">${porIniciar}</div></div>
+      <div class="stat"><div class="stat-label" style="font-size:10px;">Solo impl.</div><div class="stat-value" style="color:var(--purple)">${ccSOLO_IMPLEMENTACION.length}</div></div>
+      <div class="stat"><div class="stat-label">En riesgo</div><div class="stat-value stat-red">${ccIMPLEMENTACIONES_RIESGO.length}</div></div>
+    </div>
+    <h3 style="font-size:14px;font-weight:700;color:var(--navy);margin:20px 0 12px;">Implementaciones de clientes</h3>
+    ${ccIMPLEMENTACIONES.map(impl => ccRenderImplCard(impl, {})).join('')}
+    <h3 style="font-size:14px;font-weight:700;color:var(--purple);margin:28px 0 12px;">Solo implementacion</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Clientes que contrataron solo implementacion, no servicio mensual.</p>
+    ${ccSOLO_IMPLEMENTACION.map(impl => ccRenderImplCard(impl, {
+      borderColor: 'var(--purple)', statusBg: '#f3e8ff', statusColor: '#8b5cf6',
+      statusLabel: 'Solo Impl.', completedLabel: 'Implementacion completada'
+    })).join('')}
+    <h3 style="font-size:14px;font-weight:700;color:var(--red);margin:28px 0 12px;">⚠️ Implementaciones en riesgo</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Implementaciones estancadas o con retrasos significativos.</p>
+    ${ccIMPLEMENTACIONES_RIESGO.map(impl => ccRenderImplCard(impl, {
+      borderColor: 'var(--red)', statusBg: '#fef2f2', statusColor: '#ef4444', statusLabel: 'En riesgo'
+    })).join('')}
+  `;
+  el.innerHTML = html;
+}
+
+function ccRenderSoftware(el) {
+  const stats = ccGetSoftwareStats();
+  const last = stats.rows[stats.rows.length - 1];
+  const totalNuevos = stats.rows.reduce((s,r) => s + r.nuevos.length, 0);
+  const totalChurn = stats.rows.reduce((s,r) => s + r.churn.length, 0);
+  const ytdPct = stats.baseCount > 0 ? ((last.total - stats.baseCount) / stats.baseCount * 100) : 0;
+
+  const groups = {};
+  ccSOFTWARE_CLIENTES.forEach(c => {
+    if (!groups[c.licencia]) groups[c.licencia] = [];
+    groups[c.licencia].push(c);
+  });
+  const LICENCIA_ORDER = ['Punto de Venta','Starter','Starter + FE','Basic','Basic + FE','Standard','Standard + FE','Premium + FE','Nomina','Manufactura'];
+  const groupKeys = Object.keys(groups).sort((a,b) => {
+    const ia = LICENCIA_ORDER.indexOf(a); const ib = LICENCIA_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+  const LICENCIA_COLORS = {
+    'Basic + FE': '#4361ee', 'Basic': '#60a5fa', 'Starter + FE': '#10b981', 'Starter': '#34d399',
+    'Standard + FE': '#8b5cf6', 'Standard': '#a78bfa', 'Premium + FE': '#f59e0b', 'Manufactura': '#ec4899',
+    'Nomina': '#f97316', 'Punto de Venta': '#6366f1'
+  };
+
+  let html = `
+    <div class="stats" style="grid-template-columns:repeat(5,1fr);">
+      <div class="stat"><div class="stat-label">Software actual</div><div class="stat-value">${last.total}</div><div class="stat-sub">Base 2026: ${stats.baseCount}</div></div>
+      <div class="stat"><div class="stat-label">Nuevos 2026</div><div class="stat-value stat-green">${totalNuevos}</div><div class="stat-sub">${stats.baseCount > 0 ? (totalNuevos / stats.baseCount * 100).toFixed(1) : 0}% crecimiento</div></div>
+      <div class="stat"><div class="stat-label">Churn 2026</div><div class="stat-value stat-red">${totalChurn}</div><div class="stat-sub">${stats.baseCount > 0 ? (totalChurn / stats.baseCount * 100).toFixed(1) : 0}% churn</div></div>
+      <div class="stat"><div class="stat-label">Crecimiento</div><div class="stat-value ${ytdPct >= 0 ? 'stat-green' : 'stat-red'}">${ytdPct >= 0 ? '+' : ''}${ytdPct.toFixed(1)}%</div><div class="stat-sub">${ytdPct >= 0 ? '+' : ''}${last.total - stats.baseCount} neto</div></div>
+      <div class="stat"><div class="stat-label">Monto mensual</div><div class="stat-value" style="color:var(--navy)">US$ ${last.monto.toLocaleString()}</div><div class="stat-sub">Base: US$ ${stats.baseMonto.toLocaleString()}</div></div>
+    </div>
+    <div class="card">
+      <h3>Resumen mensual</h3>
+      <div class="table-wrap"><table>
+        <tr><th>Mes</th><th>Inicio</th><th>Nuevos</th><th>Churn</th><th>Neto</th><th>Cierre</th><th>Crecimiento</th><th>Monto</th></tr>
+        ${stats.rows.map(r => {
+          const mi = MESES.indexOf(r.mes);
+          const pctStr = (r.pct >= 0 ? '+' : '') + r.pct.toFixed(1) + '%';
+          const pctColor = r.pct >= 0 ? 'var(--green)' : 'var(--red)';
+          const netoStr = (r.neto >= 0 ? '+' : '') + r.neto;
+          const netoColor = r.neto >= 0 ? 'var(--green)' : 'var(--red)';
+          const nuevosHtml = r.nuevos.length > 0
+            ? r.nuevos.map(c => '<span class="badge badge-new" style="margin:1px 2px">' + c.n + '</span>').join('')
+            : '—';
+          const churnHtml = r.churn.length > 0
+            ? r.churn.map(c => '<span class="badge badge-churn" style="margin:1px 2px">' + c.n + '</span>').join('')
+            : '—';
+          const detailId = 'sw-detail-' + r.mes;
+          const inicio = r.total - r.nuevos.length + r.churn.length;
+          return '<tr style="cursor:pointer" onclick="ccToggleSwDetail(\'' + r.mes + '\')">' +
+            '<td><strong>' + MESES_FULL[mi] + '</strong></td>' +
+            '<td>' + inicio + '</td>' +
+            '<td style="color:var(--green)">' + r.nuevos.length + '</td>' +
+            '<td style="color:var(--red)">' + r.churn.length + '</td>' +
+            '<td style="color:' + netoColor + '">' + netoStr + '</td>' +
+            '<td><strong>' + r.total + '</strong></td>' +
+            '<td style="color:' + pctColor + '">' + pctStr + '</td>' +
+            '<td>US$ ' + r.monto.toLocaleString() + '</td></tr>' +
+            '<tr id="' + detailId + '" style="display:none"><td colspan="8" style="padding:10px 14px;background:#f8fafc;border-bottom:2px solid var(--border)">' +
+              '<div style="display:flex;gap:20px;flex-wrap:wrap">' +
+                '<div><span style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.3px">Entraron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">' + nuevosHtml + '</div></div>' +
+                '<div><span style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:0.3px">Salieron:</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">' + churnHtml + '</div></div>' +
+              '</div>' +
+            '</td></tr>';
+        }).join('')}
+      </table></div>
+    </div>
+    <div class="card">
+      <h3>Clientes por tipo de licencia</h3>
+      ${groupKeys.map(lic => {
+        const clientes = groups[lic];
+        const montoTotal = clientes.reduce((s,c) => s + c.monto, 0);
+        const color = LICENCIA_COLORS[lic] || '#7c8495';
+        const groupId = 'sw-lic-' + lic.replace(/[^a-zA-Z]/g, '');
+        return '<div class="contadora-card">' +
+          '<div class="cc-contadora-header" onclick="ccToggleSwLic(\'' + groupId + '\', this)">' +
+            '<div class="contadora-color" style="background:' + color + '"></div>' +
+            '<div class="contadora-info"><div class="contadora-name-row">' +
+              '<span class="contadora-title">' + lic + '</span>' +
+              '<div class="contadora-pills">' +
+                '<span class="pill pill-blue">' + clientes.length + ' cliente' + (clientes.length > 1 ? 's' : '') + '</span>' +
+                '<span class="pill pill-green">US$ ' + montoTotal + '/mes</span>' +
+              '</div>' +
+            '</div></div>' +
+            '<span class="contadora-arrow">▼</span>' +
+          '</div>' +
+          '<div class="contadora-detail" id="' + groupId + '">' +
+            '<table class="detail-table"><tr><th>Cliente</th><th>Monto</th><th>Desde</th></tr>' +
+            clientes.map(c => {
+              const desde = c.periodo === '2025' ? '2025' : c.periodo.charAt(0).toUpperCase() + c.periodo.slice(1) + ' 2026';
+              return '<tr><td><strong>' + c.n + '</strong></td><td>US$ ' + c.monto + '</td><td>' + desde + '</td></tr>';
+            }).join('') +
+            '</table>' +
+          '</div>' +
+        '</div>';
+      }).join('')}
+    </div>
+  `;
+  el.innerHTML = html;
+}
+
+function ccRenderMonth(el, mes, d) {
+  const { idx, asig, names, maxC, growth, growthSign, growthColor, pctStr, nuevosHtml, churnHtml } = ccGetMonthViewData(mes);
+  const sinAsignar = asig["Sin asignar"] || [];
+  const hasCap = ccMESES_CON_CAPACIDAD.includes(mes);
+
+  let html = `
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Total ${MESES_LABEL[idx]}</div><div class="stat-value">${d.total}</div></div>
+      <div class="stat"><div class="stat-label">Crecimiento neto</div><div class="stat-value ${growthColor}">${growthSign}${growth.neto}</div>
+        <div class="stat-sub">${pctStr} vs mes anterior</div></div>
+      <div class="stat" style="min-width:180px"><div class="stat-label" style="color:var(--green)">Entraron</div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${nuevosHtml}</div></div>
+      <div class="stat" style="min-width:180px"><div class="stat-label" style="color:var(--red)">Salieron</div>
+        <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${churnHtml}</div></div>
+      <div class="stat"><div class="stat-label">Transacciones</div><div class="stat-value">${d.txTotal.serv.toLocaleString()}</div>
+        <div class="stat-sub">Adm: ${d.txTotal.adm.toLocaleString()}</div></div>
+    </div>
+    ${d.notas?`<div class="note">${d.notas}</div>`:''}
+    <div class="charts-grid">
+      <div class="card"><h3>Clientes por contadora</h3><canvas id="chartMonthC"></canvas></div>
+      <div class="card"><h3>Transacciones por contadora</h3><canvas id="chartMonthTx"></canvas></div>
+    </div>
+    <div class="card"><h3>Detalle por contadora — ${MESES_FULL[idx]} 2026</h3>
+      <div class="table-wrap"><table>
+        <tr><th>Contadora</th><th>Clientes</th><th>Serv.</th><th>Adm</th><th>Brecha</th>${hasCap?'<th>Capacidad</th><th>Uso</th>':''}</tr>
+        ${names.map((n,ni)=>{
+          const clients=asig[n];
+          const cnt=clients.length;
+          const sv=ccContadoraServ(asig,n);
+          const ad=ccContadoraAdm(asig,n);
+          const gap=ad-sv;
+          const gapClass=gap>=0?'gap-positive':'gap-negative';
+          const col=ccCOLORS[n]||'#a3aab8';
+          const capUtil=ccGetUtilCapacidad(mes,n,ad);
+          const cap=ccGetCapacidad(n);
+          const isSinAsignar=n==="Sin asignar";
+          const tooltipAttr=isSinAsignar?` title="${sinAsignar.map(c=>c.n).join(', ')}"`:'';
+          const rowId='month-detail-'+mes+'-'+ni;
+          let capCell='';
+          if (hasCap) {
+            if (capUtil!==null) {
+              const capColor=capUtil<=70?'var(--green)':capUtil<=90?'var(--amber)':'var(--red)';
+              capCell=`<td>${cap.toLocaleString()}</td><td>${capUtil}% <div class="utilization-bar"><div class="utilization-fill" style="width:${Math.min(capUtil,100)}%;background:${capColor}"></div></div></td>`;
+            } else {
+              capCell='<td style="color:var(--light);font-size:11px">—</td><td style="color:var(--light);font-size:11px">—</td>';
+            }
+          }
+          return `<tr style="cursor:pointer" onclick="ccToggleCargaDetail('${rowId}')"${tooltipAttr}>
+            <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${col};margin-right:6px;vertical-align:middle"></span><strong>${n}</strong></td>
+            <td>${cnt}</td><td>${sv.toLocaleString()}</td><td>${ad.toLocaleString()}</td>
+            <td class="${gapClass}">${gap>=0?'+':''}${gap}</td>
+            ${capCell}
+          </tr>
+          <tr id="${rowId}" style="display:none"><td colspan="${hasCap?7:5}" style="padding:0;background:#f8fafc">
+            <table style="width:100%;border-collapse:collapse">
+              ${clients.map(c=>{
+                const cGap=c.a-c.s;
+                const isNew=d.nuevos.includes(c.n);
+                return `<tr style="border-bottom:1px solid #f1f5f9">
+                  <td style="padding:6px 10px 6px 32px;font-size:13px">${isNew?'<span class="badge badge-new" style="padding:1px 5px;font-size:9px;margin-right:4px">nuevo</span>':''}${c.n}</td>
+                  <td style="padding:6px 10px;width:60px;font-size:13px;text-align:right">${c.s.toLocaleString()}</td>
+                  <td style="padding:6px 10px;width:60px;font-size:13px;text-align:right">${c.a.toLocaleString()}</td>
+                  <td style="padding:6px 10px;width:60px;font-size:13px;text-align:right" class="${cGap>=0?'gap-positive':'gap-negative'}">${cGap>=0?'+':''}${cGap}</td>
+                </tr>`;
+              }).join('')}
+              <tr style="border-top:2px solid var(--border);background:#f1f5f9">
+                <td style="padding:8px 10px 8px 32px;font-size:12px;font-weight:700">Total ${n}</td>
+                <td style="padding:8px 10px;width:60px;font-size:12px;font-weight:700;text-align:right">${sv.toLocaleString()}</td>
+                <td style="padding:8px 10px;width:60px;font-size:12px;font-weight:700;text-align:right">${ad.toLocaleString()}</td>
+                <td style="padding:8px 10px;width:60px;font-size:12px;font-weight:700;text-align:right" class="${gap>=0?'gap-positive':'gap-negative'}">${gap>=0?'+':''}${gap}</td>
+              </tr>
+            </table>
+          </td></tr>`;
+        }).join('')}
+      </table></div>
+    </div>
+  `;
+  el.innerHTML = html;
+
+  const cColors = names.map(n=>ccCOLORS[n]||'#a3aab8');
+  const sinNombres = sinAsignar.map(c=>c.n).join(', ');
+
+  ccCharts.push(new Chart(document.getElementById("chartMonthC"),{
+    type:"bar",
+    data:{labels:names, datasets:[{data:names.map(n=>asig[n].length),backgroundColor:cColors,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        afterBody:function(ctx){
+          if(ctx[0].label==='Sin asignar') return sinNombres;
+          return '';
+        }
+      }}},
+      scales:{x:{beginAtZero:true,ticks:{stepSize:1}}}
+    }
+  }));
+
+  const servData = names.map(n=>ccContadoraServ(asig,n));
+  const admData = names.map(n=>ccContadoraAdm(asig,n));
+  ccCharts.push(new Chart(document.getElementById("chartMonthTx"),{
+    type:"bar",
+    data:{labels:names, datasets:[
+      {label:"Serv. Contratado",data:servData,backgroundColor:cColors,borderRadius:4}
+    ]},
+    options:{indexAxis:'y',responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{
+        label:function(ctx){
+          const i=ctx.dataIndex;
+          return 'Contratado: '+servData[i].toLocaleString();
+        },
+        afterLabel:function(ctx){
+          const i=ctx.dataIndex;
+          let lines = ['Segun Adm: '+admData[i].toLocaleString()];
+          if(names[i]==='Sin asignar') lines.push(sinNombres);
+          return lines;
+        }
+      }}},
+      scales:{x:{beginAtZero:true}}
+    }
+  }));
+}
+
+// ─── CC Perfiles ───
+const ccPERFIL_FIELDS = [
+  {section:'Servicio Contratado', fields:[
+    {id:'software', label:'Software', placeholder:'Ej: Adm Basic + FE'},
+    {id:'servicio_impl', label:'Servicio de Implementacion', placeholder:'Ej: Implementacion ADM + FE'},
+    {id:'servicio_recurrente', label:'Servicio Recurrente', placeholder:'Ej: Tax One'}
+  ]},
+  {section:'Fechas', fields:[
+    {id:'inicio_impl', label:'Inicio de Implementacion', placeholder:'Ej: 1ro al 30 mayo'},
+    {id:'inicio_fiscal', label:'Inicio de Responsabilidades Fiscales', placeholder:'Ej: 1ro junio'}
+  ]},
+  {section:'Generales de la Empresa', fields:[
+    {id:'nombre_empresa', label:'Nombre de la Empresa', placeholder:'Ej: Centro Adorartes SRL (RST)'},
+    {id:'rnc', label:'RNC', placeholder:'Ej: 132-04965-9'},
+    {id:'tipo_empresa', label:'Tipo de Empresa', placeholder:'Ej: Liderazgo y capacitacion'},
+    {id:'contacto', label:'Contacto Principal', placeholder:'Nombre del contacto'},
+    {id:'telefono', label:'Telefono', placeholder:'Numero de contacto'},
+    {id:'email', label:'Email', placeholder:'Correo electronico'},
+    {id:'estado_contabilidad', label:'Estado del Depto. de Contabilidad', placeholder:'Ej: No tiene / Tiene contador interno'}
+  ]},
+  {section:'Asignacion Interna', fields:[
+    {id:'contadora_asignada', label:'Contadora Asignada', placeholder:'Nombre de la contadora'},
+    {id:'notas', label:'Notas', placeholder:'Notas adicionales sobre el cliente'}
+  ]}
+];
+
+function ccTogglePerfil(idx) {
+  ccPerfilOpen[idx] = !ccPerfilOpen[idx];
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+function ccStartEditPerfil(idx) {
+  ccPerfilEditing[idx] = true;
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+function ccCancelEditPerfil(idx) {
+  delete ccPerfilEditing[idx];
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+async function ccSavePerfil(idx) {
+  ccPERFIL_FIELDS.forEach(sec => {
+    sec.fields.forEach(f => {
+      const input = document.getElementById('pf-'+idx+'-'+f.id);
+      if (input) ccPERFILES[idx][f.id] = input.value.trim();
+    });
+  });
+  await ccSavePerfilToDB(ccPERFILES[idx]);
+  delete ccPerfilEditing[idx];
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+async function ccAddPerfil() {
+  const nombre = prompt('Nombre del cliente:');
+  if (!nombre || !nombre.trim()) return;
+  const nuevo = { _nombre: nombre.trim() };
+  ccPERFIL_FIELDS.forEach(sec => sec.fields.forEach(f => { nuevo[f.id] = ''; }));
+  const newId = await ccInsertPerfilToDB(nuevo);
+  nuevo._id = newId;
+  ccPERFILES.push(nuevo);
+  const idx = ccPERFILES.length - 1;
+  ccPerfilOpen[idx] = true;
+  ccPerfilEditing[idx] = true;
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+async function ccDeletePerfil(idx) {
+  if (!confirm('Seguro que quieres eliminar este perfil?')) return;
+  const perfil = ccPERFILES[idx];
+  if (perfil._id) {
+    await ccDeletePerfilFromDB(perfil._id);
+  }
+  ccPERFILES.splice(idx, 1);
+  ccPerfilOpen = {};
+  ccPerfilEditing = {};
+  ccRenderPerfiles(document.getElementById('cc-content'));
+}
+
+function ccGetPerfilCompleteness(p) {
+  let total = 0, filled = 0;
+  ccPERFIL_FIELDS.forEach(sec => sec.fields.forEach(f => {
+    total++;
+    if (p[f.id] && p[f.id].trim()) filled++;
+  }));
+  return { total, filled, pct: total > 0 ? Math.round(filled/total*100) : 0 };
+}
+
+function ccParseFiscalOrder(str) {
+  if (!str) return 9999;
+  var s = str.toLowerCase();
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  for (var i = 0; i < meses.length; i++) {
+    if (s.indexOf(meses[i]) !== -1) return i;
+  }
+  return 9999;
+}
+
+function ccRenderPerfiles(el) {
+  const perfiles = ccPERFILES;
+  const indices = perfiles.map((p, i) => i);
+  indices.sort((a, b) => ccParseFiscalOrder(perfiles[a].inicio_fiscal) - ccParseFiscalOrder(perfiles[b].inicio_fiscal));
+  let html = '';
+
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">';
+  html += '<div><div style="font-size:16px;font-weight:800">Fichas de Clientes</div><div style="font-size:12px;color:var(--muted)">Perfil de cada cliente con servicio contratado, fechas y datos generales</div></div>';
+  html += '<button class="perfil-btn perfil-btn-primary" onclick="ccAddPerfil()">+ Nuevo cliente</button>';
+  html += '</div>';
+
+  if (perfiles.length === 0) {
+    html += '<div class="perfil-empty"><p>No hay perfiles creados todavia.</p><button class="perfil-btn perfil-btn-primary" onclick="ccAddPerfil()">Crear primer perfil</button></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  indices.forEach(idx => {
+    const p = perfiles[idx];
+    const isOpen = ccPerfilOpen[idx] || false;
+    const isEdit = ccPerfilEditing[idx] || false;
+    const comp = ccGetPerfilCompleteness(p);
+    const statusColor = comp.pct === 100 ? 'var(--green)' : comp.pct > 50 ? 'var(--amber)' : 'var(--light)';
+    const statusLabel = comp.pct === 100 ? 'Completo' : comp.filled + '/' + comp.total;
+
+    html += '<div class="perfil-card">';
+    html += '<div class="perfil-header '+(isOpen?'expanded':'')+'" onclick="ccTogglePerfil('+idx+')">';
+    html += '<div style="flex:1">';
+    html += '<div class="perfil-name">'+(p.nombre_empresa||p._nombre||'Sin nombre')+'</div>';
+    html += '</div>';
+    html += '<div style="display:flex;align-items:center;gap:10px">';
+    if (p.inicio_fiscal) {
+      html += '<div class="impl-item" style="padding:6px 12px"><div class="impl-item-label">Primer mes fiscal</div><div class="impl-item-value" style="color:var(--navy)">'+p.inicio_fiscal+'</div></div>';
+    }
+    html += '<span class="perfil-arrow '+(isOpen?'open':'')+'">▼</span>';
+    html += '</div>';
+    html += '</div>';
+
+    html += '<div class="perfil-body '+(isOpen?'open':'')+'">';
+
+    ccPERFIL_FIELDS.forEach(sec => {
+      html += '<div class="perfil-section">';
+      html += '<div class="perfil-section-title">'+sec.section+'</div>';
+      html += '<div class="perfil-grid">';
+      sec.fields.forEach(f => {
+        const val = p[f.id] || '';
+        html += '<div class="perfil-field">';
+        html += '<div class="perfil-field-label">'+f.label+'</div>';
+        if (isEdit) {
+          html += '<input class="perfil-field-input" id="pf-'+idx+'-'+f.id+'" value="'+val.replace(/"/g,'&quot;')+'" placeholder="'+f.placeholder+'">';
+        } else {
+          html += '<div class="perfil-field-value">'+(val || '<span style="color:var(--light);font-weight:400">—</span>')+'</div>';
+        }
+        html += '</div>';
+      });
+      html += '</div></div>';
+    });
+
+    html += '<div class="perfil-actions">';
+    if (isEdit) {
+      html += '<button class="perfil-btn perfil-btn-primary" onclick="event.stopPropagation();ccSavePerfil('+idx+')">Guardar</button>';
+      html += '<button class="perfil-btn" onclick="event.stopPropagation();ccCancelEditPerfil('+idx+')">Cancelar</button>';
+      html += '<button class="perfil-btn perfil-btn-danger" style="margin-left:auto" onclick="event.stopPropagation();ccDeletePerfil('+idx+')">Eliminar</button>';
+    } else {
+      html += '<button class="perfil-btn" onclick="event.stopPropagation();ccStartEditPerfil('+idx+')">Editar</button>';
+    }
+    html += '</div>';
+
+    html += '</div></div>';
+  });
+
+  el.innerHTML = html;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ██  CONTROL DE CONTADORAS (CTD) MODULE
+// ══════════════════════════════════════════════════════════════
+
+// ─── CTD Constants ───
+var ctdEXCLUIDAS = ['Karina', 'Milka'];
+function ctdIsExcluida(name) {
+  for (var i = 0; i < ctdEXCLUIDAS.length; i++) {
+    if (name.indexOf(ctdEXCLUIDAS[i]) === 0) return true;
+  }
+  return false;
+}
+
+var ctdCONTADORA_LAST = ['Sin asignar'];
+
+var ctdITEMS = [
+  { id:'presupuesto', label:'Presupuesto', short:'Pres.' },
+  { id:'proyeccion', label:'Proyeccion de impuestos', short:'Proy.' },
+  { id:'resumen', label:'Resumen de declaracion', short:'Resumen' },
+  { id:'video', label:'Video mensual', short:'Video' }
+];
+
+var ctdKPI_GROUPS = [
+  { id:'facturas', label:'Facturas', calc: function(row) { return (row.facturas_mes && row.facturas_mes > 0) ? 1 : 0; } },
+  { id:'reportes', label:'Reportes', calc: function(row) {
+      var n = 0;
+      if (row.presupuesto_fecha) n++;
+      if (row.proyeccion_fecha) n++;
+      if (row.resumen_fecha) n++;
+      return n / 3;
+    }
+  },
+  { id:'video', label:'Video / Reunion', calc: function(row) { return row.video_fecha ? 1 : 0; } }
+];
+
+// ─── CTD State ───
+var ctdContadorasMap = {};
+var ctdSelectedMes = '';
+var ctdSelectedContadora = 'Todas';
+var ctdReporteData = [];
+var ctdOpenSections = {};
+var ctdOpenCards = {};
+
+// ─── CTD Utils ───
+function ctdGetCurrentReportMonth() {
+  var now = new Date();
+  var m = now.getMonth();
+  var prev = m === 0 ? 11 : m - 1;
+  return MESES[prev];
+}
+
+function ctdSortContadoras(names) {
+  var regular = [];
+  var last = [];
+  names.forEach(function(n) {
+    if (ctdCONTADORA_LAST.indexOf(n) >= 0) last.push(n);
+    else regular.push(n);
+  });
+  regular.sort();
+  return regular.concat(last);
+}
+
+function ctdKpiColor(pct) {
+  if (pct >= 80) return 'var(--green)';
+  if (pct >= 50) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function ctdGetSemaforo(fechaStr) {
+  if (!fechaStr) return { color:'gray', label:'—' };
+  var fecha = new Date(fechaStr + 'T12:00:00');
+  var dia = fecha.getDate();
+  if (dia <= 24) return { color:'green', label:dia + '/' + (fecha.getMonth()+1) };
+  if (dia <= 30) return { color:'yellow', label:dia + '/' + (fecha.getMonth()+1) };
+  return { color:'red', label:dia + '/' + (fecha.getMonth()+1) };
+}
+
+function ctdSemaforoHTML(fechaStr, link) {
+  var s = ctdGetSemaforo(fechaStr);
+  var html = '<span class="semaforo sem-' + s.color + '">' + (s.color === 'gray' ? '—' : '✓') + '</span>';
+  if (s.color !== 'gray') html += '<span class="sem-date">' + s.label + '</span>';
+  if (link) html += '<a class="sem-link" href="' + link + '" target="_blank">Ver</a>';
+  return html;
+}
+
+function ctdCompletionCount(row) {
+  var done = 0;
+  ctdITEMS.forEach(function(item) { if (row[item.id + '_fecha']) done++; });
+  return done;
+}
+
+function ctdEsc(s) {
+  if (!s) return '';
+  return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ─── CTD KPI Calc ───
+function ctdCalcKPI(clients, lookup, contadora) {
+  var results = [];
+  ctdKPI_GROUPS.forEach(function(kpi) {
+    if (clients.length === 0) { results.push({ id:kpi.id, label:kpi.label, pct:0, done:0, total:0 }); return; }
+    var total = 0;
+    var sum = 0;
+    clients.forEach(function(c) {
+      var key = contadora ? (contadora + '_' + c) : c;
+      var row = lookup[key] || {};
+      total++;
+      sum += kpi.calc(row);
+    });
+    var pct = total > 0 ? Math.round((sum / total) * 100) : 0;
+    results.push({ id:kpi.id, label:kpi.label, pct:pct, done:Math.round(sum * 10)/10, total:total });
+  });
+  return results;
+}
+
+// ─── CTD Supabase ───
+async function ctdLoadContadoras() {
+  var result = await sb.from('asignaciones')
+    .select('contadora, cliente, mes')
+    .eq('anio', 2026)
+    .order('contadora');
+
+  var data = result.data || [];
+  var map = {};
+
+  var maxIdx = -1; var maxMes = '';
+  for (var i = 0; i < data.length; i++) {
+    var idx = MESES.indexOf(data[i].mes);
+    if (idx > maxIdx) { maxIdx = idx; maxMes = data[i].mes; }
+  }
+  if (!maxMes) maxMes = ctdGetCurrentReportMonth();
+
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    if (row.mes !== maxMes) continue;
+    if (!map[row.contadora]) map[row.contadora] = [];
+    if (map[row.contadora].indexOf(row.cliente) === -1) {
+      map[row.contadora].push(row.cliente);
+    }
+  }
+  ctdContadorasMap = map;
+}
+
+async function ctdLoadReporteData(mes) {
+  var result = await sb.from('reporte_mensual')
+    .select('*').eq('mes', mes).eq('anio', 2026).order('contadora');
+  return result.data || [];
+}
+
+async function ctdSaveReporte(contadora, cliente, mes, fields) {
+  var record = { contadora: contadora, cliente: cliente, mes: mes, anio: 2026 };
+  for (var key in fields) record[key] = fields[key];
+  var result = await sb.from('reporte_mensual').upsert(record, { onConflict: 'contadora,cliente,mes,anio' });
+  if (result.error) { console.error('Error guardando:', result.error); alert('Error guardando. Verifica tus permisos.'); return false; }
+  return true;
+}
+
+// ─── CTD Render ───
+async function ctdRenderApp() {
+  if (userRole === 'admin') {
+    await ctdRenderGerencial();
+  } else {
+    await ctdRenderContadoraView();
+  }
+}
+
+async function ctdRenderGerencial() {
+  var el = document.getElementById('ctd-content');
+  el.innerHTML = '<div class="empty">Cargando...</div>';
+
+  ctdReporteData = await ctdLoadReporteData(ctdSelectedMes);
+
+  var lookup = {};
+  ctdReporteData.forEach(function(r) { lookup[r.contadora + '_' + r.cliente] = r; });
+
+  var allNames = Object.keys(ctdContadorasMap).filter(function(n) {
+    return !ctdIsExcluida(n);
+  });
+  var contadoraNames = ctdSortContadoras(allNames);
+
+  var html = '';
+
+  // Month tabs
+  html += '<div class="month-tabs">';
+  MESES.forEach(function(m, i) {
+    html += '<button class="month-tab' + (m === ctdSelectedMes ? ' active' : '') + '" onclick="ctdSelectedMes=\'' + m + '\';ctdRenderApp()">' + MESES_LABEL[i] + '</button>';
+  });
+  html += '</div>';
+
+  // Contadora filter pills
+  html += '<div class="ctd-contadora-pills">';
+  html += '<button class="contadora-pill' + (ctdSelectedContadora === 'Todas' ? ' active' : '') + '" onclick="ctdSelectedContadora=\'Todas\';ctdRenderApp()">Todas</button>';
+  contadoraNames.forEach(function(name) {
+    html += '<button class="contadora-pill' + (ctdSelectedContadora === name ? ' active' : '') + '" onclick="ctdSelectedContadora=\'' + ctdEsc(name) + '\';ctdRenderApp()">' + name + '</button>';
+  });
+  html += '</div>';
+
+  var visibleContadoras = ctdSelectedContadora === 'Todas' ? contadoraNames : [ctdSelectedContadora];
+
+  var allVisibleClients = [];
+  visibleContadoras.forEach(function(contadora) {
+    var clients = ctdContadorasMap[contadora] || [];
+    clients.forEach(function(c) {
+      allVisibleClients.push({ contadora: contadora, cliente: c });
+    });
+  });
+
+  // KPI Dashboard
+  var kpiResults = [];
+  ctdKPI_GROUPS.forEach(function(kpi) {
+    var total = allVisibleClients.length;
+    var sum = 0;
+    allVisibleClients.forEach(function(item) {
+      var row = lookup[item.contadora + '_' + item.cliente] || {};
+      sum += kpi.calc(row);
+    });
+    var pct = total > 0 ? Math.round((sum / total) * 100) : 0;
+    kpiResults.push({ id:kpi.id, label:kpi.label, pct:pct, done:Math.round(sum * 10)/10, total:total });
+  });
+
+  html += '<div class="kpi-dashboard">';
+  kpiResults.forEach(function(kpi) {
+    var color = ctdKpiColor(kpi.pct);
+    html += '<div class="kpi-card">';
+    html += '<div class="kpi-card-title">' + kpi.label + '</div>';
+    html += '<div class="kpi-card-value" style="color:' + color + '">' + kpi.pct + '%</div>';
+    html += '<div class="kpi-card-sub">' + kpi.done + ' de ' + kpi.total + ' clientes</div>';
+    html += '<div class="kpi-bar-bg"><div class="kpi-bar-fill" style="width:' + kpi.pct + '%;background:' + color + '"></div></div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Expandable contadora sections
+  visibleContadoras.forEach(function(contadora) {
+    var isOpen = ctdOpenSections[contadora] || false;
+    var clients = (ctdContadorasMap[contadora] || []).slice().sort();
+    if (clients.length === 0) return;
+    var initial = contadora === 'Sin asignar' ? '?' : contadora.charAt(0);
+
+    html += '<div class="contadora-section">';
+
+    html += '<div class="ctd-contadora-header' + (isOpen ? ' expanded' : '') + '" onclick="ctdToggleSection(\'' + ctdEsc(contadora) + '\')">';
+    html += '<div class="contadora-header-avatar" style="background:var(--navy)">' + initial + '</div>';
+    html += '<div class="contadora-header-info">';
+    html += '<div class="contadora-header-name">' + contadora + '</div>';
+    html += '<div class="contadora-header-count">' + clients.length + ' clientes</div>';
+    html += '</div>';
+    html += '<span class="contadora-header-arrow' + (isOpen ? ' open' : '') + '">▼</span>';
+    html += '</div>';
+
+    html += '<div class="contadora-body' + (isOpen ? ' open' : '') + '">';
+    if (isOpen) {
+      var miniKPIs = ctdCalcKPI(clients, lookup, contadora);
+      html += '<div class="mini-kpis">';
+      miniKPIs.forEach(function(kpi) {
+        var color = ctdKpiColor(kpi.pct);
+        html += '<div class="mini-kpi">';
+        html += '<div class="mini-kpi-label">' + kpi.label + '</div>';
+        html += '<div class="mini-kpi-row">';
+        html += '<div class="mini-kpi-bar-bg"><div class="mini-kpi-bar-fill" style="width:' + kpi.pct + '%;background:' + color + '"></div></div>';
+        html += '<span class="mini-kpi-pct" style="color:' + color + '">' + kpi.pct + '%</span>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+
+      html += '<table class="report-table"><thead><tr>';
+      html += '<th>Cliente</th><th class="center">Facturas</th>';
+      ctdITEMS.forEach(function(item) { html += '<th class="center">' + item.short + '</th>'; });
+      html += '</tr></thead><tbody>';
+
+      clients.forEach(function(cliente) {
+        var row = lookup[contadora + '_' + cliente] || {};
+        html += '<tr>';
+        html += '<td class="client-name-cell">' + cliente + '</td>';
+        html += '<td class="center">' + (row.facturas_mes || '—') + '</td>';
+        ctdITEMS.forEach(function(item) {
+          html += '<td class="center">' + ctdSemaforoHTML(row[item.id + '_fecha'], row[item.id + '_link']) + '</td>';
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+    }
+    html += '</div></div>';
+  });
+
+  if (visibleContadoras.length === 0 || allVisibleClients.length === 0) {
+    html += '<div class="empty">No hay datos para mostrar.</div>';
+  }
+
+  el.innerHTML = html;
+}
+
+function ctdToggleSection(contadora) {
+  ctdOpenSections[contadora] = !ctdOpenSections[contadora];
+  ctdRenderApp();
+}
+
+async function ctdRenderContadoraView() {
+  var el = document.getElementById('ctd-content');
+  el.innerHTML = '<div class="empty">Cargando...</div>';
+
+  var myName = '';
+  var firstName = userName.split(' ')[0];
+  for (var key in ctdContadorasMap) {
+    if (key === firstName || key === userName) { myName = key; break; }
+  }
+
+  var clients = [];
+  if (myName && ctdContadorasMap[myName] && ctdContadorasMap[myName].length > 0) {
+    clients = ctdContadorasMap[myName].slice().sort();
+  } else {
+    var nameVariants = [userName, firstName];
+    for (var v = 0; v < nameVariants.length; v++) {
+      var tryName = nameVariants[v];
+      if (!tryName) continue;
+      var asigResult = await sb.from('asignaciones')
+        .select('cliente, contadora').eq('contadora', tryName).eq('anio', 2026);
+      if (asigResult.data && asigResult.data.length > 0) {
+        myName = tryName;
+        var seen = {};
+        asigResult.data.forEach(function(r) {
+          if (!seen[r.cliente]) { clients.push(r.cliente); seen[r.cliente] = true; }
+        });
+        clients.sort();
+        break;
+      }
+    }
+  }
+
+  if (!myName || clients.length === 0) {
+    el.innerHTML = '<div class="empty">No tienes clientes asignados.</div>';
+    return;
+  }
+
+  ctdReporteData = await ctdLoadReporteData(ctdSelectedMes);
+  var lookup = {};
+  ctdReporteData.forEach(function(r) { if (r.contadora === myName) lookup[r.cliente] = r; });
+
+  var html = '';
+
+  // Month tabs
+  html += '<div class="month-tabs">';
+  MESES.forEach(function(m, i) {
+    html += '<button class="month-tab' + (m === ctdSelectedMes ? ' active' : '') + '" onclick="ctdSelectedMes=\'' + m + '\';ctdRenderApp()">' + MESES_LABEL[i] + '</button>';
+  });
+  html += '</div>';
+
+  html += '<span id="ctd-save-msg" class="saving-indicator"></span>';
+
+  clients.forEach(function(cliente) {
+    var row = lookup[cliente] || {};
+    var done = ctdCompletionCount(row);
+    var total = ctdITEMS.length;
+    var isOpen = ctdOpenCards[cliente] || false;
+
+    var statusColor = done === total ? 'background:#ecfdf5;color:#059669;' : done > 0 ? 'background:#fffbeb;color:#d97706;' : 'background:#f5f7fa;color:var(--light);';
+    var statusLabel = done === total ? 'Completo' : done + '/' + total;
+
+    html += '<div class="edit-card">';
+    html += '<div class="edit-header' + (isOpen ? ' expanded' : '') + '" onclick="ctdToggleCard(\'' + ctdEsc(cliente) + '\')">';
+    html += '<span class="edit-client-name">' + cliente + '</span>';
+    html += '<span class="edit-status" style="' + statusColor + '">' + statusLabel + '</span>';
+    html += '<span class="edit-arrow' + (isOpen ? ' open' : '') + '">▼</span>';
+    html += '</div>';
+
+    html += '<div class="edit-body' + (isOpen ? ' open' : '') + '">';
+    if (isOpen) {
+      html += '<div class="edit-field" style="margin-bottom:16px">';
+      html += '<div class="edit-field-label">Cantidad de facturas del mes</div>';
+      html += '<input type="number" id="ctdf_' + ctdEsc(cliente) + '_facturas" value="' + (row.facturas_mes || '') + '" placeholder="0">';
+      html += '</div>';
+
+      html += '<div class="edit-grid">';
+      ctdITEMS.forEach(function(item) {
+        var fechaVal = row[item.id + '_fecha'] || '';
+        var linkVal = row[item.id + '_link'] || '';
+        html += '<div class="edit-field">';
+        html += '<div class="edit-field-label">' + item.label + '</div>';
+        html += '<div class="edit-field-row"><input type="date" id="ctdf_' + ctdEsc(cliente) + '_' + item.id + '_fecha" value="' + fechaVal + '"></div>';
+        html += '<input type="url" id="ctdf_' + ctdEsc(cliente) + '_' + item.id + '_link" value="' + linkVal + '" placeholder="Link (opcional)" style="margin-top:6px">';
+        html += '<div class="edit-field-hint">Fecha de entrega + link al documento</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      html += '<div class="edit-save">';
+      html += '<button class="btn btn-primary" onclick="ctdHandleSave(\'' + ctdEsc(myName) + '\',\'' + ctdEsc(cliente) + '\')">Guardar</button>';
+      html += '<button class="btn btn-ghost" onclick="ctdToggleCard(\'' + ctdEsc(cliente) + '\')">Cerrar</button>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  });
+
+  if (clients.length === 0) {
+    html += '<div class="empty">No tienes clientes asignados para este periodo.</div>';
+  }
+  el.innerHTML = html;
+}
+
+function ctdToggleCard(cliente) {
+  ctdOpenCards[cliente] = !ctdOpenCards[cliente];
+  ctdRenderApp();
+}
+
+async function ctdHandleSave(contadora, cliente) {
+  var prefix = 'ctdf_' + cliente.replace(/'/g, "\\'") + '_';
+  var fields = { facturas_mes: parseInt(document.getElementById(prefix + 'facturas').value) || 0 };
+  ctdITEMS.forEach(function(item) {
+    fields[item.id + '_fecha'] = document.getElementById(prefix + item.id + '_fecha').value || null;
+    fields[item.id + '_link'] = document.getElementById(prefix + item.id + '_link').value || '';
+  });
+
+  var msg = document.getElementById('ctd-save-msg');
+  msg.textContent = 'Guardando...';
+  var ok = await ctdSaveReporte(contadora, cliente, ctdSelectedMes, fields);
+  if (ok) {
+    msg.textContent = 'Guardado';
+    setTimeout(function() { msg.textContent = ''; }, 2000);
+    ctdReporteData = await ctdLoadReporteData(ctdSelectedMes);
+    ctdRenderApp();
+  } else { msg.textContent = 'Error'; }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ██  SHARED AUTH & INIT
+// ══════════════════════════════════════════════════════════════
+
+async function handleLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var password = document.getElementById('login-password').value;
+  var errorEl = document.getElementById('login-error');
+  var btn = document.getElementById('btn-login');
+  if (!email || !password) { errorEl.textContent = 'Ingresa email y contrasena.'; errorEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...'; errorEl.style.display = 'none';
+  var result = await sb.auth.signInWithPassword({ email: email, password: password });
+  if (result.error) { errorEl.textContent = 'Email o contrasena incorrectos.'; errorEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Entrar'; return; }
+  await loadUserProfile();
+  await showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  userRole = null;
+  userName = '';
+  document.getElementById('app-wrapper').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-password').value = '';
+}
+
+async function loadUserProfile() {
+  var result = await sb.auth.getUser();
+  var user = result.data ? result.data.user : null;
+  if (!user) return;
+  var pr = await sb.from('profiles').select('nombre, rol').eq('id', user.id).single();
+  if (pr.data) { userRole = pr.data.rol; userName = pr.data.nombre || user.email; }
+  else { userRole = 'contadora'; userName = user.email; }
+}
+
+async function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').classList.remove('hidden');
+  document.getElementById('user-display-name').textContent = userName;
+
+  // Load both modules' data in parallel
+  await Promise.all([
+    ccLoadData(),
+    ccLoadImplementaciones(),
+    ccLoadSoftwareClientes(),
+    ccLoadPerfilesFromDB(),
+    ccLoadKpiFromDB(),
+    ctdLoadContadoras()
+  ]);
+
+  // Init CC state
+  ccActiveMainTab = 'dashboard';
+  ccActiveSubTab = null;
+
+  // Init CTD state
+  ctdSelectedMes = ctdGetCurrentReportMonth();
+
+  // Render
+  renderGerMainTabs();
+  switchGerTab(gerMainTab);
+}
+
+// Enter key handlers
+var loginPwdEl = document.getElementById('login-password');
+var loginEmailEl = document.getElementById('login-email');
+if (loginPwdEl) loginPwdEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleLogin(); });
+if (loginEmailEl) loginEmailEl.addEventListener('keydown', function(e) { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+
+// Embed mode
+var isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+if (isEmbed) document.body.classList.add('embed');
+
+// Init
+async function init() {
+  var result = await sb.auth.getSession();
+  var session = result.data ? result.data.session : null;
+  if (session) { await loadUserProfile(); await showApp(); }
+  else if (isEmbed) { document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#7c8495;">Sesion no encontrada. Recarga la pagina principal.</div>'; }
+}
+init();
+</script>
+</body>
+</html>

@@ -498,12 +498,9 @@ const MENU = [
     icon: '\ud83c\udfe2',
     iconBg: '#ecfdf5',
     roles: ['admin'],
-    children: [
-      { id: 'control-clientes', title: 'Control de Clientes', href: 'contadores.html', active: true,
-        desc: 'Clientes por contadora, carga de trabajo e implementaciones.' },
-      { id: 'control-contadoras', title: 'Control de Contadoras', href: 'control-contadoras.html', active: true,
-        desc: 'Reporte mensual por contadora: facturas, presupuesto, proyeccion, resumen, video.' }
-    ]
+    href: 'gerencia.html',
+    active: true,
+    desc: 'Control de clientes, carga de trabajo, reportes mensuales y contadoras.'
   },
   {
     id: 'comercial',
@@ -521,12 +518,9 @@ const MENU = [
     icon: '\ud83c\udfaf',
     iconBg: '#f5f3ff',
     roles: ['admin', 'contadora'],
-    children: [
-      { id: 'checklist', title: 'Checklist Mensual', href: 'checklist.html', active: true,
-        desc: 'Checklist de 23 tareas por cliente, con fechas de firma y presentacion.' },
-      { id: 'kpi', title: 'KPI', href: 'kpi.html', active: true,
-        desc: 'Evaluacion trimestral: digitacion, resumenes y reuniones.' }
-    ]
+    href: 'contadores-tab.html',
+    active: true,
+    desc: 'Checklist mensual de tareas y evaluacion KPI por contadora.'
   },
   {
     id: 'impuestos',
