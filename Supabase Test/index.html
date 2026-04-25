@@ -677,7 +677,7 @@ async function loadDashboardData() {
 
   // 3) Leads y ROAS del mes actual
   var totalLeads = 0, cierres = 0, vendido = 0, cotizado = 0, ejecutado = 0;
-  var nombresRec = [], nombresImpl = [], nombresFE = [], nombresSinCat = [];
+  var nombresRec = [], nombresImpl = [], nombresFE = [], nombresSinCat = [], nombresSoft = [];
   try {
     var res3 = await sb.from('leads').select('*').eq('anio', 2026).eq('mes', currentMes);
     var leads = res3.data || [];
@@ -700,6 +700,7 @@ async function loadDashboardData() {
         else if (cat === 'Implementacion') nombresImpl.push(nombre);
         else if (cat === 'Facturacion Electronica') nombresFE.push(nombre);
         else nombresSinCat.push(nombre);
+        if (soft > 0) nombresSoft.push(nombre);
       }
     });
     vendido = Math.round(vendido * 100) / 100;
@@ -723,7 +724,7 @@ async function loadDashboardData() {
     mesLabel: mesLabel,
     contabilidad: { total: contaTotal, prevTotal: contaPrevTotal, nuevos: contaNuevos, churn: contaChurn, txServ: contaTxServ, txAdm: contaTxAdm },
     software: { total: softTotal, prev: softPrev, base: softBase, nuevosMes: softNuevosMes },
-    comercial: { totalLeads: totalLeads, cierres: cierres, cpl: cpl, cpa: cpa, pctCierre: pctCierre, cotizado: cotizado, vendido: vendido, ejecutado: ejecutado, ganancia: ganancia, roas: roasVal, nombresRec: nombresRec, nombresImpl: nombresImpl, nombresFE: nombresFE, nombresSinCat: nombresSinCat }
+    comercial: { totalLeads: totalLeads, cierres: cierres, cpl: cpl, cpa: cpa, pctCierre: pctCierre, cotizado: cotizado, vendido: vendido, ejecutado: ejecutado, ganancia: ganancia, roas: roasVal, nombresRec: nombresRec, nombresImpl: nombresImpl, nombresFE: nombresFE, nombresSinCat: nombresSinCat, nombresSoft: nombresSoft }
   };
 }
 
@@ -814,6 +815,10 @@ function renderDashboard(d) {
     if (d.comercial.nombresSinCat.length > 0) {
       html += '<div class="dash-stat" style="min-width:180px"><div class="dash-stat-label" style="color:var(--light)">Sin categoria (' + d.comercial.nombresSinCat.length + ')</div>';
       html += '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">' + pills(d.comercial.nombresSinCat, 'green') + '</div></div>';
+    }
+    if (d.comercial.nombresSoft.length > 0) {
+      html += '<div class="dash-stat" style="min-width:180px"><div class="dash-stat-label" style="color:#8b5cf6">Software (' + d.comercial.nombresSoft.length + ')</div>';
+      html += '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">' + pills(d.comercial.nombresSoft, 'green') + '</div></div>';
     }
     html += '</div>';
   }
