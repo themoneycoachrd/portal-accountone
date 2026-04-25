@@ -208,7 +208,7 @@ var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','
 var MESES_LABEL = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-var EXCLUIDAS = ['Karina', 'Milka', 'Yoleni'];
+var EXCLUIDAS = ['Karina', 'Milka', 'Yolenny'];
 function isExcluida(name) {
   for (var i = 0; i < EXCLUIDAS.length; i++) {
     if (name.indexOf(EXCLUIDAS[i]) === 0) return true;
@@ -352,6 +352,7 @@ async function loadAsignaciones() {
   if (result.error) { console.error('Error cargando asignaciones:', result.error); return; }
   ASIGNACIONES = {};
   (result.data || []).forEach(function(r) {
+    if (isExcluida(r.contadora)) return;
     var key = r.contadora + '_' + r.mes;
     if (!ASIGNACIONES[key]) ASIGNACIONES[key] = [];
     if (ASIGNACIONES[key].indexOf(r.cliente) === -1) ASIGNACIONES[key].push(r.cliente);
