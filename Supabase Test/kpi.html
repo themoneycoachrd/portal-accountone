@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPI Scorecard — Account One 2026</title>
+<title>KPI Contadoras — Account One 2026</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -14,6 +14,7 @@
   --red: #ef4444;
   --amber: #f59e0b;
   --purple: #8b5cf6;
+  --pink: #ec4899;
   --bg: #f4f6f9;
   --card: #ffffff;
   --border: #e8ecf1;
@@ -21,7 +22,6 @@
   --muted: #7c8495;
   --light: #a3aab8;
 }
-
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; }
 
@@ -51,72 +51,131 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 
 /* ─── Breadcrumb ─── */
 .breadcrumb-bar { display:flex; align-items:center; gap:6px; padding:10px 24px; background:white; border-bottom:1px solid var(--border); font-size:13px; }
-.breadcrumb-bar a { color:var(--muted); text-decoration:none; font-weight:500; }
+.breadcrumb-bar a { color:var(--muted); text-decoration:none; font-weight:500; cursor:pointer; }
 .breadcrumb-bar a:hover { color:var(--navy); text-decoration:underline; }
 .breadcrumb-bar .sep { color:var(--light); font-size:11px; }
 .breadcrumb-bar .current { color:var(--text); font-weight:600; }
 
-/* ─── Tabs ─── */
+/* ─── Main tabs ─── */
 .main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
 .main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
 .main-tab:hover { color:var(--text); }
 .main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
 
-.sub-tabs { display:flex; gap:4px; padding:10px 24px; background:var(--bg); border-bottom:1px solid var(--border); flex-wrap:wrap; }
-.sub-tab { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
-.sub-tab:hover { background:#eef0f4; }
-.sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+/* ─── Quarter bar & month tabs ─── */
+.quarter-bar { display:flex; gap:6px; padding:12px 24px; background:var(--bg); border-bottom:1px solid var(--border); }
+.q-btn { flex:1; padding:10px 8px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; border:2px solid var(--border); background:white; color:var(--muted); transition:all 0.2s; text-align:center; font-family:inherit; }
+.q-btn:hover { border-color:var(--blue); background:#f8fafc; }
+.q-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+.q-btn .q-label { font-size:15px; }
+.q-btn .q-months { font-size:10px; opacity:0.6; margin-top:2px; }
+
+.month-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+.month-tab { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.month-tab:hover { background:#eef0f4; }
+.month-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
 
 /* ─── Content ─── */
-.content { padding:24px; max-width:1100px; margin:0 auto; }
+.content { padding:24px; max-width:1000px; margin:0 auto; }
 
-/* ─── Stats ─── */
-.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
-.stat { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); }
-.stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); font-weight:600; }
-.stat-value { font-size:1.6rem; font-weight:800; margin-top:4px; }
-.stat-sub { font-size:0.7rem; color:var(--light); margin-top:4px; }
+/* ─── Selector de contadora ─── */
+.selector-screen { text-align:center; padding:40px 20px; }
+.selector-screen h2 { font-size:18px; font-weight:700; margin-bottom:8px; }
+.selector-screen p { font-size:13px; color:var(--muted); margin-bottom:24px; }
+.selector-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px; max-width:600px; margin:0 auto; }
+.selector-card { background:white; border:2px solid var(--border); border-radius:12px; padding:20px 16px; cursor:pointer; transition:all 0.2s; }
+.selector-card:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+.selector-card .sc-dot { width:14px; height:14px; border-radius:50%; margin:0 auto 10px; }
+.selector-card .sc-name { font-size:15px; font-weight:700; }
+.selector-card .sc-tier { font-size:11px; color:var(--light); margin-top:2px; }
+.selector-card .sc-obj { font-size:12px; color:var(--muted); margin-top:6px; }
 
-/* ─── Cards ─── */
-.card { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); margin-bottom:16px; }
-.card h3 { font-size:0.85rem; font-weight:700; color:var(--muted); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.3px; }
+/* ─── Score overview ─── */
+.score-overview { background:white; border-radius:14px; border:1px solid var(--border); padding:20px; margin-bottom:20px; display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; }
+.score-big { text-align:center; min-width:100px; }
+.score-big .num { font-size:48px; font-weight:900; line-height:1; }
+.score-big .of { font-size:13px; color:var(--light); }
+.score-big .label { display:inline-block; margin-top:6px; padding:3px 12px; border-radius:10px; font-size:12px; font-weight:700; }
+.score-breakdown { display:grid; grid-template-columns:1fr; gap:6px; }
+.score-row { display:flex; align-items:center; gap:8px; }
+.score-row-label { font-size:12px; color:var(--muted); width:120px; min-width:120px; }
+.score-row-bar { flex:1; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; }
+.score-row-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+.score-row-pts { font-size:12px; font-weight:700; width:50px; text-align:right; }
+.escala-mini { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-top:8px; }
+.escala-item { text-align:center; padding:8px 4px; border-radius:8px; border:1px solid var(--border); transition:all 0.2s; }
+.escala-item.active { border-width:2px; }
+.escala-range { font-size:14px; font-weight:800; }
+.escala-name { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.3px; margin-top:1px; }
 
-/* ─── KPI Card ─── */
-.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:14px; overflow:hidden; }
-.kpi-header { display:flex; align-items:center; gap:12px; padding:16px 20px; cursor:pointer; transition:background 0.12s; }
-.kpi-header:hover { background:#fafbfc; }
-.kpi-header.expanded { background:#f5f7fa; border-bottom:1px solid var(--border); }
-.kpi-avatar { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:700; color:white; flex-shrink:0; }
-.kpi-info { flex:1; }
-.kpi-name { font-size:0.95rem; font-weight:700; }
-.kpi-tier { font-size:0.72rem; color:var(--light); }
-.kpi-score-pill { font-size:0.85rem; font-weight:800; padding:4px 14px; border-radius:10px; }
-.kpi-arrow { font-size:14px; color:var(--light); transition:transform 0.2s; }
-.kpi-arrow.open { transform:rotate(180deg); }
-.kpi-body { max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease; }
-.kpi-body.open { max-height:600px; padding:20px; }
+@media (max-width:768px) { .score-overview { grid-template-columns:1fr; } }
 
-.kpi-components { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
-.kpi-comp { background:var(--bg); border-radius:10px; padding:14px; text-align:center; }
-.kpi-comp-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.3px; color:var(--light); font-weight:600; }
-.kpi-comp-weight { font-size:0.6rem; color:var(--light); margin-top:1px; }
-.kpi-comp-value { font-size:1.3rem; font-weight:800; margin-top:6px; }
-.kpi-comp-input { width:70px; padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:1rem; font-weight:700; text-align:center; font-family:inherit; background:white; }
-.kpi-comp-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); }
-.kpi-comp-weighted { font-size:0.7rem; color:var(--muted); margin-top:4px; }
+/* ─── Bono card ─── */
+.bono-card { background:linear-gradient(135deg, #1a2332 0%, #2a3a4e 50%, #3b5998 100%); border-radius:14px; padding:24px; margin-bottom:20px; color:white; position:relative; overflow:hidden; }
+.bono-card::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; background:rgba(255,255,255,0.06); border-radius:50%; }
+.bono-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; position:relative; z-index:1; }
+.bono-icon { width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:18px; }
+.bono-header-text h3 { font-size:14px; font-weight:700; margin-bottom:1px; }
+.bono-header-text span { font-size:11px; opacity:0.65; }
+.bono-body { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; position:relative; z-index:1; }
+.bono-item { text-align:center; }
+.bono-item-label { font-size:10px; text-transform:uppercase; letter-spacing:0.4px; opacity:0.6; margin-bottom:4px; }
+.bono-item-value { font-size:22px; font-weight:900; }
+.bono-item-sub { font-size:11px; opacity:0.5; margin-top:2px; }
+.bono-pct-badge { display:inline-block; padding:3px 10px; border-radius:8px; font-size:12px; font-weight:700; margin-top:4px; }
+.bono-msg { text-align:center; margin-top:16px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.12); position:relative; z-index:1; }
+.bono-msg p { font-size:13px; font-weight:600; }
+.bono-msg span { font-size:11px; opacity:0.5; }
+@media (max-width:500px) { .bono-body { grid-template-columns:1fr; gap:10px; } }
 
-.kpi-total-bar { height:8px; background:#e8ecf1; border-radius:4px; overflow:hidden; margin-bottom:8px; }
-.kpi-total-fill { height:100%; border-radius:4px; transition:width 0.3s; }
-.kpi-total-row { display:flex; justify-content:space-between; align-items:center; }
-.kpi-total-label { font-size:0.78rem; color:var(--muted); }
-.kpi-total-score { font-size:1.1rem; font-weight:800; }
+/* ─── Component cards ─── */
+.comp-card { background:white; border-radius:12px; border:1px solid var(--border); margin-bottom:16px; overflow:hidden; }
+.comp-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #f1f5f9; }
+.comp-header-left { display:flex; align-items:center; gap:10px; }
+.comp-num { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:white; }
+.comp-title { font-size:14px; font-weight:700; }
+.comp-weight { font-size:11px; color:var(--light); }
+.comp-score-pill { padding:4px 12px; border-radius:8px; font-size:12px; font-weight:700; }
+.comp-body { padding:18px; }
 
-.kpi-actions { display:flex; gap:8px; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
-.btn { padding:8px 18px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.12s; }
-.btn-primary { background:var(--navy); color:white; }
-.btn-primary:hover { background:var(--navy-mid); }
-.btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
-.btn-ghost:hover { background:#f5f7fa; }
+/* ─── Digitacion table ─── */
+.dig-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.dig-table th { text-align:center; padding:8px 6px; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.3px; color:var(--muted); border-bottom:2px solid var(--border); background:#f8fafc; }
+.dig-table th:first-child { text-align:left; }
+.dig-table td { padding:6px; border-bottom:1px solid #f1f5f9; text-align:center; }
+.dig-table td:first-child { text-align:left; font-weight:600; }
+.dig-table tr:hover td { background:#fafbfc; }
+.dig-table .total-row td { border-top:2px solid var(--border); font-weight:700; background:#f8fafc; }
+.dig-input { width:56px; padding:5px 4px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem; text-align:center; font-family:inherit; -moz-appearance:textfield; }
+.dig-input::-webkit-outer-spin-button, .dig-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.dig-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); }
+
+/* ─── Stats row ─── */
+.dig-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+.dig-stat { background:#f8fafc; border-radius:8px; padding:10px; text-align:center; }
+.dig-stat-label { font-size:10px; text-transform:uppercase; color:var(--light); letter-spacing:0.3px; }
+.dig-stat-value { font-size:20px; font-weight:800; margin-top:2px; }
+
+/* ─── Progress ─── */
+.progress-bar { width:100%; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+.res-progress { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.res-count { font-size:14px; font-weight:700; }
+
+/* ─── Client table (resumenes + video) ─── */
+.client-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+.client-table th { text-align:left; padding:8px 10px; background:#f8fafc; font-size:0.65rem; font-weight:700; text-transform:uppercase; color:var(--muted); letter-spacing:0.3px; border-bottom:2px solid var(--border); }
+.client-table td { padding:8px 10px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+.client-table tr:hover td { background:#fafbfc; }
+.row-done { background:#f0fdf4 !important; }
+
+/* ─── Toggle group ─── */
+.toggle-group { display:flex; gap:0; }
+.toggle-opt { padding:5px 14px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; font-family:inherit; }
+.toggle-opt:first-child { border-radius:6px 0 0 6px; }
+.toggle-opt:last-child { border-radius:0 6px 6px 0; border-left:none; }
+.toggle-opt.active-yes { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+.toggle-opt.active-no { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
 
 /* ─── Trimestral table ─── */
 .tri-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
@@ -125,28 +184,37 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .tri-table td { padding:10px 12px; border-bottom:1px solid #f1f3f7; }
 .tri-table td.center { text-align:center; }
 .tri-table tr:hover td { background:#fafbfc; }
-.tri-table .total-row td { border-top:2px solid var(--navy); font-weight:700; background:#f8f9fb; }
-
 .score-badge { display:inline-block; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.78rem; min-width:42px; text-align:center; }
 .score-excelente { background:#ecfdf5; color:#059669; }
 .score-bueno { background:#eef2ff; color:#4361ee; }
 .score-aceptable { background:#fffbeb; color:#d97706; }
 .score-sinbono { background:#fef2f2; color:#dc2626; }
 .score-empty { background:#f5f7fa; color:var(--light); }
-
 .bono-pill { display:inline-block; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.78rem; }
 .bono-100 { background:#ecfdf5; color:#059669; }
 .bono-75 { background:#eef2ff; color:#4361ee; }
 .bono-50 { background:#fffbeb; color:#d97706; }
 .bono-0 { background:#fef2f2; color:#dc2626; }
 
-/* ─── Misc ─── */
+.card { background:var(--card); border-radius:12px; padding:20px; border:1px solid var(--border); margin-bottom:16px; }
+.card h3 { font-size:0.85rem; font-weight:700; color:var(--muted); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.3px; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:12px; margin-bottom:20px; }
+.stat { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); }
+.stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); font-weight:600; }
+.stat-value { font-size:1.6rem; font-weight:800; margin-top:4px; }
+.stat-sub { font-size:0.7rem; color:var(--light); margin-top:4px; }
+
+.note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:0.78rem; color:#92400e; margin-bottom:16px; }
+.save-bar { display:flex; gap:8px; margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+.btn { padding:8px 18px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:none; font-family:inherit; transition:all 0.12s; }
+.btn-primary { background:var(--navy); color:white; }
+.btn-primary:hover { background:var(--navy-mid); }
+.btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+
 .hidden { display:none; }
 .footer { text-align:center; font-size:0.75rem; color:var(--light); padding:20px; }
 .empty { text-align:center; padding:40px; color:var(--light); font-size:0.88rem; }
-.note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:0.78rem; color:#92400e; margin-bottom:16px; }
 
-/* ─── Embed ─── */
 body.embed .login-overlay { display:none !important; }
 body.embed .header { display:none !important; }
 body.embed .breadcrumb-bar { display:none !important; }
@@ -180,8 +248,8 @@ body.embed .footer { display:none !important; }
 <div class="header">
   <div class="header-inner">
     <div>
-      <h1>KPI Scorecard</h1>
-      <p>Evaluacion trimestral — 2026</p>
+      <h1>KPI Contadoras</h1>
+      <p>Account One — 2026</p>
     </div>
     <div class="user-bar">
       <span class="user-name" id="user-display-name"></span>
@@ -193,11 +261,11 @@ body.embed .footer { display:none !important; }
 <div class="breadcrumb-bar">
   <a href="index.html">Account One</a>
   <span class="sep">›</span>
-  <span class="current">KPI Scorecard</span>
+  <span class="current">KPI Contadoras</span>
 </div>
 
 <div class="main-tabs" id="mainTabs"></div>
-<div class="sub-tabs" id="subTabs"></div>
+<div id="navArea"></div>
 <div class="content" id="content"></div>
 <div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
 
@@ -214,436 +282,228 @@ const MESES_LABEL = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'
 const MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 const QUARTERS = [
-  { id:'Q1', label:'Q1 (Ene-Mar)', meses:['enero','febrero','marzo'] },
-  { id:'Q2', label:'Q2 (Abr-Jun)', meses:['abril','mayo','junio'] },
-  { id:'Q3', label:'Q3 (Jul-Sep)', meses:['julio','agosto','septiembre'] },
-  { id:'Q4', label:'Q4 (Oct-Dic)', meses:['octubre','noviembre','diciembre'] }
+  { id:1, label:'Q1', meses:['enero','febrero','marzo'], cierre:'Marzo' },
+  { id:2, label:'Q2', meses:['abril','mayo','junio'], cierre:'Junio' },
+  { id:3, label:'Q3', meses:['julio','agosto','septiembre'], cierre:'Septiembre' },
+  { id:4, label:'Q4', meses:['octubre','noviembre','diciembre'], cierre:'Diciembre' }
 ];
-
-// Meses de video vs reunion dentro de cada trimestre
-// Posicion 0,1 = video; posicion 2 = reunion
-function getVideoReunionLabel(mes) {
-  const idx = MESES.indexOf(mes);
-  const posInQ = idx % 3;
-  return posInQ === 2 ? 'Reunion' : 'Video';
-}
 
 const KPI_CONTADORAS = [
-  { nombre:'Beliani', tier:'Contadora I', objetivo:1000, salario:45000, bono:15000, color:'#8b5cf6' },
-  { nombre:'Yessica', tier:'Contadora I', objetivo:1000, salario:45000, bono:15000, color:'#f59e0b' },
-  { nombre:'Taina', tier:'Contadora II', objetivo:500, salario:60000, bono:20000, color:'#4361ee' },
-  { nombre:'Victoria', tier:'Pendiente', objetivo:500, salario:45000, bono:15000, color:'#ec4899' }
+  { nombre:'Beliani', tier:'Contadora I', objetivo:1000, salario:45000, color:'#8b5cf6' },
+  { nombre:'Yessica', tier:'Contadora I', objetivo:1000, salario:45000, color:'#f59e0b' },
+  { nombre:'Taina', tier:'Contadora II', objetivo:500, salario:60000, color:'#4361ee' },
+  { nombre:'Victoria', tier:'Por definir', objetivo:500, salario:45000, color:'#ec4899' }
 ];
 
-const COMPONENTES = [
-  { id:'digitacion', label:'Digitacion', peso:50, max:10 },
-  { id:'resumenes', label:'Resumenes', peso:30, max:10 },
-  { id:'video_reunion', label:'Video / Reunion', peso:20, max:10 }
+const KPI_ESCALA = [
+  { min:90, max:100, label:'Excelente', bonoPct:100, color:'#10b981', bg:'#ecfdf5', css:'score-excelente', bonoCss:'bono-100' },
+  { min:80, max:89,  label:'Bueno',     bonoPct:75,  color:'#4361ee', bg:'#eef2ff', css:'score-bueno', bonoCss:'bono-75' },
+  { min:70, max:79,  label:'Aceptable', bonoPct:50,  color:'#f59e0b', bg:'#fffbeb', css:'score-aceptable', bonoCss:'bono-50' },
+  { min:0,  max:69,  label:'Sin bono',  bonoPct:0,   color:'#ef4444', bg:'#fef2f2', css:'score-sinbono', bonoCss:'bono-0' }
 ];
 
-function getCategoria(total) {
-  if (total >= 90) return { label:'Excelente', css:'score-excelente', pctBono:100, bonoCss:'bono-100' };
-  if (total >= 80) return { label:'Bueno', css:'score-bueno', pctBono:75, bonoCss:'bono-75' };
-  if (total >= 70) return { label:'Aceptable', css:'score-aceptable', pctBono:50, bonoCss:'bono-50' };
-  return { label:'Sin bono', css:'score-sinbono', pctBono:0, bonoCss:'bono-0' };
-}
+function getEscala(score) { return KPI_ESCALA.find(e => score >= e.min && score <= e.max) || KPI_ESCALA[3]; }
+function getBonoBase(contadora) { const c = KPI_CONTADORAS.find(x => x.nombre === contadora); return c ? Math.round(c.salario / 3) : 0; }
+function formatMoney(n) { return 'RD$' + n.toLocaleString(); }
+function getVideoTipo(mes) { const idx = MESES.indexOf(mes); return (idx % 3 === 2) ? 'Reunion' : 'Video'; }
+function getQuarterInfo(mes) { const idx = MESES.indexOf(mes); const q = Math.floor(idx / 3) + 1; const pos = (idx % 3) + 1; return { q, pos, label:'Q' + q + ' — Mes ' + pos + ' de 3' }; }
+function getCategoriaColor(total) { if (total >= 90) return '#10b981'; if (total >= 80) return '#4361ee'; if (total >= 70) return '#f59e0b'; return '#ef4444'; }
+function getBarColor(pct) { return pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)'; }
+function isMonthPast(mesIdx) { const now = new Date(); const end = new Date(2026, mesIdx + 1, 0, 23, 59, 59); return now > end; }
 
-function calcTotal(scores) {
-  const d = (scores.digitacion || 0);
-  const r = (scores.resumenes || 0);
-  const v = (scores.video_reunion || 0);
-  return (d * 5) + (r * 3) + (v * 2);
-}
-
-function getCategoriaColor(total) {
-  if (total >= 90) return '#10b981';
-  if (total >= 80) return '#4361ee';
-  if (total >= 70) return '#f59e0b';
-  return '#ef4444';
+function getCurrentQuarter() {
+  const m = new Date().getMonth();
+  return Math.floor(m / 3) + 1;
 }
 
 // ==================== STATE ====================
 let userRole = null;
 let userName = '';
-let KPI_DATA = {};
-let activeTab = 'trimestral';
-let activeQuarter = 'Q2';
-let activeMonth = 'abril';
-let openCards = {};
+let DETALLE = {};       // kpi_detalle keyed by "contadora_mes"
+let ASIGNACIONES = {};  // keyed by "contadora_mes" -> [{nombre, transacciones}]
+let activeTab = 'detalle';
+let activeQuarter = getCurrentQuarter();
+let activeContadora = null;
+let activeMes = null;
+let saving = false;
 
-// ==================== SUPABASE ====================
+// ==================== SUPABASE DATA ====================
 
-async function loadKpiData() {
-  const { data, error } = await sb.from('kpi_scores').select('*').eq('anio', 2026);
-  if (error) console.error('Error cargando KPI:', error);
-  const kpi = {};
+async function loadAsignaciones() {
+  const { data, error } = await sb.from('asignaciones').select('*');
+  if (error) { console.error('Error cargando asignaciones:', error); return; }
+  ASIGNACIONES = {};
   (data || []).forEach(r => {
     const key = r.contadora + '_' + r.mes;
-    kpi[key] = {
-      _id: r.id,
-      contadora: r.contadora,
-      mes: r.mes,
-      digitacion: parseFloat(r.digitacion) || 0,
-      resumenes: parseFloat(r.resumenes) || 0,
-      video_reunion: parseFloat(r.video_reunion) || 0,
-      total: parseFloat(r.total) || 0
-    };
+    if (!ASIGNACIONES[key]) ASIGNACIONES[key] = [];
+    ASIGNACIONES[key].push({ nombre: r.cliente, transacciones: r.adm || 0 });
   });
-  return kpi;
 }
 
-async function saveKpi(contadora, mes, scores) {
-  const total = calcTotal(scores);
-  const key = contadora + '_' + mes;
-  const existing = KPI_DATA[key];
-
-  if (existing && existing._id) {
-    const { error } = await sb.from('kpi_scores').update({
-      digitacion: scores.digitacion,
-      resumenes: scores.resumenes,
-      video_reunion: scores.video_reunion,
-      total: total
-    }).eq('id', existing._id);
-    if (error) { console.error('Error actualizando KPI:', error); alert('Error guardando. Verifica tus permisos.'); return false; }
-    existing.digitacion = scores.digitacion;
-    existing.resumenes = scores.resumenes;
-    existing.video_reunion = scores.video_reunion;
-    existing.total = total;
-  } else {
-    const { data, error } = await sb.from('kpi_scores').insert({
-      contadora: contadora,
-      mes: mes,
-      anio: 2026,
-      digitacion: scores.digitacion,
-      resumenes: scores.resumenes,
-      video_reunion: scores.video_reunion,
-      total: total
-    }).select();
-    if (error) { console.error('Error insertando KPI:', error); alert('Error guardando. Verifica tus permisos.'); return false; }
-    if (data && data[0]) {
-      KPI_DATA[key] = {
-        _id: data[0].id,
-        contadora, mes,
-        digitacion: scores.digitacion,
-        resumenes: scores.resumenes,
-        video_reunion: scores.video_reunion,
-        total
-      };
-    }
+function getClients(contadora, mes) {
+  // Try exact month, then fallback to previous months in same year
+  const idx = MESES.indexOf(mes);
+  for (let i = idx; i >= 0; i--) {
+    const key = contadora + '_' + MESES[i];
+    if (ASIGNACIONES[key] && ASIGNACIONES[key].length > 0) return ASIGNACIONES[key];
   }
-  return true;
+  return [];
 }
 
-// ==================== UTILS ====================
+function getAdmTotal(contadora, mes) {
+  return getClients(contadora, mes).reduce((s, c) => s + c.transacciones, 0);
+}
 
-function getScore(contadora, mes) {
+async function loadDetalle() {
+  const { data, error } = await sb.from('kpi_detalle').select('*').eq('anio', 2026);
+  if (error) { console.error('Error cargando kpi_detalle:', error); return; }
+  DETALLE = {};
+  (data || []).forEach(r => {
+    const key = r.contadora + '_' + r.mes;
+    DETALLE[key] = { _id: r.id, datos: r.datos || {} };
+  });
+}
+
+function getDetalle(contadora, mes) {
   const key = contadora + '_' + mes;
-  return KPI_DATA[key] || null;
+  if (!DETALLE[key]) {
+    DETALLE[key] = { _id: null, datos: { digitacion: {}, resumenes: {}, video: {} } };
+  }
+  const d = DETALLE[key].datos;
+  if (!d.digitacion) d.digitacion = {};
+  if (!d.resumenes) d.resumenes = {};
+  if (!d.video) d.video = {};
+
+  // Ensure all assigned clients exist in the data
+  const clients = getClients(contadora, mes);
+  clients.forEach(c => {
+    if (!d.digitacion[c.nombre]) d.digitacion[c.nombre] = [0,0,0,0,0];
+    if (!d.resumenes[c.nombre]) d.resumenes[c.nombre] = { done: false, fecha: '', foto: false };
+    if (!d.video[c.nombre]) d.video[c.nombre] = { done: false, fecha: '', link: '' };
+  });
+  return DETALLE[key];
 }
 
-function getScoreValue(contadora, mes, field) {
-  const s = getScore(contadora, mes);
-  return s ? (s[field] || 0) : 0;
+async function saveDetalle(contadora, mes) {
+  if (saving) return;
+  saving = true;
+  const key = contadora + '_' + mes;
+  const entry = DETALLE[key];
+  if (!entry) { saving = false; return; }
+
+  try {
+    if (entry._id) {
+      const { error } = await sb.from('kpi_detalle').update({ datos: entry.datos, updated_at: new Date().toISOString() }).eq('id', entry._id);
+      if (error) { console.error('Error guardando:', error); alert('Error guardando. Verifica tus permisos.'); }
+    } else {
+      const { data, error } = await sb.from('kpi_detalle').insert({ contadora, mes, anio: 2026, datos: entry.datos }).select();
+      if (error) { console.error('Error insertando:', error); alert('Error guardando. Verifica tus permisos.'); }
+      else if (data && data[0]) entry._id = data[0].id;
+    }
+
+    // Also sync the aggregated score to kpi_scores for the trimestral view
+    await syncKpiScores(contadora, mes);
+  } finally {
+    saving = false;
+  }
 }
 
-function getTotalScore(contadora, mes) {
-  const s = getScore(contadora, mes);
-  return s ? s.total : 0;
+async function syncKpiScores(contadora, mes) {
+  const scores = calcScoresForContadora(contadora, mes);
+  const total = calcTotal(scores.digScore, scores.resScore, scores.vidScore);
+
+  // Upsert into kpi_scores
+  const { error } = await sb.from('kpi_scores').upsert({
+    contadora, mes, anio: 2026,
+    digitacion: scores.digScore,
+    resumenes: scores.resScore,
+    video_reunion: scores.vidScore,
+    total: total
+  }, { onConflict: 'contadora,mes,anio', ignoreDuplicates: false });
+
+  if (error) console.error('Error syncing kpi_scores:', error);
+}
+
+// ==================== SCORING ====================
+
+function calcTotal(dig, res, vid) {
+  return Math.round(dig * 5 + res * 3 + vid * 2);
+}
+
+function calcScoresForContadora(contadora, mes) {
+  const entry = getDetalle(contadora, mes);
+  const clients = getClients(contadora, mes);
+  const d = entry.datos;
+
+  // Digitacion: sum all clients all weeks vs total assigned
+  let digActual = 0;
+  const admTotal = getAdmTotal(contadora, mes);
+  clients.forEach(c => {
+    const weeks = d.digitacion[c.nombre] || [0,0,0,0,0];
+    digActual += weeks.reduce((s, w) => s + (w || 0), 0);
+  });
+  const digScore = admTotal > 0 ? Math.min(10, Math.round(digActual / admTotal * 10 * 10) / 10) : 10;
+
+  // Resumenes: % of clients done
+  const resTotal = clients.length;
+  const resDone = clients.filter(c => d.resumenes[c.nombre] && d.resumenes[c.nombre].done).length;
+  const resScore = resTotal > 0 ? Math.round(resDone / resTotal * 10 * 10) / 10 : 10;
+
+  // Video: % of clients done
+  const vidTotal = clients.length;
+  const vidDone = clients.filter(c => d.video[c.nombre] && d.video[c.nombre].done).length;
+  const vidScore = vidTotal > 0 ? Math.round(vidDone / vidTotal * 10 * 10) / 10 : 10;
+
+  return { digScore, resScore, vidScore, digActual, admTotal, resDone, resTotal, vidDone, vidTotal };
+}
+
+function getTotalForMonth(contadora, mes) {
+  const s = calcScoresForContadora(contadora, mes);
+  return calcTotal(s.digScore, s.resScore, s.vidScore);
 }
 
 function getQuarterAvg(contadora, qMeses) {
-  const scores = qMeses.map(m => getTotalScore(contadora, m));
-  const filled = scores.filter(s => s > 0);
-  if (filled.length === 0) return 0;
-  return Math.round(filled.reduce((a,b) => a + b, 0) / filled.length);
-}
-
-function getVisibleContadoras() {
-  if (userRole === 'admin') return KPI_CONTADORAS;
-  return KPI_CONTADORAS.filter(c => c.nombre === userName.split(' ')[0] || userName.includes(c.nombre));
-}
-
-function canEdit(contadoraNombre) {
-  if (userRole === 'admin') return true;
-  return userName.includes(contadoraNombre);
-}
-
-function getInitials(name) {
-  const parts = name.trim().split(/\s+/);
-  return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.substring(0,2).toUpperCase();
-}
-
-function getCurrentQuarter() {
-  const m = new Date().getMonth();
-  if (m < 3) return 'Q1';
-  if (m < 6) return 'Q2';
-  if (m < 9) return 'Q3';
-  return 'Q4';
-}
-
-// ==================== RENDERING ====================
-
-function renderMainTabs() {
-  const el = document.getElementById('mainTabs');
-  const tabs = [
-    { id:'trimestral', label:'Resumen Trimestral' },
-    { id:'detalle', label:'Detalle por Contadora' }
-  ];
-  el.innerHTML = tabs.map(t =>
-    '<button class="main-tab ' + (activeTab === t.id ? 'active' : '') + '" onclick="switchTab(\'' + t.id + '\')">' + t.label + '</button>'
-  ).join('');
-}
-
-function renderSubTabs() {
-  const el = document.getElementById('subTabs');
-
-  if (activeTab === 'trimestral') {
-    el.innerHTML = QUARTERS.map(q =>
-      '<button class="sub-tab ' + (activeQuarter === q.id ? 'active' : '') + '" onclick="switchQuarter(\'' + q.id + '\')">' + q.label + '</button>'
-    ).join('');
-  } else {
-    el.innerHTML = MESES.map((m, i) =>
-      '<button class="sub-tab ' + (activeMonth === m ? 'active' : '') + '" onclick="switchMonth(\'' + m + '\')">' + MESES_LABEL[i] + '</button>'
-    ).join('');
-  }
-}
-
-function switchTab(tab) {
-  activeTab = tab;
-  renderAll();
-}
-function switchQuarter(q) {
-  activeQuarter = q;
-  renderSubTabs();
-  renderContent();
-}
-function switchMonth(m) {
-  activeMonth = m;
-  renderSubTabs();
-  renderContent();
-}
-
-function renderAll() {
-  renderMainTabs();
-  renderSubTabs();
-  renderContent();
-}
-
-function renderContent() {
-  const el = document.getElementById('content');
-  if (activeTab === 'trimestral') renderTrimestral(el);
-  else renderDetalle(el);
-}
-
-// ==================== TAB 1: RESUMEN TRIMESTRAL ====================
-
-function renderTrimestral(el) {
-  const q = QUARTERS.find(q => q.id === activeQuarter);
-  const contadoras = getVisibleContadoras();
-
-  // Stats
-  const allAvgs = contadoras.map(c => getQuarterAvg(c.nombre, q.meses));
-  const filledAvgs = allAvgs.filter(a => a > 0);
-  const teamAvg = filledAvgs.length > 0 ? Math.round(filledAvgs.reduce((a,b) => a+b, 0) / filledAvgs.length) : 0;
-  const excelentes = filledAvgs.filter(a => a >= 90).length;
-  const sinBono = filledAvgs.filter(a => a > 0 && a < 70).length;
-  const totalBonoPool = contadoras.reduce((s, c) => {
-    const avg = getQuarterAvg(c.nombre, q.meses);
-    const cat = getCategoria(avg);
-    return s + Math.round(c.bono * cat.pctBono / 100);
-  }, 0);
-
-  let html = '';
-
-  html += '<div class="stats">';
-  html += '<div class="stat"><div class="stat-label">Promedio equipo</div><div class="stat-value" style="color:' + getCategoriaColor(teamAvg) + '">' + teamAvg + '</div><div class="stat-sub">' + q.label + '</div></div>';
-  html += '<div class="stat"><div class="stat-label">Excelentes</div><div class="stat-value" style="color:var(--green)">' + excelentes + '</div><div class="stat-sub">de ' + contadoras.length + '</div></div>';
-  html += '<div class="stat"><div class="stat-label">Sin bono</div><div class="stat-value" style="color:var(--red)">' + sinBono + '</div><div class="stat-sub">&lt; 70 pts</div></div>';
-  html += '<div class="stat"><div class="stat-label">Bono total ' + q.id + '</div><div class="stat-value" style="color:var(--navy)">RD$ ' + totalBonoPool.toLocaleString() + '</div><div class="stat-sub">del pool disponible</div></div>';
-  html += '</div>';
-
-  // Table
-  html += '<div class="card"><h3>Scores ' + q.label + '</h3>';
-  html += '<div style="overflow-x:auto"><table class="tri-table">';
-  html += '<thead><tr>';
-  html += '<th>Contadora</th><th>Tier</th>';
-  q.meses.forEach((m, i) => {
-    html += '<th class="center">' + MESES_FULL[MESES.indexOf(m)] + '</th>';
+  const scores = qMeses.map(m => {
+    const clients = getClients(contadora, m);
+    if (clients.length === 0) return null;
+    return getTotalForMonth(contadora, m);
   });
-  html += '<th class="center">Promedio</th><th class="center">Categoria</th><th class="center">Bono</th>';
-  html += '</tr></thead><tbody>';
+  const valid = scores.filter(s => s !== null && s > 0);
+  if (valid.length === 0) return 0;
+  return Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
+}
 
-  contadoras.forEach(c => {
-    const avg = getQuarterAvg(c.nombre, q.meses);
-    const cat = getCategoria(avg);
-    const bonoMonto = Math.round(c.bono * cat.pctBono / 100);
+function getQuarterBonoData(contadora, qNum) {
+  const q = QUARTERS[qNum - 1];
+  const cfg = KPI_CONTADORAS.find(x => x.nombre === contadora);
+  const bonoBase = getBonoBase(contadora);
 
-    html += '<tr>';
-    html += '<td><div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:' + c.color + '"></div><strong>' + c.nombre + '</strong></div></td>';
-    html += '<td style="color:var(--muted);font-size:0.78rem">' + c.tier + '</td>';
-
-    q.meses.forEach(m => {
-      const total = getTotalScore(c.nombre, m);
-      if (total > 0) {
-        const mCat = getCategoria(total);
-        html += '<td class="center"><span class="score-badge ' + mCat.css + '">' + total + '</span></td>';
-      } else {
-        html += '<td class="center"><span class="score-badge score-empty">—</span></td>';
-      }
-    });
-
-    if (avg > 0) {
-      html += '<td class="center"><span class="score-badge ' + cat.css + '" style="font-size:0.88rem">' + avg + '</span></td>';
-      html += '<td class="center"><span style="font-size:0.78rem;color:' + getCategoriaColor(avg) + ';font-weight:600">' + cat.label + '</span></td>';
-      html += '<td class="center"><span class="bono-pill ' + cat.bonoCss + '">RD$ ' + bonoMonto.toLocaleString() + '</span></td>';
-    } else {
-      html += '<td class="center"><span class="score-badge score-empty">—</span></td>';
-      html += '<td class="center">—</td>';
-      html += '<td class="center">—</td>';
-    }
-
-    html += '</tr>';
+  const monthScores = q.meses.map(m => {
+    const clients = getClients(contadora, m);
+    if (clients.length === 0) return null;
+    return getTotalForMonth(contadora, m);
   });
 
-  html += '</tbody></table></div></div>';
-
-  // Escala de referencia
-  html += '<div class="card"><h3>Escala de evaluacion</h3>';
-  html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
-  html += '<div style="background:#ecfdf5;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#059669;font-weight:600">EXCELENTE</div><div style="font-size:1.1rem;font-weight:800;color:#059669;margin-top:2px">90-100</div><div style="font-size:0.7rem;color:#059669;margin-top:2px">100% del bono</div></div>';
-  html += '<div style="background:#eef2ff;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#4361ee;font-weight:600">BUENO</div><div style="font-size:1.1rem;font-weight:800;color:#4361ee;margin-top:2px">80-89</div><div style="font-size:0.7rem;color:#4361ee;margin-top:2px">75% del bono</div></div>';
-  html += '<div style="background:#fffbeb;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#d97706;font-weight:600">ACEPTABLE</div><div style="font-size:1.1rem;font-weight:800;color:#d97706;margin-top:2px">70-79</div><div style="font-size:0.7rem;color:#d97706;margin-top:2px">50% del bono</div></div>';
-  html += '<div style="background:#fef2f2;border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:#dc2626;font-weight:600">SIN BONO</div><div style="font-size:1.1rem;font-weight:800;color:#dc2626;margin-top:2px">0-69</div><div style="font-size:0.7rem;color:#dc2626;margin-top:2px">Conversacion de mejora</div></div>';
-  html += '</div></div>';
-
-  el.innerHTML = html;
-}
-
-// ==================== TAB 2: DETALLE POR CONTADORA ====================
-
-function toggleCard(nombre) {
-  openCards[nombre] = !openCards[nombre];
-  renderContent();
-}
-
-function renderDetalle(el) {
-  const contadoras = getVisibleContadoras();
-  const mesIdx = MESES.indexOf(activeMonth);
-  const vrLabel = getVideoReunionLabel(activeMonth);
-
-  let html = '';
-
-  // Note about the current month's video/reunion
-  html += '<div class="note">En ' + MESES_FULL[mesIdx] + ' el componente de Video/Reunion es: <strong>' + vrLabel + '</strong>. ';
-  html += 'Fecha limite digitacion: dia 5 del mes siguiente. Resumenes: dia 25 del mes siguiente.</div>';
-
-  contadoras.forEach(c => {
-    const score = getScore(c.nombre, activeMonth);
-    const d = score ? score.digitacion : 0;
-    const r = score ? score.resumenes : 0;
-    const v = score ? score.video_reunion : 0;
-    const total = score ? score.total : 0;
-    const cat = getCategoria(total);
-    const isOpen = openCards[c.nombre] || false;
-    const editable = canEdit(c.nombre);
-
-    html += '<div class="kpi-card">';
-
-    // Header
-    html += '<div class="kpi-header ' + (isOpen ? 'expanded' : '') + '" onclick="toggleCard(\'' + c.nombre + '\')">';
-    html += '<div class="kpi-avatar" style="background:' + c.color + '">' + c.nombre.substring(0,2).toUpperCase() + '</div>';
-    html += '<div class="kpi-info"><div class="kpi-name">' + c.nombre + '</div><div class="kpi-tier">' + c.tier + ' — Objetivo: ' + c.objetivo.toLocaleString() + ' tx</div></div>';
-    if (total > 0) {
-      html += '<span class="kpi-score-pill ' + cat.css + '">' + total + ' pts</span>';
-    } else {
-      html += '<span class="kpi-score-pill score-empty">Sin datos</span>';
-    }
-    html += '<span class="kpi-arrow ' + (isOpen ? 'open' : '') + '">\u25BC</span>';
-    html += '</div>';
-
-    // Body
-    html += '<div class="kpi-body ' + (isOpen ? 'open' : '') + '">';
-
-    // Components
-    html += '<div class="kpi-components">';
-    COMPONENTES.forEach(comp => {
-      const rawValue = comp.id === 'digitacion' ? d : comp.id === 'resumenes' ? r : v;
-      const weighted = rawValue * (comp.peso / 10);
-      const label = comp.id === 'video_reunion' ? vrLabel : comp.label;
-
-      html += '<div class="kpi-comp">';
-      html += '<div class="kpi-comp-label">' + label + '</div>';
-      html += '<div class="kpi-comp-weight">Peso: ' + comp.peso + '%</div>';
-
-      if (editable) {
-        if (comp.id === 'video_reunion') {
-          // Binary toggle for video/reunion
-          html += '<div style="margin-top:8px">';
-          html += '<select class="kpi-comp-input" id="input-' + c.nombre + '-' + comp.id + '" style="width:auto;padding:6px 12px">';
-          html += '<option value="0"' + (rawValue === 0 ? ' selected' : '') + '>No (0)</option>';
-          html += '<option value="10"' + (rawValue === 10 ? ' selected' : '') + '>Si (10)</option>';
-          html += '</select>';
-          html += '</div>';
-        } else {
-          html += '<div style="margin-top:8px"><input type="number" class="kpi-comp-input" id="input-' + c.nombre + '-' + comp.id + '" value="' + rawValue + '" min="0" max="10" step="0.1"></div>';
-        }
-      } else {
-        html += '<div class="kpi-comp-value">' + rawValue + '<span style="font-size:0.7rem;color:var(--light)"> / 10</span></div>';
-      }
-
-      html += '<div class="kpi-comp-weighted">' + weighted.toFixed(0) + ' de ' + comp.peso + ' pts</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-
-    // Total bar
-    const barColor = total > 0 ? getCategoriaColor(total) : '#e8ecf1';
-    html += '<div class="kpi-total-bar"><div class="kpi-total-fill" style="width:' + total + '%;background:' + barColor + '"></div></div>';
-    html += '<div class="kpi-total-row">';
-    html += '<span class="kpi-total-label">Total ponderado</span>';
-    if (total > 0) {
-      html += '<span class="kpi-total-score" style="color:' + getCategoriaColor(total) + '">' + total + ' / 100 — ' + cat.label + '</span>';
-    } else {
-      html += '<span class="kpi-total-score" style="color:var(--light)">Sin datos</span>';
-    }
-    html += '</div>';
-
-    // Actions
-    if (editable) {
-      html += '<div class="kpi-actions">';
-      html += '<button class="btn btn-primary" onclick="event.stopPropagation();handleSave(\'' + c.nombre + '\')">Guardar</button>';
-      html += '<button class="btn btn-ghost" onclick="event.stopPropagation();toggleCard(\'' + c.nombre + '\')">Cerrar</button>';
-      html += '</div>';
-    }
-
-    html += '</div>'; // kpi-body
-    html += '</div>'; // kpi-card
+  // Projected: open months get optimistic 100
+  const projectedScores = q.meses.map((m, i) => {
+    const mesIdx = MESES.indexOf(m);
+    if (monthScores[i] === null) return null;
+    if (isMonthPast(mesIdx)) return monthScores[i];
+    return Math.max(monthScores[i], 100);
   });
 
-  if (contadoras.length === 0) {
-    html += '<div class="empty">No tienes KPIs asignados.</div>';
-  }
+  const avgReal = getAvg(monthScores);
+  const avgProjected = getAvg(projectedScores);
+  const escala = getEscala(avgProjected);
+  const bonoReal = Math.round(bonoBase * escala.bonoPct / 100);
 
-  el.innerHTML = html;
+  return { monthScores, projectedScores, avgScore: avgReal, avgProjected, escala, bonoBase, bonoReal, cierre: q.cierre, qLabel: q.label + ' 2026' };
 }
 
-// ==================== ACTIONS ====================
-
-async function handleSave(nombre) {
-  const dEl = document.getElementById('input-' + nombre + '-digitacion');
-  const rEl = document.getElementById('input-' + nombre + '-resumenes');
-  const vEl = document.getElementById('input-' + nombre + '-video_reunion');
-
-  const scores = {
-    digitacion: Math.min(10, Math.max(0, parseFloat(dEl.value) || 0)),
-    resumenes: Math.min(10, Math.max(0, parseFloat(rEl.value) || 0)),
-    video_reunion: parseFloat(vEl.value) || 0
-  };
-
-  const ok = await saveKpi(nombre, activeMonth, scores);
-  if (ok) {
-    renderContent();
-  }
+function getAvg(arr) {
+  const valid = arr.filter(s => s !== null);
+  if (valid.length === 0) return 0;
+  return Math.round(valid.reduce((a, b) => a + b, 0) / valid.length);
 }
 
 // ==================== AUTH ====================
@@ -653,35 +513,17 @@ async function handleLogin() {
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   const btn = document.getElementById('btn-login');
-
-  if (!email || !password) {
-    errorEl.textContent = 'Ingresa email y contrasena.';
-    errorEl.style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Entrando...';
-  errorEl.style.display = 'none';
-
+  if (!email || !password) { errorEl.textContent = 'Ingresa email y contrasena.'; errorEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando...'; errorEl.style.display = 'none';
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    errorEl.textContent = 'Email o contrasena incorrectos.';
-    errorEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Entrar';
-    return;
-  }
-
+  if (error) { errorEl.textContent = 'Email o contrasena incorrectos.'; errorEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'Entrar'; return; }
   await loadUserProfile();
-  showApp();
+  await showApp();
 }
 
 async function handleLogout() {
   await sb.auth.signOut();
-  userRole = null;
-  userName = '';
+  userRole = null; userName = '';
   document.getElementById('app-wrapper').classList.add('hidden');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-password').value = '';
@@ -690,20 +532,460 @@ async function handleLogout() {
 async function loadUserProfile() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
-
-  const { data: profile } = await sb.from('profiles')
-    .select('nombre, rol')
-    .eq('id', user.id)
-    .single();
-
-  if (profile) {
-    userRole = profile.rol;
-    userName = profile.nombre || user.email;
-  } else {
-    userRole = 'contadora';
-    userName = user.email;
-  }
+  const { data: profile } = await sb.from('profiles').select('nombre, rol').eq('id', user.id).single();
+  if (profile) { userRole = profile.rol; userName = profile.nombre || user.email; }
+  else { userRole = 'contadora'; userName = user.email; }
 }
+
+function getVisibleContadoras() {
+  if (userRole === 'admin') return KPI_CONTADORAS;
+  return KPI_CONTADORAS.filter(c => userName.includes(c.nombre));
+}
+
+function canEdit(contadoraNombre) {
+  if (userRole === 'admin') return true;
+  return userName.includes(contadoraNombre);
+}
+
+// ==================== NAVIGATION ====================
+
+function switchTab(tab) { activeTab = tab; activeContadora = null; renderAll(); }
+function switchQuarter(qNum) { activeQuarter = qNum; const q = QUARTERS[qNum - 1]; activeMes = q.meses[0]; renderNav(); renderContent(); }
+function switchMonth(m) { activeMes = m; renderNav(); renderContent(); }
+
+function selectContadora(nombre) {
+  activeContadora = nombre;
+  const q = QUARTERS[activeQuarter - 1];
+  if (!activeMes || !q.meses.includes(activeMes)) activeMes = q.meses[0];
+  renderNav();
+  renderContent();
+}
+
+function goBackToSelector() {
+  activeContadora = null;
+  renderNav();
+  renderContent();
+}
+
+// ==================== RENDERING ====================
+
+function renderAll() { renderMainTabs(); renderNav(); renderContent(); }
+
+function renderMainTabs() {
+  const el = document.getElementById('mainTabs');
+  const tabs = [
+    { id:'detalle', label:'Detalle por Contadora' },
+    { id:'trimestral', label:'Resumen Trimestral' }
+  ];
+  el.innerHTML = tabs.map(t =>
+    '<button class="main-tab ' + (activeTab === t.id ? 'active' : '') + '" onclick="switchTab(\'' + t.id + '\')">' + t.label + '</button>'
+  ).join('');
+}
+
+function renderNav() {
+  const el = document.getElementById('navArea');
+  if (activeTab === 'trimestral') {
+    el.innerHTML = '<div class="quarter-bar">' + QUARTERS.map(q =>
+      '<button class="q-btn ' + (activeQuarter === q.id ? 'active' : '') + '" onclick="switchQuarter(' + q.id + ')"><div class="q-label">' + q.label + '</div><div class="q-months">' + q.meses.map(m => MESES_LABEL[MESES.indexOf(m)]).join(' · ') + '</div></button>'
+    ).join('') + '</div>';
+    return;
+  }
+
+  // Detalle tab: quarter bar + month tabs (when contadora selected)
+  let html = '<div class="quarter-bar">' + QUARTERS.map(q =>
+    '<button class="q-btn ' + (activeQuarter === q.id ? 'active' : '') + '" onclick="switchQuarter(' + q.id + ')"><div class="q-label">' + q.label + '</div><div class="q-months">' + q.meses.map(m => MESES_LABEL[MESES.indexOf(m)]).join(' · ') + '</div></button>'
+  ).join('') + '</div>';
+
+  if (activeContadora) {
+    const q = QUARTERS[activeQuarter - 1];
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:10px 24px;background:var(--bg);border-bottom:1px solid var(--border)">';
+    html += '<button class="btn" style="padding:5px 12px;font-size:12px;background:white;color:var(--muted);border:1px solid var(--border)" onclick="goBackToSelector()">← Volver</button>';
+    html += '<div class="month-tabs">' + q.meses.map(m => {
+      const idx = MESES.indexOf(m);
+      return '<button class="month-tab ' + (activeMes === m ? 'active' : '') + '" onclick="switchMonth(\'' + m + '\')">' + MESES_FULL[idx] + '</button>';
+    }).join('') + '</div>';
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+function renderContent() {
+  const el = document.getElementById('content');
+  if (activeTab === 'trimestral') return renderTrimestral(el);
+  if (!activeContadora) return renderSelector(el);
+  renderKPIDetail(el);
+}
+
+// ==================== SELECTOR ====================
+
+function renderSelector(el) {
+  const contadoras = getVisibleContadoras();
+  el.innerHTML = '<div class="selector-screen"><h2>Selecciona tu perfil</h2><p>Elige tu nombre para ver y completar tu KPI del mes.</p><div class="selector-grid">' +
+    contadoras.map(c => {
+      const q = QUARTERS[activeQuarter - 1];
+      const avg = getQuarterAvg(c.nombre, q.meses);
+      const escala = getEscala(avg);
+      return '<div class="selector-card" onclick="selectContadora(\'' + c.nombre + '\')"><div class="sc-dot" style="background:' + c.color + '"></div><div class="sc-name">' + c.nombre + '</div><div class="sc-tier">' + c.tier + '</div><div class="sc-obj">Objetivo: ' + c.objetivo.toLocaleString() + ' tx</div>' + (avg > 0 ? '<div style="margin-top:8px"><span class="score-badge ' + escala.css + '">' + avg + ' pts</span></div>' : '') + '</div>';
+    }).join('') +
+  '</div></div>';
+}
+
+// ==================== KPI DETAIL VIEW ====================
+
+function renderKPIDetail(el) {
+  const c = activeContadora;
+  const mes = activeMes;
+  const mesIdx = MESES.indexOf(mes);
+  const cfg = KPI_CONTADORAS.find(x => x.nombre === c);
+  const col = cfg.color;
+  const entry = getDetalle(c, mes);
+  const clients = getClients(c, mes);
+  const scores = calcScoresForContadora(c, mes);
+  const total = calcTotal(scores.digScore, scores.resScore, scores.vidScore);
+  const escala = getEscala(total);
+  const vidTipo = getVideoTipo(mes);
+  const editable = canEdit(c);
+  const bono = getQuarterBonoData(c, activeQuarter);
+  const q = QUARTERS[activeQuarter - 1];
+
+  if (clients.length === 0) {
+    el.innerHTML = '<div class="empty">No hay clientes asignados para ' + c + ' en ' + MESES_FULL[mesIdx] + '.<br>Verifica la tabla de asignaciones.</div>';
+    return;
+  }
+
+  // Calc percentages
+  const digPct = scores.admTotal > 0 ? Math.min(100, Math.round(scores.digActual / scores.admTotal * 100)) : 0;
+  const resPct = scores.resTotal > 0 ? Math.round(scores.resDone / scores.resTotal * 100) : 0;
+  const vidPct = scores.vidTotal > 0 ? Math.round(scores.vidDone / scores.vidTotal * 100) : 0;
+
+  let html = '';
+
+  // ── Score overview ──
+  html += '<div class="score-overview">';
+  html += '<div class="score-big"><div class="num" style="color:' + escala.color + '">' + total + '</div><div class="of">de 100 · ' + MESES_FULL[mesIdx] + '</div><div class="label" style="background:' + escala.bg + ';color:' + escala.color + '">' + escala.label + '</div></div>';
+  html += '<div class="score-breakdown">';
+  html += '<div class="score-row"><span class="score-row-label">Digitacion (50%)</span><div class="score-row-bar"><div class="score-row-fill" style="width:' + (scores.digScore * 10) + '%;background:' + col + '"></div></div><span class="score-row-pts">' + Math.round(scores.digScore * 5) + ' pts</span></div>';
+  html += '<div class="score-row"><span class="score-row-label">Resumenes (30%)</span><div class="score-row-bar"><div class="score-row-fill" style="width:' + (scores.resScore * 10) + '%;background:' + col + '"></div></div><span class="score-row-pts">' + Math.round(scores.resScore * 3) + ' pts</span></div>';
+  html += '<div class="score-row"><span class="score-row-label">' + vidTipo + ' (20%)</span><div class="score-row-bar"><div class="score-row-fill" style="width:' + (scores.vidScore * 10) + '%;background:' + col + '"></div></div><span class="score-row-pts">' + Math.round(scores.vidScore * 2) + ' pts</span></div>';
+
+  // Escala mini with money
+  html += '<div class="escala-mini">';
+  KPI_ESCALA.forEach(e => {
+    const active = total >= e.min && total <= e.max;
+    const montoNivel = Math.round(bono.bonoBase * e.bonoPct / 100);
+    html += '<div class="escala-item ' + (active ? 'active' : '') + '" style="' + (active ? 'border-color:' + e.color + ';border-width:2px;background:' + e.bg : '') + '"><div class="escala-range" style="color:' + e.color + '">' + e.min + '-' + e.max + '</div><div class="escala-name" style="color:' + e.color + '">' + e.label + '</div><div style="font-size:9px;color:' + e.color + ';margin-top:1px;opacity:0.8">' + e.bonoPct + '%</div><div style="font-size:11px;color:' + e.color + ';font-weight:800;margin-top:3px">' + formatMoney(montoNivel) + '</div></div>';
+  });
+  html += '</div>';
+  html += '</div></div>';
+
+  // ── Bono trimestral ──
+  html += '<div class="bono-card"><div class="bono-header"><div class="bono-icon">💰</div><div class="bono-header-text"><h3>Bono ' + q.label + ' 2026</h3><span>Cierre: ' + q.cierre + ' · Promedio de ' + bono.monthScores.filter(s => s !== null).length + ' mes(es)</span></div></div>';
+  html += '<div class="bono-body">';
+  html += '<div class="bono-item"><div class="bono-item-label">Bono base</div><div class="bono-item-value">' + formatMoney(bono.bonoBase) + '</div><div class="bono-item-sub">1/3 del salario</div></div>';
+  html += '<div class="bono-item"><div class="bono-item-label">Proyeccion ' + q.label + '</div><div class="bono-item-value">' + bono.avgProjected + '<span style="font-size:14px;opacity:0.5">/100</span></div>';
+  html += '<div style="display:flex;gap:4px;justify-content:center;margin-top:6px">';
+  bono.monthScores.forEach((s, i) => {
+    const mLabel = MESES_LABEL[MESES.indexOf(q.meses[i])];
+    const mIdx = MESES.indexOf(q.meses[i]);
+    const past = isMonthPast(mIdx);
+    if (s === null) { html += '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.1);opacity:0.4">' + mLabel + ': —</span>'; return; }
+    if (!past) { html += '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.12);color:#6ee7b7">' + mLabel + ': ' + s + ' → 100</span>'; return; }
+    const clr = s >= 70 ? '#6ee7b7' : '#fca5a5';
+    html += '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,0.12);color:' + clr + '">' + mLabel + ': ' + s + '</span>';
+  });
+  html += '</div>';
+  html += '<div class="bono-pct-badge" style="background:' + bono.escala.bg + ';color:' + bono.escala.color + ';margin-top:6px">' + bono.escala.bonoPct + '% del bono</div></div>';
+  html += '<div class="bono-item"><div class="bono-item-label">Vas a cobrar</div><div class="bono-item-value" style="color:' + (bono.bonoReal > 0 ? '#6ee7b7' : '#fca5a5') + '">' + formatMoney(bono.bonoReal) + '</div><div class="bono-item-sub">' + bono.escala.label + '</div></div>';
+  html += '</div>';
+  if (bono.bonoReal > 0) {
+    html += '<div class="bono-msg"><p>Vas en camino a cobrar ' + formatMoney(bono.bonoReal) + ' en ' + q.cierre + '.</p><span>Completa tus tareas para mantener este nivel.</span></div>';
+  } else {
+    html += '<div class="bono-msg"><p style="color:#fca5a5">Necesitas subir tu promedio a 70+ para activar el bono.</p><span>Todavia hay tiempo, completa tus tareas pendientes.</span></div>';
+  }
+  html += '</div>';
+
+  // ── 1. Digitacion ──
+  html += '<div class="comp-card"><div class="comp-header"><div class="comp-header-left"><div class="comp-num" style="background:' + col + '">1</div><div><div class="comp-title">Digitacion de transacciones · ' + MESES_FULL[mesIdx] + '</div><div class="comp-weight">Peso: 50% · Maximo: 50 puntos</div></div></div>';
+  html += '<span class="comp-score-pill" style="background:' + escala.bg + ';color:' + col + '">' + scores.digScore + '/10 → ' + Math.round(scores.digScore * 5) + ' pts</span></div>';
+  html += '<div class="comp-body">';
+
+  // Stats
+  html += '<div class="dig-stats"><div class="dig-stat"><div class="dig-stat-label">Objetivo</div><div class="dig-stat-value">' + cfg.objetivo.toLocaleString() + '</div></div>';
+  html += '<div class="dig-stat"><div class="dig-stat-label">Tx asignadas (Adm)</div><div class="dig-stat-value">' + scores.admTotal + '</div></div>';
+  html += '<div class="dig-stat"><div class="dig-stat-label">Tx digitadas</div><div class="dig-stat-value" style="color:' + getBarColor(digPct) + '">' + scores.digActual + '</div></div></div>';
+
+  // Client x Week table
+  html += '<div style="overflow-x:auto"><table class="dig-table"><thead><tr><th style="text-align:left">Cliente</th><th>Adm</th><th>Sem 1</th><th>Sem 2</th><th>Sem 3</th><th>Sem 4</th><th>Sem 5</th><th>Total</th></tr></thead><tbody>';
+
+  let grandTotal = 0;
+  clients.forEach(cl => {
+    const weeks = entry.datos.digitacion[cl.nombre] || [0,0,0,0,0];
+    const clientTotal = weeks.reduce((s, w) => s + (w || 0), 0);
+    grandTotal += clientTotal;
+    const cln = cl.nombre.replace(/'/g, "\\'");
+
+    html += '<tr><td style="font-weight:600">' + cl.nombre + '</td><td>' + cl.transacciones + '</td>';
+    for (let w = 0; w < 5; w++) {
+      if (editable) {
+        html += '<td><input type="number" class="dig-input" value="' + (weeks[w] || '') + '" min="0" data-contadora="' + c + '" data-mes="' + mes + '" data-client="' + cln + '" data-week="' + w + '" onchange="handleDigChange(this)"></td>';
+      } else {
+        html += '<td>' + (weeks[w] || 0) + '</td>';
+      }
+    }
+    const pctClient = cl.transacciones > 0 ? Math.round(clientTotal / cl.transacciones * 100) : 0;
+    html += '<td style="font-weight:700;color:' + getBarColor(pctClient) + '">' + clientTotal + '</td></tr>';
+  });
+
+  // Total row
+  html += '<tr class="total-row"><td>Total</td><td>' + scores.admTotal + '</td>';
+  const weekTotals = [0,0,0,0,0];
+  clients.forEach(cl => {
+    const weeks = entry.datos.digitacion[cl.nombre] || [0,0,0,0,0];
+    weeks.forEach((w, i) => { weekTotals[i] += (w || 0); });
+  });
+  weekTotals.forEach(wt => { html += '<td>' + wt + '</td>'; });
+  html += '<td style="color:' + getBarColor(digPct) + '">' + grandTotal + '</td></tr>';
+  html += '</tbody></table></div>';
+
+  // Progress bar
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="font-size:12px;color:var(--muted)">Avance:</span><div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:' + digPct + '%;background:' + getBarColor(digPct) + '"></div></div><span style="font-size:12px;font-weight:700;color:' + getBarColor(digPct) + '">' + digPct + '%</span></div>';
+  html += '</div></div>';
+
+  // ── 2. Resumenes ──
+  const mesAnteriorLabel = mesIdx > 0 ? MESES_FULL[mesIdx - 1] : MESES_FULL[11];
+  html += '<div class="comp-card"><div class="comp-header"><div class="comp-header-left"><div class="comp-num" style="background:' + col + '">2</div><div><div class="comp-title">Resumenes de declaracion · ' + mesAnteriorLabel + '</div><div class="comp-weight">Peso: 30% · Maximo: 30 puntos</div></div></div>';
+  html += '<span class="comp-score-pill" style="background:' + escala.bg + ';color:' + col + '">' + scores.resScore + '/10 → ' + Math.round(scores.resScore * 3) + ' pts</span></div>';
+  html += '<div class="comp-body">';
+  html += '<div class="res-progress"><div class="res-count">' + scores.resDone + ' de ' + scores.resTotal + ' clientes</div><div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:' + resPct + '%;background:' + getBarColor(resPct) + '"></div></div><span style="font-size:12px;font-weight:700;color:' + getBarColor(resPct) + '">' + resPct + '%</span></div>';
+
+  html += '<table class="client-table"><tr><th>Cliente</th><th style="width:80px">Tx (Adm)</th><th style="width:130px">Entregado?</th><th style="width:90px">Foto</th></tr>';
+  clients.forEach(cl => {
+    const r = entry.datos.resumenes[cl.nombre] || { done: false, fecha: '', foto: false };
+    const cln = cl.nombre.replace(/'/g, "\\'");
+    const fotoHtml = !editable
+      ? (r.foto ? '<span style="font-size:11px;color:var(--green);font-weight:600">✓</span>' : '<span style="font-size:11px;color:var(--light)">—</span>')
+      : (r.done
+        ? (r.foto
+          ? '<span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer" onclick="handleFoto(\'' + cln + '\',false)" title="Clic para quitar">✓ Cargada</span>'
+          : '<span style="font-size:11px;color:var(--amber);font-weight:600;cursor:pointer;text-decoration:underline" onclick="handleFoto(\'' + cln + '\',true)" title="Marcar como cargada">Cargar</span>')
+        : '<span style="font-size:11px;color:var(--light)">—</span>');
+
+    html += '<tr class="' + (r.done ? 'row-done' : '') + '"><td style="font-weight:600">' + cl.nombre + '</td><td>' + cl.transacciones + '</td><td>';
+    if (editable) {
+      html += '<div class="toggle-group"><button class="toggle-opt ' + (r.done ? 'active-yes' : '') + '" onclick="handleRes(\'' + cln + '\',true)">Si</button><button class="toggle-opt ' + (!r.done ? 'active-no' : '') + '" onclick="handleRes(\'' + cln + '\',false)">No</button></div>';
+    } else {
+      html += r.done ? '<span style="color:var(--green);font-weight:600">Si</span>' : '<span style="color:var(--light)">No</span>';
+    }
+    html += '</td><td>' + fotoHtml + '</td></tr>';
+  });
+  html += '</table></div></div>';
+
+  // ── 3. Video / Reunion ──
+  html += '<div class="comp-card"><div class="comp-header"><div class="comp-header-left"><div class="comp-num" style="background:' + col + '">3</div><div><div class="comp-title">' + vidTipo + ' con clientes · ' + mesAnteriorLabel + '</div><div class="comp-weight">Peso: 20% · Maximo: 20 puntos</div></div></div>';
+  html += '<span class="comp-score-pill" style="background:' + escala.bg + ';color:' + col + '">' + scores.vidScore + '/10 → ' + Math.round(scores.vidScore * 2) + ' pts</span></div>';
+  html += '<div class="comp-body">';
+
+  // Info cards
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px"><div style="background:#f8fafc;border-radius:8px;padding:10px"><div style="font-size:10px;text-transform:uppercase;color:var(--light);letter-spacing:0.3px">Ciclo trimestral</div><div style="font-size:14px;font-weight:700;margin-top:2px">' + getQuarterInfo(mes).label + '</div></div><div style="background:#f8fafc;border-radius:8px;padding:10px"><div style="font-size:10px;text-transform:uppercase;color:var(--light);letter-spacing:0.3px">Tipo requerido</div><div style="font-size:14px;font-weight:700;margin-top:2px;color:' + (vidTipo === 'Reunion' ? 'var(--purple)' : 'var(--blue)') + '">' + vidTipo + '</div></div></div>';
+
+  html += '<div class="res-progress"><div class="res-count">' + scores.vidDone + ' de ' + scores.vidTotal + ' clientes</div><div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:' + vidPct + '%;background:' + getBarColor(vidPct) + '"></div></div><span style="font-size:12px;font-weight:700;color:' + getBarColor(vidPct) + '">' + vidPct + '%</span></div>';
+
+  html += '<table class="client-table"><tr><th>Cliente</th><th style="width:80px">Tx (Adm)</th><th style="width:130px">Se realizo?</th><th style="width:120px">Link</th></tr>';
+  clients.forEach(cl => {
+    const vd = entry.datos.video[cl.nombre] || { done: false, fecha: '', link: '' };
+    const vcln = cl.nombre.replace(/'/g, "\\'");
+    const linkHtml = !editable
+      ? (vd.link ? '<a href="' + vd.link + '" target="_blank" style="font-size:11px;color:var(--blue)">Ver</a>' : '<span style="font-size:11px;color:var(--light)">—</span>')
+      : (vd.done
+        ? (vd.link
+          ? '<span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer" onclick="handleVidLink(\'' + vcln + '\',\'\')" title="Clic para quitar">✓ Guardado</span>'
+          : '<span style="font-size:11px;color:var(--amber);font-weight:600;cursor:pointer;text-decoration:underline" onclick="promptVidLink(\'' + vcln + '\')" title="Agregar link">Agregar</span>')
+        : '<span style="font-size:11px;color:var(--light)">—</span>');
+
+    html += '<tr class="' + (vd.done ? 'row-done' : '') + '"><td style="font-weight:600">' + cl.nombre + '</td><td>' + cl.transacciones + '</td><td>';
+    if (editable) {
+      html += '<div class="toggle-group"><button class="toggle-opt ' + (vd.done ? 'active-yes' : '') + '" onclick="handleVid(\'' + vcln + '\',true)">Si</button><button class="toggle-opt ' + (!vd.done ? 'active-no' : '') + '" onclick="handleVid(\'' + vcln + '\',false)">No</button></div>';
+    } else {
+      html += vd.done ? '<span style="color:var(--green);font-weight:600">Si</span>' : '<span style="color:var(--light)">No</span>';
+    }
+    html += '</td><td>' + linkHtml + '</td></tr>';
+  });
+  html += '</table></div></div>';
+
+  // ── Save bar ──
+  if (editable) {
+    html += '<div class="save-bar"><button class="btn btn-primary" id="btn-save" onclick="handleSave()">Guardar cambios</button></div>';
+  }
+
+  el.innerHTML = html;
+}
+
+// ==================== TRIMESTRAL VIEW ====================
+
+function renderTrimestral(el) {
+  const q = QUARTERS[activeQuarter - 1];
+  const contadoras = getVisibleContadoras();
+
+  const allAvgs = contadoras.map(c => getQuarterAvg(c.nombre, q.meses));
+  const filledAvgs = allAvgs.filter(a => a > 0);
+  const teamAvg = filledAvgs.length > 0 ? Math.round(filledAvgs.reduce((a, b) => a + b, 0) / filledAvgs.length) : 0;
+  const excelentes = filledAvgs.filter(a => a >= 90).length;
+  const sinBono = filledAvgs.filter(a => a > 0 && a < 70).length;
+  const totalBonoPool = contadoras.reduce((s, c) => {
+    const avg = getQuarterAvg(c.nombre, q.meses);
+    const esc = getEscala(avg);
+    return s + Math.round(getBonoBase(c.nombre) * esc.bonoPct / 100);
+  }, 0);
+
+  let html = '';
+
+  html += '<div class="stats">';
+  html += '<div class="stat"><div class="stat-label">Promedio equipo</div><div class="stat-value" style="color:' + getCategoriaColor(teamAvg) + '">' + teamAvg + '</div><div class="stat-sub">' + q.label + ' 2026</div></div>';
+  html += '<div class="stat"><div class="stat-label">Excelentes</div><div class="stat-value" style="color:var(--green)">' + excelentes + '</div><div class="stat-sub">de ' + contadoras.length + '</div></div>';
+  html += '<div class="stat"><div class="stat-label">Sin bono</div><div class="stat-value" style="color:var(--red)">' + sinBono + '</div><div class="stat-sub">&lt; 70 pts</div></div>';
+  html += '<div class="stat"><div class="stat-label">Bono total ' + q.label + '</div><div class="stat-value" style="color:var(--navy)">RD$ ' + totalBonoPool.toLocaleString() + '</div><div class="stat-sub">del pool disponible</div></div>';
+  html += '</div>';
+
+  html += '<div class="card"><h3>Scores ' + q.label + ' 2026</h3><div style="overflow-x:auto"><table class="tri-table"><thead><tr><th>Contadora</th><th>Tier</th>';
+  q.meses.forEach(m => { html += '<th class="center">' + MESES_FULL[MESES.indexOf(m)] + '</th>'; });
+  html += '<th class="center">Promedio</th><th class="center">Categoria</th><th class="center">Bono</th></tr></thead><tbody>';
+
+  contadoras.forEach(c => {
+    const avg = getQuarterAvg(c.nombre, q.meses);
+    const esc = getEscala(avg);
+    const bonoMonto = Math.round(getBonoBase(c.nombre) * esc.bonoPct / 100);
+
+    html += '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:' + c.color + '"></div><strong>' + c.nombre + '</strong></div></td>';
+    html += '<td style="color:var(--muted);font-size:0.78rem">' + c.tier + '</td>';
+
+    q.meses.forEach(m => {
+      const t = getTotalForMonth(c.nombre, m);
+      const clients = getClients(c.nombre, m);
+      if (t > 0 && clients.length > 0) {
+        const mEsc = getEscala(t);
+        html += '<td class="center"><span class="score-badge ' + mEsc.css + '">' + t + '</span></td>';
+      } else {
+        html += '<td class="center"><span class="score-badge score-empty">—</span></td>';
+      }
+    });
+
+    if (avg > 0) {
+      html += '<td class="center"><span class="score-badge ' + esc.css + '" style="font-size:0.88rem">' + avg + '</span></td>';
+      html += '<td class="center"><span style="font-size:0.78rem;color:' + getCategoriaColor(avg) + ';font-weight:600">' + esc.label + '</span></td>';
+      html += '<td class="center"><span class="bono-pill ' + esc.bonoCss + '">RD$ ' + bonoMonto.toLocaleString() + '</span></td>';
+    } else {
+      html += '<td class="center"><span class="score-badge score-empty">—</span></td><td class="center">—</td><td class="center">—</td>';
+    }
+    html += '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+
+  // Escala
+  html += '<div class="card"><h3>Escala de evaluacion</h3><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
+  KPI_ESCALA.forEach(e => {
+    html += '<div style="background:' + e.bg + ';border-radius:8px;padding:12px;text-align:center"><div style="font-size:0.7rem;color:' + e.color + ';font-weight:600">' + e.label.toUpperCase() + '</div><div style="font-size:1.1rem;font-weight:800;color:' + e.color + ';margin-top:2px">' + e.min + '-' + e.max + '</div><div style="font-size:0.7rem;color:' + e.color + ';margin-top:2px">' + e.bonoPct + '% del bono</div></div>';
+  });
+  html += '</div></div>';
+
+  el.innerHTML = html;
+}
+
+// ==================== EVENT HANDLERS ====================
+
+function handleDigChange(input) {
+  const contadora = input.dataset.contadora;
+  const mes = input.dataset.mes;
+  const client = input.dataset.client;
+  const week = parseInt(input.dataset.week);
+  const value = parseInt(input.value) || 0;
+
+  const entry = getDetalle(contadora, mes);
+  if (!entry.datos.digitacion[client]) entry.datos.digitacion[client] = [0,0,0,0,0];
+  entry.datos.digitacion[client][week] = value;
+
+  // Don't re-render the whole thing on each keystroke, just update totals
+  // The full save happens on the save button
+}
+
+function handleRes(clientName, done) {
+  const entry = getDetalle(activeContadora, activeMes);
+  if (!entry.datos.resumenes[clientName]) entry.datos.resumenes[clientName] = { done: false, fecha: '', foto: false };
+  entry.datos.resumenes[clientName].done = done;
+  if (done) {
+    const hoy = new Date();
+    entry.datos.resumenes[clientName].fecha = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+  } else {
+    entry.datos.resumenes[clientName].fecha = '';
+    entry.datos.resumenes[clientName].foto = false;
+  }
+  renderContent();
+}
+
+function handleFoto(clientName, value) {
+  const entry = getDetalle(activeContadora, activeMes);
+  if (entry.datos.resumenes[clientName]) entry.datos.resumenes[clientName].foto = value;
+  renderContent();
+}
+
+function handleVid(clientName, done) {
+  const entry = getDetalle(activeContadora, activeMes);
+  if (!entry.datos.video[clientName]) entry.datos.video[clientName] = { done: false, fecha: '', link: '' };
+  entry.datos.video[clientName].done = done;
+  if (done) {
+    const hoy = new Date();
+    entry.datos.video[clientName].fecha = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+  } else {
+    entry.datos.video[clientName].fecha = '';
+    entry.datos.video[clientName].link = '';
+  }
+  renderContent();
+}
+
+function handleVidLink(clientName, link) {
+  const entry = getDetalle(activeContadora, activeMes);
+  if (entry.datos.video[clientName]) entry.datos.video[clientName].link = link;
+  renderContent();
+}
+
+function promptVidLink(clientName) {
+  const link = prompt('Pega el link del video para ' + clientName + ':');
+  if (link && link.trim()) handleVidLink(clientName, link.trim());
+}
+
+async function handleSave() {
+  const btn = document.getElementById('btn-save');
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  // Read all dig inputs from DOM to ensure we have latest values
+  document.querySelectorAll('.dig-input').forEach(input => {
+    const contadora = input.dataset.contadora;
+    const mes = input.dataset.mes;
+    const client = input.dataset.client;
+    const week = parseInt(input.dataset.week);
+    const value = parseInt(input.value) || 0;
+    const entry = getDetalle(contadora, mes);
+    if (!entry.datos.digitacion[client]) entry.datos.digitacion[client] = [0,0,0,0,0];
+    entry.datos.digitacion[client][week] = value;
+  });
+
+  await saveDetalle(activeContadora, activeMes);
+
+  btn.disabled = false;
+  btn.textContent = 'Guardar cambios';
+  renderContent();
+}
+
+// ==================== INIT ====================
+
+const loginPwdEl = document.getElementById('login-password');
+const loginEmailEl = document.getElementById('login-email');
+if (loginPwdEl) loginPwdEl.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+if (loginEmailEl) loginEmailEl.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
+
+const isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
+if (isEmbed) document.body.classList.add('embed');
 
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
@@ -711,27 +993,18 @@ async function showApp() {
   document.getElementById('user-display-name').textContent = userName;
 
   activeQuarter = getCurrentQuarter();
-  const qObj = QUARTERS.find(q => q.id === activeQuarter);
-  activeMonth = qObj.meses[0];
+  const qObj = QUARTERS[activeQuarter - 1];
+  activeMes = qObj.meses[0];
 
-  KPI_DATA = await loadKpiData();
+  await Promise.all([loadAsignaciones(), loadDetalle()]);
   renderAll();
 }
-
-const loginPwdEl = document.getElementById('login-password');
-const loginEmailEl = document.getElementById('login-email');
-if (loginPwdEl) loginPwdEl.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
-if (loginEmailEl) loginEmailEl.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-password').focus(); });
-
-// Embed mode
-const isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
-if (isEmbed) document.body.classList.add('embed');
 
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await loadUserProfile();
-    showApp();
+    await showApp();
   } else if (isEmbed) {
     document.body.innerHTML = '<div style="text-align:center;padding:60px;color:#7c8495;">Sesion no encontrada. Recarga la pagina principal.</div>';
   }
