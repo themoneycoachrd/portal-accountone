@@ -566,7 +566,8 @@ async function loadData() {
         serv: parseFloat(row.serv) || 0,
         soft: parseFloat(row.soft) || 0,
         desc: parseFloat(row.descuento),
-        notas: row.notas || ''
+        notas: row.notas || '',
+        categoria: row.categoria || ''
       });
     });
   }
@@ -604,7 +605,8 @@ async function dbInsertLead(mes, lead) {
     funnel: lead.f, impl: lead.impl || 0, fe: lead.fe || 0,
     serv: lead.serv || 0, soft: lead.soft || 0,
     descuento: lead.desc != null ? lead.desc : 25,
-    notas: lead.notas || ''
+    notas: lead.notas || '',
+    categoria: lead.categoria || ''
   }).select();
   if (error) { console.error('Error insertando lead:', error); return null; }
   return data && data[0] ? data[0].id : null;
@@ -619,7 +621,8 @@ async function dbUpdateLead(lead) {
     funnel: lead.f, impl: lead.impl || 0, fe: lead.fe || 0,
     serv: lead.serv || 0, soft: lead.soft || 0,
     descuento: lead.desc != null ? lead.desc : 25,
-    notas: lead.notas || ''
+    notas: lead.notas || '',
+    categoria: lead.categoria || ''
   }).eq('id', lead._id);
 }
 
@@ -811,7 +814,7 @@ function renderPipeline() {
     html += '<div class="card"><div class="table-wrapper"><table>';
     html += '<thead><tr><th>#</th><th>Nombre</th><th>Empresa</th><th>Temp</th><th>Demo</th><th>Funnel</th><th>Impl</th><th>FE</th><th>Serv</th><th>Soft</th>';
     if (!isVentas) html += '<th>Cotizado</th><th>Desc%</th><th>Vendido</th>';
-    html += '<th>Notas</th></tr></thead>';
+    html += '<th>Notas</th><th>Categoria</th></tr></thead>';
     html += '<tbody>';
     filtered.forEach((lead, idx) => {
       const realIdx = leads.indexOf(lead);
@@ -834,6 +837,7 @@ function renderPipeline() {
         <td>${isGanado ? descPct + '%' : '-'}</td>
         <td class="currency">${isGanado ? '<strong>' + fmt(Math.round(vendido)) + '</strong>' : '-'}</td>` : ''}
         <td>${lead.notas}</td>
+        <td>${lead.categoria ? '<span class="badge" style="background:#f0f4ff;color:#4361ee;font-size:10px">' + lead.categoria + '</span>' : '-'}</td>
       </tr>`;
       if (isExpanded) {
         html += renderEditRow(lead, realIdx);
@@ -850,7 +854,7 @@ function renderPipeline() {
 
 function renderEditRow(lead, idx) {
   const descVal = lead.desc != null ? lead.desc : 25;
-  const colSpan = APP.userRole === 'ventas' ? 11 : 14;
+  const colSpan = APP.userRole === 'ventas' ? 12 : 15;
   return `<tr class="edit-row"><td colspan="${colSpan}">
     <div class="edit-form" style="grid-template-columns:repeat(5,1fr);">
       <div class="field"><label>Nombre</label><input type="text" data-field="n" value="${esc(lead.n)}"></div>
@@ -874,9 +878,17 @@ function renderEditRow(lead, idx) {
       <div class="field"><label>Servicio</label><input type="number" data-field="serv" value="${lead.serv}"></div>
       <div class="field"><label>Software</label><input type="number" data-field="soft" value="${lead.soft}"></div>
     </div>
-    <div class="edit-form" style="grid-template-columns:1fr 4fr;margin-top:8px;">
+    <div class="edit-form" style="grid-template-columns:1fr 2fr 2fr;margin-top:8px;">
       <div class="field"><label>Descuento % (Impl + FE)</label><input type="number" data-field="desc" value="${descVal}" min="0" max="100"></div>
       <div class="field"><label>Notas</label><textarea data-field="notas">${esc(lead.notas)}</textarea></div>
+      <div class="field"><label>Categoria</label>
+        <select data-field="categoria">
+          <option value="" ${!lead.categoria ? 'selected' : ''}>Sin categoria</option>
+          <option value="Implementacion" ${lead.categoria === 'Implementacion' ? 'selected' : ''}>Implementacion</option>
+          <option value="Facturacion Electronica" ${lead.categoria === 'Facturacion Electronica' ? 'selected' : ''}>Facturacion Electronica</option>
+          <option value="Recurrente" ${lead.categoria === 'Recurrente' ? 'selected' : ''}>Recurrente</option>
+        </select>
+      </div>
     </div>
     <div class="edit-actions">
       <button class="btn btn-primary" data-action="save" data-idx="${idx}">Guardar</button>
@@ -911,9 +923,17 @@ function renderAddLeadForm() {
       <div class="field"><label>Servicio</label><input type="number" data-field="serv" value="0"></div>
       <div class="field"><label>Software</label><input type="number" data-field="soft" value="0"></div>
     </div>
-    <div class="edit-form" style="grid-template-columns:1fr 1fr;margin-top:12px;">
+    <div class="edit-form" style="grid-template-columns:1fr 2fr 1fr;margin-top:12px;">
       <div class="field"><label>Descuento % (Impl + FE)</label><input type="number" data-field="desc" value="25" min="0" max="100"></div>
       <div class="field"><label>Notas</label><textarea data-field="notas"></textarea></div>
+      <div class="field"><label>Categoria</label>
+        <select data-field="categoria">
+          <option value="">Sin categoria</option>
+          <option value="Implementacion">Implementacion</option>
+          <option value="Facturacion Electronica">Facturacion Electronica</option>
+          <option value="Recurrente">Recurrente</option>
+        </select>
+      </div>
     </div>
     <div class="edit-actions">
       <button class="btn btn-primary" id="btn-save-new">Guardar</button>
