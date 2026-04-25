@@ -203,6 +203,12 @@ var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agos
 
 // Contadoras excluidas del control (su servicio no lleva estos controles)
 var EXCLUIDAS = ['Karina', 'Milka'];
+function isExcluida(name) {
+  for (var i = 0; i < EXCLUIDAS.length; i++) {
+    if (name.indexOf(EXCLUIDAS[i]) === 0) return true;
+  }
+  return false;
+}
 
 // Contadoras last in sort order
 var CONTADORA_LAST = ['Sin asignar'];
@@ -377,7 +383,7 @@ async function renderGerencial() {
 
   // Filter out excluded, then sort
   var allNames = Object.keys(contadorasMap).filter(function(n) {
-    return EXCLUIDAS.indexOf(n) < 0;
+    return !isExcluida(n);
   });
   var contadoraNames = sortContadoras(allNames);
 
