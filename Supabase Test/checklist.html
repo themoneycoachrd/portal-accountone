@@ -110,6 +110,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .check-table tr:hover td { background:#fafbfc; }
 .check-table tr.row-done td { background:#f0fdf4; }
 .check-table tr.row-overdue td { background:#fef2f2; }
+.check-table tr.group-row td { background:#f0f2f5; font-weight:700; font-size:0.72rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--border); padding:6px 12px; }
 
 /* ─── Type badges ─── */
 .tipo-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700; letter-spacing:0.2px; white-space:nowrap; }
@@ -207,7 +208,7 @@ var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','
 var MESES_LABEL = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 var MESES_FULL = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-var EXCLUIDAS = ['Karina', 'Milka'];
+var EXCLUIDAS = ['Karina', 'Milka', 'Yoleni'];
 function isExcluida(name) {
   for (var i = 0; i < EXCLUIDAS.length; i++) {
     if (name.indexOf(EXCLUIDAS[i]) === 0) return true;
@@ -219,30 +220,49 @@ function isExcluida(name) {
 // mesRel: 0 = deadline en el mes de trabajo, 1 = deadline en el mes siguiente
 // dia: dia del mes para la fecha limite de presentacion
 // firma = 5 dias antes del limite
+// Grupos de impuestos para los separadores visuales
+var ITEM_GROUPS = [
+  { label: 'Nomina → TSS / IR-3 — Presentacion dia 3', from: 0, to: 6 },
+  { label: 'Proveedores informales — Presentacion dia 10', from: 7, to: 12 },
+  { label: 'Anticipo — Presentacion dia 15', from: 13, to: 13 },
+  { label: 'ITBIS — Presentacion dia 20', from: 14, to: 18 },
+  { label: 'Presentacion mensual', from: 19, to: 23 }
+];
+
 var ITEMS = [
-  { id:'solicitud_nomina',      n:1,  label:'Solicitud de Nomina',                        tipo:'Nomina',       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3', dia:25, mesRel:0 },
-  { id:'solicitar_proveedores', n:2,  label:'Solicitar Proveedores Informales',            tipo:'Proveedores',  tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:25, mesRel:0 },
-  { id:'recepcion_nomina',      n:3,  label:'Recepcion de Nomina',                         tipo:'Nomina',       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3', dia:28, mesRel:0 },
-  { id:'registro_nomina',       n:4,  label:'Registro de Nomina',                          tipo:'Nomina',       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3', dia:30, mesRel:0 },
-  { id:'informar_impuestos',    n:5,  label:'Informar a Impuestos (via Trello)',            tipo:'Nomina',       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3', dia:30, mesRel:0 },
-  { id:'recepcion_proveedores', n:6,  label:'Recepcion de Proveedores Informales',         tipo:'Proveedores',  tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:30, mesRel:0 },
-  { id:'verificar_facturas',    n:7,  label:'Verificar facturas de gastos pendientes',     tipo:'Gastos',       tipoCss:'tipo-itbis',    impuesto:'ITBIS',      dia:30, mesRel:0 },
-  { id:'autorizacion_tss',      n:8,  label:'Subir autorizacion al cliente (TSS)',         tipo:'TSS',          tipoCss:'tipo-tss',      impuesto:'TSS',        dia:3,  mesRel:1 },
-  { id:'registrar_proveedores', n:9,  label:'Registrar gastos de Proveedores Informales',  tipo:'Proveedores',  tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:5,  mesRel:1 },
-  { id:'borrador_ir17',         n:10, label:'Realizar Borrador de IR-17',                  tipo:'IR-17',        tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:5,  mesRel:1 },
-  { id:'solicitar_facturas',    n:11, label:'Solicitar o confirmar facturas de gastos',    tipo:'Gastos',       tipoCss:'tipo-itbis',    impuesto:'ITBIS',      dia:5,  mesRel:1 },
-  { id:'enviar_ir17',           n:12, label:'Enviar borrador de IR-17 al cliente',         tipo:'IR-17',        tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:7,  mesRel:1 },
-  { id:'autorizacion_ir3',      n:13, label:'Subir Autorizacion de IR-3 al cliente',       tipo:'IR-3',         tipoCss:'tipo-ir3',      impuesto:'IR-3',       dia:10, mesRel:1 },
-  { id:'notificacion_ir17',     n:14, label:'Subir Notificacion de pago IR-17',            tipo:'IR-17',        tipoCss:'tipo-ir17',     impuesto:'IR-17',      dia:10, mesRel:1 },
-  { id:'facturas_registradas',  n:15, label:'Facturas de Gastos registradas',              tipo:'Gastos',       tipoCss:'tipo-itbis',    impuesto:'ITBIS',      dia:10, mesRel:1 },
-  { id:'autorizacion_anticipo', n:16, label:'Subir autorizacion de Anticipo al cliente',   tipo:'Anticipo',     tipoCss:'tipo-anticipo', impuesto:'Anticipo',   dia:15, mesRel:1 },
-  { id:'borrador_itbis',        n:17, label:'Realizar Borrador ITBIS',                     tipo:'ITBIS',        tipoCss:'tipo-itbis',    impuesto:'ITBIS',      dia:15, mesRel:1 },
-  { id:'enviar_itbis',          n:18, label:'Enviar autorizacion de pago ITBIS',           tipo:'ITBIS',        tipoCss:'tipo-itbis',    impuesto:'ITBIS',      dia:20, mesRel:1 },
-  { id:'registros_realizados',  n:19, label:'Realizar registros realizados',               tipo:'Cierre',       tipoCss:'tipo-cierre',   impuesto:'—',          dia:25, mesRel:1 },
-  { id:'presupuesto',           n:20, label:'Realizar Presupuesto y ejecucion',            tipo:'Cierre',       tipoCss:'tipo-cierre',   impuesto:'—',          dia:25, mesRel:1 },
-  { id:'proyeccion_impuestos',  n:21, label:'Realizar Proyeccion de impuestos',            tipo:'Cierre',       tipoCss:'tipo-cierre',   impuesto:'—',          dia:25, mesRel:1 },
-  { id:'resumen_declaracion',   n:22, label:'Realizar resumen de declaracion del mes',     tipo:'Cierre',       tipoCss:'tipo-cierre',   impuesto:'—',          dia:28, mesRel:1 },
-  { id:'video_reunion',         n:23, label:'Grabar video o reunion con cliente',          tipo:'Cierre',       tipoCss:'tipo-cierre',   impuesto:'—',          dia:30, mesRel:1 }
+  // ── Nomina → TSS / IR-3 (todo deadline dia 3, firma dia 28) ──
+  { id:'solicitud_nomina',        n:1,  label:'Solicitud de Nomina',                       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'recepcion_nomina',        n:2,  label:'Recepcion de Nomina',                        tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'registro_nomina',         n:3,  label:'Registro de Nomina',                         tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'informar_impuestos',      n:4,  label:'Informar a Impuestos (via Trello)',           tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_tss_nomina', n:5,  label:'Subir autorizacion de TSS al cliente',       tipoCss:'tipo-nomina',   impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_tss',        n:6,  label:'Subir autorizacion al cliente (TSS)',        tipoCss:'tipo-tss',      impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_ir3',        n:7,  label:'Subir Autorizacion de IR-3 al cliente',      tipoCss:'tipo-ir3',      impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+
+  // ── Proveedores informales (deadline dia 10, firma dia 5) ──
+  { id:'solicitar_proveedores',   n:8,  label:'Solicitar Proveedores Informales',           tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'recepcion_proveedores',   n:9,  label:'Recepcion de Proveedores Informales',        tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'registrar_proveedores',   n:10, label:'Registrar gastos de Proveedores Informales', tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'borrador_ir17',           n:11, label:'Realizar Borrador de IR-17',                 tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'enviar_ir17',             n:12, label:'Enviar borrador de IR-17 al cliente',        tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'notificacion_ir17',       n:13, label:'Subir Notificacion de pago IR-17',           tipoCss:'tipo-ir17',     impuesto:'Proveedores',   dia:10, mesRel:1 },
+
+  // ── Anticipo (deadline dia 15, firma dia 10) ──
+  { id:'autorizacion_anticipo',   n:14, label:'Subir autorizacion de Anticipo al cliente',  tipoCss:'tipo-anticipo', impuesto:'Anticipo',      dia:15, mesRel:1 },
+
+  // ── ITBIS (deadline dia 20, firma dia 15) ──
+  { id:'verificar_facturas',      n:15, label:'Verificar facturas de gastos pendientes',    tipoCss:'tipo-itbis',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'solicitar_facturas',      n:16, label:'Solicitar o confirmar facturas de gastos',   tipoCss:'tipo-itbis',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'facturas_registradas',    n:17, label:'Facturas de Gastos registradas',             tipoCss:'tipo-itbis',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'borrador_itbis',          n:18, label:'Realizar Borrador ITBIS',                    tipoCss:'tipo-itbis',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'enviar_itbis',            n:19, label:'Enviar autorizacion de pago ITBIS',          tipoCss:'tipo-itbis',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+
+  // ── Presentacion mensual (registro gastos dia 5, lo demas dia 30) ──
+  { id:'registros_realizados',    n:20, label:'Registrar gastos',                           tipoCss:'tipo-cierre',   impuesto:'Presentacion',  dia:5,  mesRel:1, firmaOffset:4 },
+  { id:'presupuesto',             n:21, label:'Realizar Presupuesto y ejecucion',           tipoCss:'tipo-cierre',   impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'proyeccion_impuestos',    n:22, label:'Realizar Proyeccion de impuestos',           tipoCss:'tipo-cierre',   impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'resumen_declaracion',     n:23, label:'Realizar resumen de declaracion del mes',    tipoCss:'tipo-cierre',   impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'video_reunion',           n:24, label:'Grabar video o reunion con cliente',         tipoCss:'tipo-cierre',   impuesto:'Presentacion',  dia:30, mesRel:1 }
 ];
 
 // ==================== HELPERS ====================
@@ -272,7 +292,8 @@ function getDeadlineDate(mesIdx, item) {
 function getFirmaDate(mesIdx, item) {
   var deadline = getDeadlineDate(mesIdx, item);
   var firma = new Date(deadline.getTime());
-  firma.setDate(firma.getDate() - 5);
+  var offset = item.firmaOffset || 5;
+  firma.setDate(firma.getDate() - offset);
   return firma;
 }
 
@@ -343,7 +364,19 @@ function getContadoraNames() {
     var contadora = key.split('_')[0];
     if (!isExcluida(contadora)) names[contadora] = true;
   }
-  return Object.keys(names).sort();
+  return sortContadoras(Object.keys(names));
+}
+
+function sortContadoras(arr) {
+  return arr.sort(function(a, b) {
+    var aLast = a === 'Sin asignar' || a === 'Sin Asignar';
+    var bLast = b === 'Sin asignar' || b === 'Sin Asignar';
+    if (aLast && !bLast) return 1;
+    if (!aLast && bLast) return -1;
+    if (a === 'Taina' && b !== 'Taina') return -1;
+    if (b === 'Taina' && a !== 'Taina') return 1;
+    return a.localeCompare(b);
+  });
 }
 
 function getClientsForContadora(contadora, mes) {
@@ -625,7 +658,13 @@ function renderDetail(el) {
   html += '<th style="width:85px" class="center">Fecha</th>';
   html += '</tr></thead><tbody>';
 
-  ITEMS.forEach(function(item) {
+  ITEMS.forEach(function(item, idx) {
+    // Insert group header row
+    var group = ITEM_GROUPS.find(function(g) { return g.from === idx; });
+    if (group) {
+      html += '<tr class="group-row"><td colspan="7">' + group.label + '</td></tr>';
+    }
+
     var d = entry.datos[item.id] || { done: false, fecha: '' };
     var limiteStr = formatDeadline(mesIdx, item);
     var firmaStr = formatFirma(mesIdx, item);
