@@ -65,6 +65,9 @@
   .stat-sub { font-size:11px; color:var(--light); margin-top:4px; }
   .stat-green { color:var(--green); }
   .stat-red { color:var(--red); }
+  .cc-serv-stat { transition:border-color 0.15s, box-shadow 0.15s; }
+  .cc-serv-stat:hover { border-color:var(--blue); }
+  .cc-serv-stat.active { border-color:var(--navy); box-shadow:0 0 0 2px rgba(26,35,50,0.15); }
 
   /* ─── Cards ─── */
   .card { background:var(--card); border-radius:12px; padding:16px; border:1px solid var(--border); margin-bottom:16px; }
@@ -762,6 +765,7 @@ let ccKPI_DATA = {};
 let ccActiveMainTab = "dashboard";
 let ccActiveSubTab = null;
 let ccCharts = [];
+var ccAllClientes = [];
 
 let ccPerfilOpen = {};
 let ccPerfilEditing = {};
@@ -784,8 +788,9 @@ async function ccLoadData() {
   MESES.forEach(function(m) { data[m] = null; });
 
   // 1. Cargar todos los clientes de la maestra
-  var { data: clientes } = await sb.from('clientes').select('nombre, fecha_entrada, fecha_salida, activo, monto_adm, contadora_contabilidad, responsabilidad_contabilidad');
+  var { data: clientes } = await sb.from('clientes').select('nombre, fecha_entrada, fecha_salida, activo, monto_adm, contadora_contabilidad, contadora_impuestos, responsabilidad_contabilidad, tipo_servicio, rnc');
   clientes = clientes || [];
+  ccAllClientes = clientes;
 
   // 2. Cargar asignaciones para el detalle por contadora (serv/adm por mes)
   var { data: asig } = await sb.from('asignaciones').select('*').eq('anio', 2026);
@@ -1158,6 +1163,7 @@ function ccRenderMainTabs() {
   const el = document.getElementById("ccMainTabs");
   const tabs = [
     {id:'dashboard', label:'Dashboard'},
+    {id:'servicios', label:'Servicios'},
     {id:'implementacion', label:'Implementaciones'},
     {id:'software', label:'Software'},
     {id:'perfiles', label:'Perfiles'}
@@ -1169,7 +1175,7 @@ function ccRenderMainTabs() {
 
 function ccRenderSubTabs() {
   const el = document.getElementById("ccSubTabs");
-  if (ccActiveMainTab !== 'dashboard') { el.style.display = 'none'; return; }
+  if (ccActiveMainTab !== 'dashboard') { el.style.display = 'none'; el.innerHTML = ''; return; }
   el.style.display = 'flex';
   let html = `<div class="sub-tab ${ccActiveSubTab===null?'active':''}" onclick="ccNavigateSub(null)">Resumen</div>`;
   MESES.forEach((m,i) => {
@@ -1189,6 +1195,7 @@ function ccRenderAll() {
 function ccRenderContent() {
   ccDestroyCharts();
   const el = document.getElementById("cc-content");
+  if (ccActiveMainTab === "servicios") return ccRenderServicios(el);
   if (ccActiveMainTab === "implementacion") return ccRenderImplementacion(el);
   if (ccActiveMainTab === "perfiles") return ccRenderPerfiles(el);
   if (ccActiveMainTab === "software") return ccRenderSoftware(el);
@@ -1196,6 +1203,83 @@ function ccRenderContent() {
   const d = ccGetMonthData(ccActiveSubTab);
   if (!d) { el.innerHTML = '<div class="empty">Sin datos para este mes todavia.</div>'; return; }
   ccRenderMonth(el, ccActiveSubTab, d);
+}
+
+// ─── Servicios tab ───
+var ccServFiltro = null; // null = todos, o 'Contabilidad completa', 'Solo impuestos', 'Solo supervisión'
+
+function ccRenderServicios(el) {
+  var activos = ccAllClientes.filter(function(c) { return c.activo !== false; });
+  var total = activos.length;
+  var contab = activos.filter(function(c) { return c.tipo_servicio === 'Contabilidad completa'; });
+  var imp = activos.filter(function(c) { return c.tipo_servicio === 'Solo impuestos'; });
+  var sup = activos.filter(function(c) { return c.tipo_servicio === 'Solo supervisión'; });
+  var sinTipo = activos.filter(function(c) { return !c.tipo_servicio; });
+
+  function statClass(key) { return ccServFiltro === key ? 'stat cc-serv-stat active' : 'stat cc-serv-stat'; }
+
+  var html = '<div class="stats">';
+  html += '<div class="' + statClass(null) + '" onclick="ccServFilter(null)" style="cursor:pointer">';
+  html += '<div class="stat-label">Total clientes activos</div><div class="stat-value">' + total + '</div>';
+  html += '<div class="stat-sub">Todos los servicios</div></div>';
+
+  html += '<div class="' + statClass('Contabilidad completa') + '" onclick="ccServFilter(\'Contabilidad completa\')" style="cursor:pointer">';
+  html += '<div class="stat-label">Contabilidad completa</div><div class="stat-value stat-green">' + contab.length + '</div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (contab.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+
+  html += '<div class="' + statClass('Solo impuestos') + '" onclick="ccServFilter(\'Solo impuestos\')" style="cursor:pointer">';
+  html += '<div class="stat-label">Tax One (Solo impuestos)</div><div class="stat-value" style="color:var(--blue)">' + imp.length + '</div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (imp.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+
+  html += '<div class="' + statClass('Solo supervisión') + '" onclick="ccServFilter(\'Solo supervisión\')" style="cursor:pointer">';
+  html += '<div class="stat-label">Supervisión</div><div class="stat-value" style="color:var(--amber)">' + sup.length + '</div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (sup.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+  html += '</div>';
+
+  // Determinar qué lista mostrar
+  var lista, titulo;
+  if (ccServFiltro === 'Contabilidad completa') { lista = contab; titulo = 'Contabilidad completa'; }
+  else if (ccServFiltro === 'Solo impuestos') { lista = imp; titulo = 'Tax One (Solo impuestos)'; }
+  else if (ccServFiltro === 'Solo supervisión') { lista = sup; titulo = 'Supervisión'; }
+  else { lista = activos; titulo = 'Todos los clientes activos'; }
+
+  lista.sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); });
+
+  html += '<div class="card">';
+  html += '<h3>' + titulo + ' (' + lista.length + ')</h3>';
+
+  if (sinTipo.length > 0 && ccServFiltro === null) {
+    html += '<div class="note">' + sinTipo.length + ' cliente(s) sin tipo de servicio asignado. Asígnalo desde BD Clientes → Editar.</div>';
+  }
+
+  html += '<div class="table-wrap"><table>';
+  html += '<tr><th>#</th><th>Cliente</th><th>RNC</th><th>Servicio</th><th>Cont. contab</th><th>Cont. imp</th><th>Adm</th></tr>';
+  lista.forEach(function(c, i) {
+    var tipoLabel = '';
+    var tipoColor = 'var(--muted)';
+    if (c.tipo_servicio === 'Contabilidad completa') { tipoLabel = 'Contabilidad'; tipoColor = 'var(--green)'; }
+    else if (c.tipo_servicio === 'Solo impuestos') { tipoLabel = 'Tax One'; tipoColor = 'var(--blue)'; }
+    else if (c.tipo_servicio === 'Solo supervisión') { tipoLabel = 'Supervisión'; tipoColor = 'var(--amber)'; }
+    else { tipoLabel = 'Sin asignar'; tipoColor = 'var(--light)'; }
+
+    html += '<tr>';
+    html += '<td>' + (i + 1) + '</td>';
+    html += '<td><strong>' + esc(c.nombre || '') + '</strong></td>';
+    html += '<td>' + esc(c.rnc || '') + '</td>';
+    html += '<td><span style="font-size:11px;font-weight:600;color:' + tipoColor + '">' + tipoLabel + '</span></td>';
+    html += '<td>' + esc(c.contadora_contabilidad || '—') + '</td>';
+    html += '<td>' + esc(c.contadora_impuestos || '—') + '</td>';
+    html += '<td>' + (c.monto_adm || '—') + '</td>';
+    html += '</tr>';
+  });
+  html += '</table></div></div>';
+
+  el.innerHTML = html;
+}
+
+function ccServFilter(tipo) {
+  ccServFiltro = tipo;
+  ccRenderContent();
 }
 
 function ccRenderDashboard(el) {
