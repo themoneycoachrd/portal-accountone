@@ -104,37 +104,44 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .status-badge.por-vencer { background:#fef3c7; color:#92400e; }
 .status-badge.sin-iniciar { background:#f3f4f6; color:#6b7280; }
 
-/* ─── Detail View ─── */
-.detail-back { display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--muted); cursor:pointer; margin-bottom:16px; padding:6px 12px; border-radius:8px; border:none; background:none; font-family:inherit; }
-.detail-back:hover { background:#f0f2f5; color:var(--navy); }
+/* ─── Detail View (same as contabilidad) ─── */
+.detail-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+.detail-back { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); font-family:inherit; }
+.detail-back:hover { background:#eef0f4; }
+.detail-title { font-size:18px; font-weight:800; }
+.detail-sub { font-size:12px; color:var(--muted); }
 
-.detail-header-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:20px; }
-.detail-client-name { font-size:1.15rem; font-weight:700; color:var(--navy); }
-.detail-contadora { font-size:0.82rem; color:var(--muted); margin-top:2px; }
-.detail-stats-row { display:flex; align-items:center; gap:20px; margin-top:14px; }
-.detail-pending { font-size:0.82rem; color:var(--muted); }
-.detail-pending strong { color:var(--navy); }
-.detail-progress-bar { flex:1; max-width:300px; height:8px; background:#eef0f4; border-radius:4px; overflow:hidden; }
-.detail-progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
-.detail-progress-pct { font-size:0.78rem; font-weight:600; color:var(--navy); min-width:40px; text-align:right; }
+.progress-row { display:flex; align-items:center; gap:12px; margin-bottom:16px; background:white; border-radius:10px; padding:14px 18px; border:1px solid var(--border); }
+.progress-row .pr-count { font-size:14px; font-weight:700; min-width:90px; }
+.progress-row .pr-bar { flex:1; height:10px; background:#f1f5f9; border-radius:5px; overflow:hidden; }
+.progress-row .pr-fill { height:100%; border-radius:5px; transition:width 0.3s; }
+.progress-row .pr-pct { font-size:13px; font-weight:700; min-width:40px; text-align:right; }
 
-/* ─── Detail Table ─── */
-.detail-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
-.detail-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
-.detail-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; vertical-align:middle; }
-.detail-table tr:last-child td { border-bottom:none; }
-.detail-table tr:hover td { background:#fafbfc; }
-.detail-table .tax-group-row td { background:#f4f6f9; font-weight:700; font-size:0.78rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.03em; padding:8px 12px; }
-.detail-table .importe-input { width:100px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; text-align:right; background:white; }
-.detail-table .importe-input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 2px rgba(67,97,238,0.1); }
+/* ─── Checklist Table (same as contabilidad) ─── */
+.check-table { width:100%; border-collapse:collapse; font-size:0.82rem; background:white; border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.check-table th { text-align:left; padding:10px 12px; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.3px; color:var(--muted); border-bottom:2px solid var(--border); background:#f8fafc; }
+.check-table th.center { text-align:center; }
+.check-table td { padding:8px 12px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+.check-table td.center { text-align:center; }
+.check-table tr:hover td { background:#fafbfc; }
+.check-table tr.row-done td { background:#f0fdf4; }
+.check-table tr.group-row td { background:#f0f2f5; font-weight:700; font-size:0.72rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--border); padding:6px 12px; }
 
-/* ─── Status Select ─── */
-.status-select { padding:4px 8px; border-radius:8px; font-size:0.75rem; font-weight:600; border:1px solid transparent; cursor:pointer; font-family:inherit; appearance:none; -webkit-appearance:none; padding-right:20px; background-repeat:no-repeat; background-position:right 6px center; background-size:10px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237c8495' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E"); }
-.status-select.finalizado { background-color:#d1fae5; color:#065f46; }
-.status-select.en-progreso { background-color:#dbeafe; color:#1e40af; }
-.status-select.en-atraso { background-color:#fee2e2; color:#991b1b; }
-.status-select.por-vencer { background-color:#fef3c7; color:#92400e; }
-.status-select.sin-iniciar { background-color:#f3f4f6; color:#6b7280; }
+/* ─── Type badges ─── */
+.tipo-badge { display:inline-block; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700; letter-spacing:0.2px; white-space:nowrap; }
+.tipo-tss { background:#eef2ff; color:#4361ee; }
+.tipo-ir3 { background:#f3f0ff; color:#8b5cf6; }
+.tipo-ir17 { background:#fffbeb; color:#d97706; }
+.tipo-anticipo { background:#fdf2f8; color:#db2777; }
+.tipo-itbis { background:#ecfdf5; color:#059669; }
+
+/* ─── Toggle Si/No (same as contabilidad) ─── */
+.toggle-group { display:flex; gap:0; }
+.toggle-opt { padding:5px 14px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.15s; font-family:inherit; }
+.toggle-opt:first-child { border-radius:6px 0 0 6px; }
+.toggle-opt:last-child { border-radius:0 6px 6px 0; border-left:none; }
+.toggle-opt.active-yes { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+.toggle-opt.active-no { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
 
 /* Pago a cuenta special select */
 .pago-select { padding:4px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.82rem; font-family:inherit; background:white; cursor:pointer; }
@@ -666,87 +673,85 @@ function renderDetail() {
 
   var el = document.getElementById('detailView');
   var h = '';
+  var mesIdx = MESES_KEY.indexOf(selectedMes);
 
-  // Month tabs (in detail too)
+  // Month tabs
   h += '<div class="month-tabs">';
   MESES_KEY.forEach(function(m, i) {
     h += '<button class="month-tab' + (m === selectedMes ? ' active' : '') + '" onclick="selectedMes=\'' + m + '\';renderDetail()">' + MESES_LABEL[i] + '</button>';
   });
   h += '</div>';
 
-  // Back button
-  h += '<button class="detail-back" onclick="closeDetail()">← Volver al control</button>';
+  // Contadora pills
+  var contNames = sortContadoras(Object.keys(contadorasMap));
+  h += '<div class="contadora-pills">';
+  h += '<button class="contadora-pill' + (selectedContadora === 'Todas' ? ' active' : '') + '" onclick="selectedContadora=\'Todas\';renderDetail()">Todas</button>';
+  contNames.forEach(function(name) {
+    h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + esc(name) + '\';renderDetail()">' + name + '</button>';
+  });
+  h += '</div>';
 
-  // Calculate overall progress for this client
+  // Header (same as contabilidad)
+  h += '<div class="detail-header">';
+  h += '<button class="detail-back" onclick="closeDetail()">&#8592; Volver</button>';
+  h += '<div><div class="detail-title">' + detCliente + '</div>';
+  h += '<div class="detail-sub">' + detContadora + ' · ' + MESES_FULL[mesIdx] + ' 2026</div></div>';
+  h += '</div>';
+
+  // Calculate progress
   var totalItems = 0;
   var doneItems = 0;
-  var pendingCount = 0;
 
   IMPUESTOS.forEach(function(imp) {
     var row = getImpuestoRow(detCliente, selectedMes, imp.id);
     var datos = row ? (row.datos || {}) : {};
-    var enAtraso = row ? row.en_atraso : false;
-
-    // Check dirty
     var dk = mapKey(detCliente, selectedMes, imp.id);
-    if (detDirty[dk]) {
-      datos = detDirty[dk].datos;
-      enAtraso = detDirty[dk].en_atraso;
-    }
+    if (detDirty[dk]) datos = detDirty[dk].datos;
 
     var items = getItemsForTax(imp.id);
     totalItems += items.length;
     items.forEach(function(it) {
       var d = datos[it.id];
       if (!d) return;
-      if (it.special === 'select') {
-        if (d.valor === 'si' || d.valor === 'n/a') doneItems++;
-        else pendingCount++;
-      } else {
-        if (d.done) doneItems++;
-        else pendingCount++;
-      }
+      if (it.special === 'select') { if (d.valor === 'si' || d.valor === 'n/a') doneItems++; }
+      else { if (d.done) doneItems++; }
     });
   });
 
   var pct = totalItems > 0 ? Math.round(doneItems / totalItems * 100) : 0;
-  var barColor = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
+  var barColor = getBarColor(pct);
 
-  // Header card
-  h += '<div class="detail-header-card">';
-  h += '<div class="detail-client-name">' + detCliente + '</div>';
-  h += '<div class="detail-contadora">Contadora: ' + detContadora + ' · ' + MESES_FULL[MESES_KEY.indexOf(selectedMes)] + ' 2026</div>';
-  h += '<div class="detail-stats-row">';
-  h += '<div class="detail-pending"><strong>' + (totalItems - doneItems) + '</strong> tareas pendientes de ' + totalItems + '</div>';
-  h += '<div class="detail-progress-bar"><div class="detail-progress-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
-  h += '<div class="detail-progress-pct">' + pct + '%</div>';
-  h += '</div></div>';
+  // Progress row (same as contabilidad)
+  h += '<div class="progress-row">';
+  h += '<div class="pr-count">' + doneItems + ' de ' + totalItems + '</div>';
+  h += '<div class="pr-bar"><div class="pr-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
+  h += '<div class="pr-pct" style="color:' + barColor + '">' + pct + '%</div>';
+  h += '</div>';
 
-  // Detail table
-  h += '<table class="detail-table">';
-  h += '<thead><tr>';
+  // Table (same columns as contabilidad: #, Tarea, Impuesto, Firma, Limite, Estado, Fecha)
+  h += '<div style="overflow-x:auto">';
+  h += '<table class="check-table"><thead><tr>';
   h += '<th style="width:30px">#</th>';
   h += '<th>Tarea</th>';
-  h += '<th style="width:110px">Importe</th>';
-  h += '<th style="width:90px">Entrega firma</th>';
-  h += '<th style="width:90px">Deadline</th>';
-  h += '<th style="width:130px">Estatus</th>';
-  h += '<th style="width:100px">Completado</th>';
+  h += '<th style="width:90px">Impuesto</th>';
+  h += '<th style="width:65px" class="center">Firma</th>';
+  h += '<th style="width:65px" class="center">Limite</th>';
+  h += '<th style="width:100px" class="center">Estado</th>';
+  h += '<th style="width:85px" class="center">Fecha</th>';
   h += '</tr></thead><tbody>';
 
   var rowNum = 0;
+  var tipoCssMap = { 'TSS': 'tipo-tss', 'IR-3': 'tipo-ir3', 'IR-17': 'tipo-ir17', 'Anticipo': 'tipo-anticipo', 'ITBIS': 'tipo-itbis' };
 
   IMPUESTOS.forEach(function(imp) {
     var row = getImpuestoRow(detCliente, selectedMes, imp.id);
     var datos = row ? JSON.parse(JSON.stringify(row.datos || {})) : getDefaultDatos(imp.id);
     var enAtraso = row ? row.en_atraso : false;
-    var importeVal = row ? (row.importe || 0) : 0;
 
     var dk = mapKey(detCliente, selectedMes, imp.id);
     if (detDirty[dk]) {
       datos = detDirty[dk].datos;
       enAtraso = detDirty[dk].en_atraso;
-      importeVal = detDirty[dk].importe;
     }
 
     var items = getItemsForTax(imp.id);
@@ -758,15 +763,10 @@ function renderDetail() {
       else { if (d.done) doneCount++; }
     });
 
-    var taxStatus = calcStatusWithVencer(imp.id, datos, enAtraso, selectedMes);
-
-    // Tax group header row
-    h += '<tr class="tax-group-row"><td colspan="7">';
-    h += imp.label + ' — Día ' + imp.deadline;
-    h += ' <span class="status-badge ' + taxStatus + '" style="margin-left:8px;font-size:0.68rem">' + statusLabel(taxStatus) + '</span>';
+    // Group header (same style as contabilidad)
+    h += '<tr class="group-row"><td colspan="7">';
+    h += imp.label + ' — Presentación día ' + imp.deadline;
     h += ' (' + doneCount + '/' + items.length + ')';
-
-    // Atraso toggle inline
     h += ' <label style="margin-left:16px;font-size:0.72rem;color:var(--red);font-weight:500;cursor:pointer">';
     h += '<input type="checkbox"' + (enAtraso ? ' checked' : '') + ' onchange="toggleAtraso(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',this.checked)" style="margin-right:4px;cursor:pointer">';
     h += 'En atraso</label>';
@@ -774,23 +774,21 @@ function renderDetail() {
 
     var dlDate = getDeadlineDate(imp.id, selectedMes, 2026);
     var firmaDate = getFirmaDate(imp.id, selectedMes, 2026);
+    var firmaStr = formatDateShort(firmaDate);
+    var limiteStr = formatDateShort(dlDate);
 
     items.forEach(function(it, idx) {
       rowNum++;
       var d = datos[it.id] || { done: false, fecha: null };
-      var itemStatus;
+      var isDone = it.special === 'select' ? (d.valor === 'si' || d.valor === 'n/a') : d.done;
+      var rowClass = isDone ? 'row-done' : '';
+      var fechaDisplay = d.fecha ? d.fecha : '<span style="color:var(--light)">—</span>';
 
-      if (it.special === 'select') {
-        itemStatus = (d.valor === 'si' || d.valor === 'n/a') ? 'finalizado' : 'sin-iniciar';
-      } else {
-        itemStatus = d.done ? 'finalizado' : 'sin-iniciar';
-      }
-
-      h += '<tr>';
-      h += '<td style="color:var(--muted);font-size:0.78rem">' + rowNum + '</td>';
+      h += '<tr class="' + rowClass + '">';
+      h += '<td style="color:var(--light);font-size:11px">' + rowNum + '</td>';
 
       // Task name
-      h += '<td>';
+      h += '<td style="font-weight:600;font-size:0.8rem">';
       if (it.special === 'select') {
         h += it.label + ' ';
         var val = d.valor || '';
@@ -800,43 +798,37 @@ function renderDetail() {
         h += '<option value="n/a"' + (val === 'n/a' ? ' selected' : '') + '>N/A</option>';
         h += '</select>';
       } else {
-        h += '<label style="cursor:pointer;display:flex;align-items:center;gap:8px">';
-        h += '<input type="checkbox"' + (d.done ? ' checked' : '') + ' onchange="toggleItem(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',this.checked)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--green)">';
-        h += '<span' + (d.done ? ' style="text-decoration:line-through;color:var(--muted)"' : '') + '>' + it.label + '</span>';
-        h += '</label>';
+        h += it.label;
       }
       h += '</td>';
 
-      // Importe (only show on first item of each tax group)
-      if (idx === 0) {
-        h += '<td rowspan="' + items.length + '" style="vertical-align:top;padding-top:14px">';
-        h += '<input type="text" class="importe-input" value="' + (importeVal || '') + '" onchange="updateImporte(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',this.value)" placeholder="0.00">';
-        h += '</td>';
+      // Impuesto badge (same as contabilidad)
+      h += '<td><span class="tipo-badge ' + (tipoCssMap[imp.id] || '') + '">' + imp.label + '</span></td>';
+
+      // Firma
+      h += '<td class="center" style="font-size:11px;color:var(--muted)">' + firmaStr + '</td>';
+
+      // Limite
+      h += '<td class="center" style="font-size:11px;color:var(--muted)">' + limiteStr + '</td>';
+
+      // Estado — Si/No toggle (same as contabilidad)
+      if (it.special !== 'select') {
+        h += '<td class="center"><div class="toggle-group">';
+        h += '<button class="toggle-opt ' + (isDone ? 'active-yes' : '') + '" onclick="toggleItem(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',true)">Si</button>';
+        h += '<button class="toggle-opt ' + (!isDone ? 'active-no' : '') + '" onclick="toggleItem(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',false)">No</button>';
+        h += '</div></td>';
+      } else {
+        h += '<td class="center">' + (isDone ? '<span style="color:var(--green);font-weight:600">Si</span>' : '<span style="color:var(--light)">No</span>') + '</td>';
       }
 
-      // Firma date (same for all items in tax group, show only on first)
-      if (idx === 0) {
-        h += '<td rowspan="' + items.length + '" style="vertical-align:top;padding-top:14px;font-size:0.78rem;color:var(--muted)">' + formatDateShort(firmaDate) + '</td>';
-      }
-
-      // Deadline (same for all items, show only on first)
-      if (idx === 0) {
-        h += '<td rowspan="' + items.length + '" style="vertical-align:top;padding-top:14px;font-size:0.78rem;font-weight:600">' + formatDateShort(dlDate) + '</td>';
-      }
-
-      // Status (per item)
-      h += '<td>';
-      h += '<span class="status-badge ' + itemStatus + '">' + statusLabel(itemStatus) + '</span>';
-      h += '</td>';
-
-      // Fecha completado
-      h += '<td style="font-size:0.78rem;color:var(--muted)">' + (d.fecha || '—') + '</td>';
+      // Fecha
+      h += '<td class="center" style="font-size:0.78rem">' + fechaDisplay + '</td>';
 
       h += '</tr>';
     });
   });
 
-  h += '</tbody></table>';
+  h += '</tbody></table></div>';
 
   // Save bar
   if (Object.keys(detDirty).length > 0) {
