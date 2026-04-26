@@ -307,11 +307,64 @@
   body.embed #app-wrapper { display:block !important; }
   body.embed .footer { display:none !important; }
 
+  /* ─── CL: Clientes Module ─── */
+  .cl-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .cl-search { padding:8px 14px; border:1px solid var(--border); border-radius:10px; font-size:0.85rem; font-family:inherit; background:#fafbfc; width:260px; }
+  .cl-search:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+  .btn-add { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; background:var(--blue); color:white; border:none; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer; }
+  .btn-add:hover { background:#3451d1; }
+  .cl-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+  .cl-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+  .cl-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; vertical-align:middle; }
+  .cl-table tr:hover td { background:#fafbfc; }
+  .cl-table tr:last-child td { border-bottom:none; }
+  .cl-table .cl-name { font-weight:600; color:var(--navy); }
+  .cl-badge-activo { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; background:#d1fae5; color:#065f46; }
+  .cl-badge-inactivo { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; background:#fee2e2; color:#991b1b; }
+  .cl-date { font-size:0.8rem; white-space:nowrap; }
+  .cl-stats { display:flex; gap:16px; margin-bottom:20px; }
+  .cl-stat { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 20px; }
+  .cl-stat-count { font-size:1.4rem; font-weight:700; color:var(--navy); }
+  .cl-stat-label { font-size:0.75rem; color:var(--muted); }
+  .cl-empty { text-align:center; padding:60px 20px; color:var(--muted); }
+  .cl-empty .emoji { font-size:2.5rem; margin-bottom:12px; }
+
+  /* ─── Modal ─── */
+  .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:500; display:flex; align-items:center; justify-content:center; }
+  .modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:520px; box-shadow:0 8px 40px rgba(0,0,0,0.15); max-height:90vh; overflow-y:auto; }
+  .modal h3 { font-size:1.1rem; color:var(--navy); margin-bottom:20px; }
+  .modal .m-field { margin-bottom:14px; }
+  .modal .m-field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:5px; }
+  .modal .m-field input,
+  .modal .m-field select,
+  .modal .m-field textarea { width:100%; padding:9px 12px; border:1px solid var(--border); border-radius:10px; font-size:0.85rem; font-family:inherit; background:#fafbfc; }
+  .modal .m-field textarea { resize:vertical; min-height:60px; }
+  .modal .m-field input:focus,
+  .modal .m-field select:focus,
+  .modal .m-field textarea:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(67,97,238,0.1); background:white; }
+  .modal .m-error { color:var(--red); font-size:0.75rem; margin-top:4px; display:none; }
+  .modal-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .btn-modal-cancel { padding:9px 18px; background:#f3f4f6; color:var(--muted); border:none; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer; }
+  .btn-modal-cancel:hover { background:#e5e7eb; color:var(--text); }
+  .btn-modal-save { padding:9px 18px; background:var(--blue); color:white; border:none; border-radius:10px; font-size:0.82rem; font-weight:600; cursor:pointer; }
+  .btn-modal-save:hover { background:#3451d1; }
+  .btn-modal-save:disabled { opacity:0.5; cursor:not-allowed; }
+  .m-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ─── Toast ─── */
+  .toast { position:fixed; bottom:24px; right:24px; padding:12px 20px; border-radius:10px; font-size:0.82rem; font-weight:600; color:white; z-index:600; opacity:0; transform:translateY(10px); transition:all 0.3s; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.success { background:var(--green); }
+  .toast.error { background:var(--red); }
+
   /* ─── Responsive ─── */
   @media (max-width:768px) {
     .kpi-dashboard { grid-template-columns:1fr; }
     .mini-kpis { flex-direction:column; }
     .edit-grid { grid-template-columns:1fr; }
+    .m-row { grid-template-columns:1fr; }
+    .cl-toolbar { flex-direction:column; align-items:stretch; }
+    .cl-search { width:100%; }
   }
 </style>
 </head>
@@ -363,9 +416,72 @@
   <div class="content" id="ctd-content"></div>
 </div>
 
+<div id="cl-area" class="hidden">
+  <div class="content" id="cl-content"></div>
+</div>
+
 <div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
 
 </div><!-- /app-wrapper -->
+
+<!-- Toast -->
+<div class="toast" id="gerToast"></div>
+
+<!-- Modal Nuevo Cliente -->
+<div class="modal-overlay hidden" id="cl-modal-overlay" onclick="if(event.target===this)clCloseModal()">
+  <div class="modal">
+    <h3 id="cl-modal-title">Nuevo cliente</h3>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Nombre del cliente *</label>
+        <input type="text" id="cl-m-nombre" placeholder="Nombre completo o razón social">
+        <div class="m-error" id="cl-m-nombre-err">Campo obligatorio</div>
+      </div>
+      <div class="m-field">
+        <label>RNC</label>
+        <input type="text" id="cl-m-rnc" placeholder="000-00000-0">
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Contacto principal</label>
+        <input type="text" id="cl-m-contacto" placeholder="Nombre del contacto">
+      </div>
+      <div class="m-field">
+        <label>Email</label>
+        <input type="email" id="cl-m-email" placeholder="correo@ejemplo.com">
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Teléfono</label>
+        <input type="text" id="cl-m-telefono" placeholder="809-000-0000">
+      </div>
+      <div class="m-field">
+        <label>Contadora asignada</label>
+        <select id="cl-m-contadora"><option value="">Sin asignar</option></select>
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Fecha de entrada</label>
+        <input type="date" id="cl-m-fecha-entrada">
+      </div>
+      <div class="m-field">
+        <label>Inicio responsabilidad fiscal</label>
+        <input type="date" id="cl-m-inicio-fiscal">
+      </div>
+    </div>
+    <div class="m-field">
+      <label>Notas</label>
+      <textarea id="cl-m-notas" placeholder="Cualquier detalle relevante..."></textarea>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="clCloseModal()">Cancelar</button>
+      <button class="btn-modal-save" id="cl-m-save" onclick="clSaveClient()">Guardar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ==================== SUPABASE ====================
@@ -397,22 +513,34 @@ function renderGerMainTabs() {
   const el = document.getElementById('mainTabs');
   el.innerHTML = [
     { id:'clientes', label:'Control de Clientes' },
-    { id:'contadoras', label:'Control de Contadoras' }
+    { id:'contadoras', label:'Control de Contadoras' },
+    { id:'directorio', label:'Clientes' }
   ].map(t => '<button class="main-tab ' + (gerMainTab === t.id ? 'active' : '') + '" onclick="switchGerTab(\'' + t.id + '\')">' + t.label + '</button>').join('');
 }
 
 function switchGerTab(tab) {
   gerMainTab = tab;
   renderGerMainTabs();
+  document.getElementById('cc-area').classList.add('hidden');
+  document.getElementById('ctd-area').classList.add('hidden');
+  document.getElementById('cl-area').classList.add('hidden');
   if (tab === 'clientes') {
     document.getElementById('cc-area').classList.remove('hidden');
-    document.getElementById('ctd-area').classList.add('hidden');
     ccRenderAll();
-  } else {
-    document.getElementById('cc-area').classList.add('hidden');
+  } else if (tab === 'contadoras') {
     document.getElementById('ctd-area').classList.remove('hidden');
     ctdRenderApp();
+  } else if (tab === 'directorio') {
+    document.getElementById('cl-area').classList.remove('hidden');
+    clRenderAll();
   }
+}
+
+function gerShowToast(msg, type) {
+  var t = document.getElementById('gerToast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type || 'success') + ' show';
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1800,6 +1928,198 @@ async function loadUserProfile() {
   else { userRole = 'contadora'; userName = user.email; }
 }
 
+// ══════════════════════════════════════════════════════════════
+// ██  CLIENTES (CL) MODULE — Directorio maestro
+// ══════════════════════════════════════════════════════════════
+
+var clData = [];
+var clSearch = '';
+var clEditingId = null; // null = new, uuid = editing
+
+async function clLoadData() {
+  var { data, error } = await sb.from('clientes').select('*').order('nombre');
+  if (error) { console.error('Error cargando clientes:', error); return; }
+  clData = data || [];
+}
+
+function clFormatDate(d) {
+  if (!d) return '';
+  var p = d.split('-');
+  return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : d;
+}
+
+function clRenderAll() {
+  var el = document.getElementById('cl-content');
+  var h = '';
+
+  // Stats
+  var activos = clData.filter(function(c) { return c.activo !== false; }).length;
+  var inactivos = clData.length - activos;
+  h += '<div class="cl-stats">';
+  h += '<div class="cl-stat"><div class="cl-stat-count">' + activos + '</div><div class="cl-stat-label">Clientes activos</div></div>';
+  h += '<div class="cl-stat"><div class="cl-stat-count">' + inactivos + '</div><div class="cl-stat-label">Inactivos</div></div>';
+  h += '<div class="cl-stat"><div class="cl-stat-count">' + clData.length + '</div><div class="cl-stat-label">Total</div></div>';
+  h += '</div>';
+
+  // Toolbar
+  h += '<div class="cl-toolbar">';
+  h += '<input class="cl-search" type="text" placeholder="Buscar cliente..." value="' + (clSearch || '') + '" oninput="clSearch=this.value;clRenderAll()">';
+  if (userRole === 'admin') {
+    h += '<button class="btn-add" onclick="clOpenModal()">+ Nuevo cliente</button>';
+  }
+  h += '</div>';
+
+  // Filter
+  var filtered = clData;
+  if (clSearch) {
+    var q = clSearch.toLowerCase();
+    filtered = clData.filter(function(c) {
+      return (c.nombre || '').toLowerCase().indexOf(q) >= 0
+        || (c.rnc || '').toLowerCase().indexOf(q) >= 0
+        || (c.contadora || '').toLowerCase().indexOf(q) >= 0
+        || (c.contacto || '').toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  if (filtered.length === 0) {
+    if (clData.length === 0) {
+      h += '<div class="cl-empty"><div class="emoji">👥</div><p>No hay clientes registrados.</p>';
+      if (userRole === 'admin') h += '<p style="font-size:0.82rem">Usa el botón de arriba para agregar el primero.</p>';
+      h += '</div>';
+    } else {
+      h += '<div class="cl-empty"><p>No se encontraron resultados para "' + clSearch + '"</p></div>';
+    }
+    el.innerHTML = h;
+    return;
+  }
+
+  h += '<table class="cl-table">';
+  h += '<thead><tr>';
+  h += '<th>Cliente</th><th>RNC</th><th>Contadora</th><th>Contacto</th><th>Entrada</th><th>Inicio fiscal</th><th>Estado</th>';
+  if (userRole === 'admin') h += '<th></th>';
+  h += '</tr></thead><tbody>';
+
+  filtered.forEach(function(c) {
+    h += '<tr>';
+    h += '<td class="cl-name">' + (c.nombre || '') + '</td>';
+    h += '<td style="font-size:0.8rem">' + (c.rnc || '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td>' + (c.contadora || '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
+    h += '<td style="font-size:0.8rem">' + (c.contacto || '') + '</td>';
+    h += '<td class="cl-date">' + (clFormatDate(c.fecha_entrada) || '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td class="cl-date">' + (clFormatDate(c.inicio_responsabilidad_fiscal) || '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td><span class="' + (c.activo !== false ? 'cl-badge-activo' : 'cl-badge-inactivo') + '">' + (c.activo !== false ? 'Activo' : 'Inactivo') + '</span></td>';
+    if (userRole === 'admin') {
+      h += '<td><button style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="clEditClient(\'' + c.id + '\')">Editar</button></td>';
+    }
+    h += '</tr>';
+  });
+
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function clPopulateContadoraSelect() {
+  var sel = document.getElementById('cl-m-contadora');
+  sel.innerHTML = '<option value="">Sin asignar</option>';
+  // Use contadoras from CC module data if available
+  var names = {};
+  Object.keys(ccDATA).forEach(function(k) { var c = ccDATA[k].contadora; if (c) names[c] = true; });
+  // Also from clData contadoras
+  clData.forEach(function(c) { if (c.contadora) names[c.contadora] = true; });
+  Object.keys(names).sort().forEach(function(n) {
+    sel.innerHTML += '<option value="' + n + '">' + n + '</option>';
+  });
+}
+
+function clOpenModal(editId) {
+  clEditingId = editId || null;
+  clPopulateContadoraSelect();
+
+  if (clEditingId) {
+    var c = clData.find(function(x) { return x.id === clEditingId; });
+    if (!c) return;
+    document.getElementById('cl-modal-title').textContent = 'Editar cliente';
+    document.getElementById('cl-m-nombre').value = c.nombre || '';
+    document.getElementById('cl-m-rnc').value = c.rnc || '';
+    document.getElementById('cl-m-contacto').value = c.contacto || '';
+    document.getElementById('cl-m-email').value = c.email || '';
+    document.getElementById('cl-m-telefono').value = c.telefono || '';
+    document.getElementById('cl-m-contadora').value = c.contadora || '';
+    document.getElementById('cl-m-fecha-entrada').value = c.fecha_entrada || '';
+    document.getElementById('cl-m-inicio-fiscal').value = c.inicio_responsabilidad_fiscal || '';
+    document.getElementById('cl-m-notas').value = c.notas || '';
+  } else {
+    document.getElementById('cl-modal-title').textContent = 'Nuevo cliente';
+    document.getElementById('cl-m-nombre').value = '';
+    document.getElementById('cl-m-rnc').value = '';
+    document.getElementById('cl-m-contacto').value = '';
+    document.getElementById('cl-m-email').value = '';
+    document.getElementById('cl-m-telefono').value = '';
+    document.getElementById('cl-m-contadora').value = '';
+    document.getElementById('cl-m-fecha-entrada').value = '';
+    document.getElementById('cl-m-inicio-fiscal').value = '';
+    document.getElementById('cl-m-notas').value = '';
+  }
+
+  document.getElementById('cl-m-nombre-err').style.display = 'none';
+  document.getElementById('cl-modal-overlay').classList.remove('hidden');
+}
+
+function clEditClient(id) { clOpenModal(id); }
+
+function clCloseModal() {
+  document.getElementById('cl-modal-overlay').classList.add('hidden');
+  clEditingId = null;
+}
+
+async function clSaveClient() {
+  var nombre = document.getElementById('cl-m-nombre').value.trim();
+  if (!nombre) {
+    document.getElementById('cl-m-nombre-err').style.display = 'block';
+    return;
+  }
+  document.getElementById('cl-m-nombre-err').style.display = 'none';
+
+  var record = {
+    nombre: nombre,
+    rnc: document.getElementById('cl-m-rnc').value.trim() || null,
+    contacto: document.getElementById('cl-m-contacto').value.trim() || null,
+    email: document.getElementById('cl-m-email').value.trim() || null,
+    telefono: document.getElementById('cl-m-telefono').value.trim() || null,
+    contadora: document.getElementById('cl-m-contadora').value || null,
+    fecha_entrada: document.getElementById('cl-m-fecha-entrada').value || null,
+    inicio_responsabilidad_fiscal: document.getElementById('cl-m-inicio-fiscal').value || null,
+    notas: document.getElementById('cl-m-notas').value.trim() || null
+  };
+
+  var btn = document.getElementById('cl-m-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  var result;
+  if (clEditingId) {
+    result = await sb.from('clientes').update(record).eq('id', clEditingId);
+  } else {
+    result = await sb.from('clientes').insert(record);
+  }
+
+  btn.disabled = false; btn.textContent = 'Guardar';
+
+  if (result.error) {
+    gerShowToast('Error: ' + result.error.message, 'error');
+    console.error(result.error);
+    return;
+  }
+
+  clCloseModal();
+  await clLoadData();
+  clRenderAll();
+  gerShowToast(clEditingId ? 'Cliente actualizado' : 'Cliente agregado');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ██  SHOW APP
+// ══════════════════════════════════════════════════════════════
+
 async function showApp() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-wrapper').classList.remove('hidden');
@@ -1812,7 +2132,8 @@ async function showApp() {
     ccLoadSoftwareClientes(),
     ccLoadPerfilesFromDB(),
     ccLoadKpiFromDB(),
-    ctdLoadContadoras()
+    ctdLoadContadoras(),
+    clLoadData()
   ]);
 
   // Init CC state
