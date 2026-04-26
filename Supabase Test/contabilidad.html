@@ -1085,6 +1085,7 @@ function renderCkClientList(el) {
       clients.push({ contadora: c, cliente: cl, done: prog.done, total: prog.total, pct: prog.pct });
     });
   });
+  clients.sort((a, b) => a.cliente.localeCompare(b.cliente, 'es'));
 
   if (clients.length === 0) {
     el.innerHTML = '<div class="empty">No hay clientes asignados para ' + MESES_FULL[mesIdx] + '.</div>';
@@ -1120,17 +1121,19 @@ function renderCkClientList(el) {
     // Table view
     html += '<div style="overflow-x:auto">';
     html += '<table class="ck-client-table"><thead><tr>';
+    html += '<th style="width:36px">#</th>';
     html += '<th>Cliente</th>';
     html += '<th>Contadora</th>';
     html += '<th>Progreso</th>';
     html += '<th>Tareas</th>';
     html += '<th>Estado</th>';
     html += '</tr></thead><tbody>';
-    clients.forEach(c => {
+    clients.forEach((c, idx) => {
       const barColor = c.pct === 100 ? 'var(--green)' : c.pct > 0 ? 'var(--amber)' : '#e2e8f0';
       const statusText = c.pct === 100 ? 'Completado' : c.pct > 0 ? 'En progreso' : 'Pendiente';
       const statusClass = c.pct === 100 ? 'ck-status-completo' : c.pct > 0 ? 'ck-status-progreso' : 'ck-status-pendiente';
       html += '<tr onclick="ckSelectClient(\'' + esc(c.contadora) + '\',\'' + esc(c.cliente) + '\')">';
+      html += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
       html += '<td class="ck-table-name">' + c.cliente + '</td>';
       html += '<td class="ck-table-contadora">' + c.contadora + '</td>';
       html += '<td><div class="ck-progress-bar"><div class="ck-progress-fill" style="width:' + c.pct + '%;background:' + barColor + '"></div></div><span style="font-size:0.78rem;font-weight:700;color:' + getBarColor(c.pct) + '">' + c.pct + '%</span></td>';

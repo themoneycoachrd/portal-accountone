@@ -1913,12 +1913,12 @@ async function ctdRenderGerencial() {
     html += '<div class="empty">No hay datos para mostrar.</div>';
   } else {
     html += '<table class="ctd-client-table">';
-    html += '<thead><tr><th>Cliente</th><th>Contadora</th><th>Checklist</th><th>Reportes</th><th>Estado</th></tr></thead>';
+    html += '<thead><tr><th style="width:36px">#</th><th>Cliente</th><th>Contadora</th><th>Checklist</th><th>Reportes</th><th>Estado</th></tr></thead>';
     html += '<tbody>';
 
-    allVisibleClients.sort(function(a, b) { return a.cliente.localeCompare(b.cliente); });
+    allVisibleClients.sort(function(a, b) { return a.cliente.localeCompare(b.cliente, 'es'); });
 
-    allVisibleClients.forEach(function(item) {
+    allVisibleClients.forEach(function(item, idx) {
       var prog = ctdGetProgress(item.contadora, item.cliente, ctdSelectedMes);
       var reportRow = lookup[item.contadora + '_' + item.cliente] || {};
 
@@ -1934,6 +1934,7 @@ async function ctdRenderGerencial() {
       var statusText = prog.pct === 100 ? 'Completo' : prog.pct > 0 ? 'En progreso' : 'Pendiente';
 
       html += '<tr onclick="ctdOpenDetail(\'' + ctdEsc(item.cliente) + '\',\'' + ctdEsc(item.contadora) + '\')">';
+      html += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
       html += '<td class="ctd-client-name">' + item.cliente + '</td>';
       html += '<td style="font-size:0.8rem;color:var(--muted)">' + item.contadora + '</td>';
       html += '<td><div style="display:flex;align-items:center;gap:8px">';
@@ -2350,14 +2351,17 @@ function bdRenderClientes() {
     return;
   }
 
+  filtered.sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); });
+
   h += '<table class="cl-table">';
   h += '<thead><tr>';
-  h += '<th>Cliente</th><th>RNC</th><th>Contadora</th><th>Contacto</th><th>Entrada</th><th>Inicio fiscal</th><th>Estado</th>';
+  h += '<th style="width:36px">#</th><th>Cliente</th><th>RNC</th><th>Contadora</th><th>Contacto</th><th>Entrada</th><th>Inicio fiscal</th><th>Estado</th>';
   if (userRole === 'admin') h += '<th></th>';
   h += '</tr></thead><tbody>';
 
-  filtered.forEach(function(c) {
+  filtered.forEach(function(c, idx) {
     h += '<tr>';
+    h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
     h += '<td class="cl-name">' + esc(c.nombre) + '</td>';
     h += '<td style="font-size:0.8rem">' + (c.rnc ? esc(c.rnc) : '<span style="color:var(--light)">—</span>') + '</td>';
     h += '<td>' + (c.contadora ? esc(c.contadora) : '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
@@ -2503,15 +2507,18 @@ function bdRenderContadoras() {
     h += '<div style="margin-bottom:14px"><button class="btn-add" onclick="bdContOpenModal()">+ Nueva contadora</button></div>';
   }
 
+  bdContadoras.sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); });
+
   h += '<table class="bd-cont-table">';
-  h += '<thead><tr><th>Nombre</th><th>Tipo</th><th>Capacidad</th><th>Estado</th><th>Notas</th>';
+  h += '<thead><tr><th style="width:36px">#</th><th>Nombre</th><th>Tipo</th><th>Capacidad</th><th>Estado</th><th>Notas</th>';
   if (userRole === 'admin') h += '<th></th>';
   h += '</tr></thead><tbody>';
 
-  bdContadoras.forEach(function(c) {
+  bdContadoras.forEach(function(c, idx) {
     var tipoCls = 'bd-tipo-' + c.tipo;
     var tipoLabel = c.tipo === 'plena' ? 'Plena' : (c.tipo === 'facturacion' ? 'Facturación' : 'Freelance');
     h += '<tr>';
+    h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
     h += '<td style="font-weight:600;color:var(--navy)">' + esc(c.nombre) + '</td>';
     h += '<td><span class="' + tipoCls + '">' + tipoLabel + '</span></td>';
     h += '<td>' + (c.capacidad ? c.capacidad.toLocaleString() : '<span style="color:var(--light)">—</span>') + '</td>';

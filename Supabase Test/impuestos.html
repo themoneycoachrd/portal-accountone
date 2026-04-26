@@ -639,6 +639,7 @@ function renderMain() {
     h += '<div style="overflow-x:auto">';
     h += '<table class="tax-table">';
     h += '<thead><tr>';
+    h += '<th style="width:36px">#</th>';
     h += '<th>Cliente</th>';
     h += '<th>Contadora</th>';
     h += '<th>Progreso</th>';
@@ -649,12 +650,13 @@ function renderMain() {
     h += '<th>Estado</th>';
     h += '</tr></thead><tbody>';
 
-    tableRows.forEach(function(r) {
+    tableRows.forEach(function(r, idx) {
       var barColor = r.prog.pct === 100 ? 'var(--green)' : r.prog.pct > 0 ? 'var(--amber)' : '#e2e8f0';
       var statusText = r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
       var statusClass = r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
 
       h += '<tr onclick="openDetail(\'' + escJs(r.cliente) + '\',\'' + escJs(r.contadora) + '\')" style="cursor:pointer">';
+      h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
       h += '<td class="client-name">' + esc(r.cliente) + '</td>';
       h += '<td style="font-size:0.78rem;color:var(--muted)">' + esc(r.contadora) + '</td>';
       h += '<td><div class="imp-progress-bar"><div class="imp-progress-fill" style="width:' + r.prog.pct + '%;background:' + barColor + '"></div></div><span class="imp-progress-text" style="color:' + getBarColor(r.prog.pct) + '">' + r.prog.pct + '%</span></td>';

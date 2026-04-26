@@ -465,8 +465,11 @@ function icRenderAll() {
     return;
   }
 
+  icData.sort(function(a, b) { return (a.cliente || '').localeCompare(b.cliente || '', 'es'); });
+
   h += '<table class="impl-table">';
   h += '<thead><tr>';
+  h += '<th style="width:36px">#</th>';
   h += '<th>Cliente</th>';
   h += '<th>Contadora</th>';
   h += '<th>Inicio</th>';
@@ -475,8 +478,9 @@ function icRenderAll() {
   h += '<th>Estatus</th>';
   h += '</tr></thead><tbody>';
 
-  icData.forEach(function(row) {
+  icData.forEach(function(row, idx) {
     h += '<tr>';
+    h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
     h += '<td class="client-name">' + (row.cliente || '') + '</td>';
     h += '<td>' + (row.contadora || '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
     h += '<td class="date-cell' + (!row.fecha_inicio ? ' empty' : '') + '">' + (formatDate(row.fecha_inicio) || '—') + '</td>';
@@ -609,8 +613,11 @@ function feRenderAll() {
     return;
   }
 
+  filtered.sort(function(a, b) { return (a.cliente || '').localeCompare(b.cliente || '', 'es'); });
+
   h += '<table class="impl-table">';
   h += '<thead><tr>';
+  h += '<th style="width:36px">#</th>';
   h += '<th>Cliente</th>';
   h += '<th>Contadora</th>';
   h += '<th>Go Live estimado</th>';
@@ -618,10 +625,11 @@ function feRenderAll() {
   h += '<th>Estatus</th>';
   h += '</tr></thead><tbody>';
 
-  filtered.forEach(function(row) {
+  filtered.forEach(function(row, idx) {
     var sem = feSemaforoClass(row);
 
     h += '<tr>';
+    h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
     h += '<td class="client-name">' + (row.cliente || '') + '</td>';
     h += '<td>' + (row.contadora || '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
     h += '<td class="date-cell' + (!row.fecha_go_live_estimada ? ' empty' : '') + '">' + (formatDate(row.fecha_go_live_estimada) || '—') + '</td>';
