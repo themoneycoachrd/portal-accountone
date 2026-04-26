@@ -587,10 +587,25 @@
       <label>Notas</label>
       <textarea id="cl-m-notas" placeholder="Cualquier detalle relevante..."></textarea>
     </div>
+    <div class="m-field hidden" id="cl-m-motivo-wrap" style="background:#fef9e7;border:1px solid #f5d76e;border-radius:8px;padding:12px">
+      <label style="color:#b7950b;font-weight:600;font-size:0.82rem">Motivo del cambio de contadora</label>
+      <textarea id="cl-m-motivo" placeholder="Ej: Vacaciones, reasignación por carga, licencia..." style="min-height:50px"></textarea>
+    </div>
     <div class="modal-buttons">
       <button class="btn-modal-cancel" onclick="clCloseModal()">Cancelar</button>
       <button class="btn-modal-save" id="cl-m-save" onclick="clSaveClient()">Guardar</button>
     </div>
+  </div>
+</div>
+
+<!-- Modal Historial Contadora -->
+<div class="modal-overlay hidden" id="cl-hist-overlay" onclick="if(event.target===this)document.getElementById('cl-hist-overlay').classList.add('hidden')">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3 id="cl-hist-title">Historial de cambios</h3>
+      <button class="modal-close" onclick="document.getElementById('cl-hist-overlay').classList.add('hidden')" title="Cerrar">✕</button>
+    </div>
+    <div id="cl-hist-body" style="max-height:400px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -2392,7 +2407,10 @@ function bdRenderClientes() {
     h += '<td style="font-size:0.8rem">' + esc(c.contacto || '') + '</td>';
     h += '<td><span class="' + (c.activo !== false ? 'cl-badge-activo' : 'cl-badge-inactivo') + '">' + (c.activo !== false ? 'Activo' : 'Inactivo') + '</span></td>';
     if (userRole === 'admin') {
-      h += '<td><button style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="clEditClient(\'' + c.id + '\')">Editar</button></td>';
+      h += '<td style="white-space:nowrap">';
+      h += '<button style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="clEditClient(\'' + c.id + '\')">Editar</button> ';
+      h += '<button style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="clShowHistory(\'' + c.id + '\',\'' + (c.nombre||'').replace(/'/g,"\\'") + '\')" title="Historial de contadoras">&#128337;</button>';
+      h += '</td>';
     }
     h += '</tr>';
   });
@@ -2422,13 +2440,35 @@ function clPopulateContadoraSelects() {
   });
 }
 
+// Valores originales de contadora para detectar cambios
+var clOrigContab = '';
+var clOrigImp = '';
+
+function clCheckContadoraChanged() {
+  if (!clEditingId) { document.getElementById('cl-m-motivo-wrap').classList.add('hidden'); return; }
+  var newC = document.getElementById('cl-m-contadora-contab').value || '';
+  var newI = document.getElementById('cl-m-contadora-imp').value || '';
+  if (newC !== clOrigContab || newI !== clOrigImp) {
+    document.getElementById('cl-m-motivo-wrap').classList.remove('hidden');
+  } else {
+    document.getElementById('cl-m-motivo-wrap').classList.add('hidden');
+    document.getElementById('cl-m-motivo').value = '';
+  }
+}
+
 function clOpenModal(editId) {
   clEditingId = editId || null;
   clPopulateContadoraSelects();
 
+  // Reset motivo
+  document.getElementById('cl-m-motivo-wrap').classList.add('hidden');
+  document.getElementById('cl-m-motivo').value = '';
+
   if (clEditingId) {
     var c = bdClientes.find(function(x) { return x.id === clEditingId; });
     if (!c) return;
+    clOrigContab = c.contadora_contabilidad || '';
+    clOrigImp = c.contadora_impuestos || '';
     document.getElementById('cl-modal-title').textContent = 'Editar cliente';
     document.getElementById('cl-m-nombre').value = c.nombre || '';
     document.getElementById('cl-m-rnc').value = c.rnc || '';
@@ -2443,7 +2483,12 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-fecha-entrada').value = c.fecha_entrada || '';
     document.getElementById('cl-m-inicio-fiscal').value = c.inicio_responsabilidad_fiscal || '';
     document.getElementById('cl-m-notas').value = c.notas || '';
+    // Listeners para detectar cambio de contadora
+    document.getElementById('cl-m-contadora-contab').onchange = clCheckContadoraChanged;
+    document.getElementById('cl-m-contadora-imp').onchange = clCheckContadoraChanged;
   } else {
+    clOrigContab = '';
+    clOrigImp = '';
     document.getElementById('cl-modal-title').textContent = 'Nuevo cliente';
     document.getElementById('cl-m-nombre').value = '';
     document.getElementById('cl-m-rnc').value = '';
@@ -2458,6 +2503,8 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-fecha-entrada').value = '';
     document.getElementById('cl-m-inicio-fiscal').value = '';
     document.getElementById('cl-m-notas').value = '';
+    document.getElementById('cl-m-contadora-contab').onchange = null;
+    document.getElementById('cl-m-contadora-imp').onchange = null;
   }
 
   document.getElementById('cl-m-nombre-err').style.display = 'none';
@@ -2471,6 +2518,48 @@ function clCloseModal() {
   clEditingId = null;
 }
 
+async function clShowHistory(clienteId, clienteNombre) {
+  document.getElementById('cl-hist-title').textContent = 'Historial — ' + clienteNombre;
+  document.getElementById('cl-hist-body').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Cargando...</div>';
+  document.getElementById('cl-hist-overlay').classList.remove('hidden');
+
+  var { data, error } = await sb.from('clientes_cambios_contadora')
+    .select('*')
+    .eq('cliente_id', clienteId)
+    .order('fecha', { ascending: false });
+
+  var rows = data || [];
+  var h = '';
+
+  if (rows.length === 0) {
+    h = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:0.85rem">No hay cambios registrados para este cliente.</div>';
+  } else {
+    h += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem">';
+    h += '<thead><tr style="border-bottom:2px solid var(--border)">';
+    h += '<th style="text-align:left;padding:8px;text-transform:uppercase;font-size:0.68rem;color:var(--muted)">Fecha</th>';
+    h += '<th style="text-align:left;padding:8px;text-transform:uppercase;font-size:0.68rem;color:var(--muted)">Area</th>';
+    h += '<th style="text-align:left;padding:8px;text-transform:uppercase;font-size:0.68rem;color:var(--muted)">Anterior</th>';
+    h += '<th style="text-align:left;padding:8px;text-transform:uppercase;font-size:0.68rem;color:var(--muted)">Nueva</th>';
+    h += '<th style="text-align:left;padding:8px;text-transform:uppercase;font-size:0.68rem;color:var(--muted)">Motivo</th>';
+    h += '</tr></thead><tbody>';
+    rows.forEach(function(r) {
+      var fecha = r.fecha ? new Date(r.fecha).toLocaleDateString('es-DO', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+      var areaLabel = r.area === 'contabilidad' ? 'Contab' : 'Imp';
+      var areaColor = r.area === 'contabilidad' ? 'var(--blue)' : 'var(--green)';
+      h += '<tr style="border-bottom:1px solid var(--border)">';
+      h += '<td style="padding:8px;white-space:nowrap">' + fecha + '</td>';
+      h += '<td style="padding:8px"><span style="background:' + areaColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:600">' + areaLabel + '</span></td>';
+      h += '<td style="padding:8px">' + (r.contadora_anterior || '<span style="color:var(--light)">—</span>') + '</td>';
+      h += '<td style="padding:8px;font-weight:600">' + (r.contadora_nueva || '<span style="color:var(--light)">Desasignada</span>') + '</td>';
+      h += '<td style="padding:8px;color:var(--muted);font-style:italic">' + (r.motivo || '—') + '</td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+  }
+
+  document.getElementById('cl-hist-body').innerHTML = h;
+}
+
 async function clSaveClient() {
   var nombre = document.getElementById('cl-m-nombre').value.trim();
   if (!nombre) {
@@ -2480,6 +2569,13 @@ async function clSaveClient() {
   document.getElementById('cl-m-nombre-err').style.display = 'none';
 
   var montoVal = document.getElementById('cl-m-monto-adm').value;
+  var newContab = document.getElementById('cl-m-contadora-contab').value || null;
+  var newImp = document.getElementById('cl-m-contadora-imp').value || null;
+  var contadoraChanged = clEditingId && (
+    (newContab || '') !== clOrigContab || (newImp || '') !== clOrigImp
+  );
+  var motivo = document.getElementById('cl-m-motivo').value.trim() || null;
+
   var record = {
     nombre: nombre,
     rnc: document.getElementById('cl-m-rnc').value.trim() || null,
@@ -2487,9 +2583,9 @@ async function clSaveClient() {
     email: document.getElementById('cl-m-email').value.trim() || null,
     telefono: document.getElementById('cl-m-telefono').value.trim() || null,
     responsabilidad_contabilidad: document.getElementById('cl-m-resp-contab').checked,
-    contadora_contabilidad: document.getElementById('cl-m-contadora-contab').value || null,
+    contadora_contabilidad: newContab,
     responsabilidad_impuestos: document.getElementById('cl-m-resp-imp').checked,
-    contadora_impuestos: document.getElementById('cl-m-contadora-imp').value || null,
+    contadora_impuestos: newImp,
     monto_adm: montoVal ? parseInt(montoVal) : null,
     fecha_entrada: document.getElementById('cl-m-fecha-entrada').value || null,
     inicio_responsabilidad_fiscal: document.getElementById('cl-m-inicio-fiscal').value || null,
@@ -2506,18 +2602,31 @@ async function clSaveClient() {
     result = await sb.from('clientes').insert(record);
   }
 
-  btn.disabled = false; btn.textContent = 'Guardar';
-
   if (result.error) {
+    btn.disabled = false; btn.textContent = 'Guardar';
     gerShowToast('Error: ' + result.error.message, 'error');
     console.error(result.error);
     return;
   }
 
+  // Si cambió la contadora, actualizar el motivo en los registros del log
+  // (el trigger ya creó las filas con motivo NULL)
+  if (contadoraChanged && motivo && clEditingId) {
+    await sb.from('clientes_cambios_contadora')
+      .update({ motivo: motivo })
+      .eq('cliente_id', clEditingId)
+      .is('motivo', null)
+      .order('fecha', { ascending: false })
+      .limit(2);
+  }
+
+  btn.disabled = false; btn.textContent = 'Guardar';
+
+  var wasEditing = !!clEditingId;
   clCloseModal();
   await bdLoadClientes();
   bdRenderClientes();
-  gerShowToast(clEditingId ? 'Cliente actualizado' : 'Cliente agregado');
+  gerShowToast(wasEditing ? 'Cliente actualizado' : 'Cliente agregado');
 }
 
 // ═══════════════════════════════════════════
