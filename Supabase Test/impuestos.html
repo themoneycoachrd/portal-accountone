@@ -295,7 +295,8 @@ var currentView = 'main'; // 'main' or 'detail'
 var mainTab = 'checklist'; // 'checklist' or 'kpi'
 
 // Data
-var contadorasMap = {};
+var asignacionesRaw = []; // all raw assignment rows
+var contadorasMap = {}; // { mes: { contadora: [client1, ...] } }
 var impuestosData = [];
 var impuestosMap = {};
 
@@ -305,7 +306,8 @@ var detContadora = null;
 var detDirty = {};
 
 // ==================== UTILS ====================
-function esc(s) { return s ? s.replace(/'/g, "\\'") : ''; }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
+function escJs(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
 function getCurrentMonth() {
   var m = new Date().getMonth();
@@ -484,14 +486,20 @@ async function initApp() {
 async function loadContadoras() {
   var { data, error } = await sb.from('asignaciones').select('contadora, cliente, mes');
   if (error) { console.error('Error cargando asignaciones:', error); return; }
+  asignacionesRaw = data || [];
+  // Build month-aware map: { mes: { contadora: [client1, ...] } }
   contadorasMap = {};
-  (data || []).forEach(function(r) {
-    if (!r.contadora || !r.cliente) return;
-    if (!contadorasMap[r.contadora]) contadorasMap[r.contadora] = {};
-    contadorasMap[r.contadora][r.cliente] = true;
+  asignacionesRaw.forEach(function(r) {
+    if (!r.contadora || !r.cliente || !r.mes) return;
+    if (!contadorasMap[r.mes]) contadorasMap[r.mes] = {};
+    if (!contadorasMap[r.mes][r.contadora]) contadorasMap[r.mes][r.contadora] = {};
+    contadorasMap[r.mes][r.contadora][r.cliente] = true;
   });
-  Object.keys(contadorasMap).forEach(function(c) {
-    contadorasMap[c] = Object.keys(contadorasMap[c]).sort();
+  // Convert client sets to sorted arrays
+  Object.keys(contadorasMap).forEach(function(mes) {
+    Object.keys(contadorasMap[mes]).forEach(function(c) {
+      contadorasMap[mes][c] = Object.keys(contadorasMap[mes][c]).sort();
+    });
   });
 }
 
@@ -509,11 +517,16 @@ function getImpuestoRow(cliente, mes, impuesto) {
   return impuestosMap[mapKey(cliente, mes, impuesto)] || null;
 }
 
+function getContadorasForMes(mes) {
+  return contadorasMap[mes] || {};
+}
+
 function getClientsForMonth() {
+  var mesMap = getContadorasForMes(selectedMes);
   var clients = {};
-  Object.keys(contadorasMap).forEach(function(contadora) {
+  Object.keys(mesMap).forEach(function(contadora) {
     if (selectedContadora !== 'Todas' && contadora !== selectedContadora) return;
-    contadorasMap[contadora].forEach(function(cliente) {
+    mesMap[contadora].forEach(function(cliente) {
       if (!clients[cliente]) clients[cliente] = contadora;
     });
   });
@@ -521,9 +534,10 @@ function getClientsForMonth() {
 }
 
 function getContadoraForClient(cliente) {
+  var mesMap = getContadorasForMes(selectedMes);
   var found = '';
-  Object.keys(contadorasMap).forEach(function(c) {
-    if (contadorasMap[c].indexOf(cliente) >= 0) found = c;
+  Object.keys(mesMap).forEach(function(c) {
+    if (mesMap[c].indexOf(cliente) >= 0) found = c;
   });
   return found;
 }
@@ -569,12 +583,19 @@ function renderMain() {
   });
   h += '</div>';
 
-  // Contadora pills
-  var contNames = sortContadoras(Object.keys(contadorasMap));
+  // Contadora pills (filtered by selected month)
+  var mesContadoras = getContadorasForMes(selectedMes);
+  var contNames = sortContadoras(Object.keys(mesContadoras));
+
+  // Reset selectedContadora if not available in this month
+  if (selectedContadora !== 'Todas' && contNames.indexOf(selectedContadora) < 0) {
+    selectedContadora = 'Todas';
+  }
+
   h += '<div class="contadora-pills">';
   h += '<button class="contadora-pill' + (selectedContadora === 'Todas' ? ' active' : '') + '" onclick="selectedContadora=\'Todas\';renderMain()">Todas</button>';
   contNames.forEach(function(name) {
-    h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + esc(name) + '\';renderMain()">' + name + '</button>';
+    h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + escJs(name) + '\';renderMain()">' + esc(name) + '</button>';
   });
   h += '</div>';
 
@@ -633,9 +654,9 @@ function renderMain() {
       var statusText = r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
       var statusClass = r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
 
-      h += '<tr onclick="openDetail(\'' + esc(r.cliente) + '\',\'' + esc(r.contadora) + '\')" style="cursor:pointer">';
-      h += '<td class="client-name">' + r.cliente + '</td>';
-      h += '<td style="font-size:0.78rem;color:var(--muted)">' + r.contadora + '</td>';
+      h += '<tr onclick="openDetail(\'' + escJs(r.cliente) + '\',\'' + escJs(r.contadora) + '\')" style="cursor:pointer">';
+      h += '<td class="client-name">' + esc(r.cliente) + '</td>';
+      h += '<td style="font-size:0.78rem;color:var(--muted)">' + esc(r.contadora) + '</td>';
       h += '<td><div class="imp-progress-bar"><div class="imp-progress-fill" style="width:' + r.prog.pct + '%;background:' + barColor + '"></div></div><span class="imp-progress-text" style="color:' + getBarColor(r.prog.pct) + '">' + r.prog.pct + '%</span></td>';
       h += '<td style="font-size:0.78rem;color:var(--muted)">' + r.prog.done + '/' + r.prog.total + '</td>';
       IMPUESTOS.forEach(function(imp) {
@@ -682,20 +703,21 @@ function renderDetail() {
   });
   h += '</div>';
 
-  // Contadora pills
-  var contNames = sortContadoras(Object.keys(contadorasMap));
+  // Contadora pills (filtered by selected month)
+  var mesContadoras = getContadorasForMes(selectedMes);
+  var contNames = sortContadoras(Object.keys(mesContadoras));
   h += '<div class="contadora-pills">';
   h += '<button class="contadora-pill' + (selectedContadora === 'Todas' ? ' active' : '') + '" onclick="selectedContadora=\'Todas\';renderDetail()">Todas</button>';
   contNames.forEach(function(name) {
-    h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + esc(name) + '\';renderDetail()">' + name + '</button>';
+    h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + escJs(name) + '\';renderDetail()">' + esc(name) + '</button>';
   });
   h += '</div>';
 
   // Header (same as contabilidad)
   h += '<div class="detail-header">';
   h += '<button class="detail-back" onclick="closeDetail()">&#8592; Volver</button>';
-  h += '<div><div class="detail-title">' + detCliente + '</div>';
-  h += '<div class="detail-sub">' + detContadora + ' · ' + MESES_FULL[mesIdx] + ' 2026</div></div>';
+  h += '<div><div class="detail-title">' + esc(detCliente) + '</div>';
+  h += '<div class="detail-sub">' + esc(detContadora) + ' · ' + MESES_FULL[mesIdx] + ' 2026</div></div>';
   h += '</div>';
 
   // Calculate progress
@@ -768,7 +790,7 @@ function renderDetail() {
     h += imp.label + ' — Presentación día ' + imp.deadline;
     h += ' (' + doneCount + '/' + items.length + ')';
     h += ' <label style="margin-left:16px;font-size:0.72rem;color:var(--red);font-weight:500;cursor:pointer">';
-    h += '<input type="checkbox"' + (enAtraso ? ' checked' : '') + ' onchange="toggleAtraso(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',this.checked)" style="margin-right:4px;cursor:pointer">';
+    h += '<input type="checkbox"' + (enAtraso ? ' checked' : '') + ' onchange="toggleAtraso(\'' + escJs(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',this.checked)" style="margin-right:4px;cursor:pointer">';
     h += 'En atraso</label>';
     h += '</td></tr>';
 
@@ -792,7 +814,7 @@ function renderDetail() {
       if (it.special === 'select') {
         h += it.label + ' ';
         var val = d.valor || '';
-        h += '<select class="pago-select" onchange="togglePagoSelect(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',this.value)">';
+        h += '<select class="pago-select" onchange="togglePagoSelect(\'' + escJs(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',this.value)">';
         h += '<option value=""' + (val === '' ? ' selected' : '') + '>—</option>';
         h += '<option value="si"' + (val === 'si' ? ' selected' : '') + '>Sí</option>';
         h += '<option value="n/a"' + (val === 'n/a' ? ' selected' : '') + '>N/A</option>';
@@ -814,8 +836,8 @@ function renderDetail() {
       // Estado — Si/No toggle (same as contabilidad)
       if (it.special !== 'select') {
         h += '<td class="center"><div class="toggle-group">';
-        h += '<button class="toggle-opt ' + (isDone ? 'active-yes' : '') + '" onclick="toggleItem(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',true)">Si</button>';
-        h += '<button class="toggle-opt ' + (!isDone ? 'active-no' : '') + '" onclick="toggleItem(\'' + esc(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',false)">No</button>';
+        h += '<button class="toggle-opt ' + (isDone ? 'active-yes' : '') + '" onclick="toggleItem(\'' + escJs(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',true)">Si</button>';
+        h += '<button class="toggle-opt ' + (!isDone ? 'active-no' : '') + '" onclick="toggleItem(\'' + escJs(detCliente) + '\',\'' + selectedMes + '\',\'' + imp.id + '\',\'' + it.id + '\',false)">No</button>';
         h += '</div></td>';
       } else {
         h += '<td class="center">' + (isDone ? '<span style="color:var(--green);font-weight:600">Si</span>' : '<span style="color:var(--light)">No</span>') + '</td>';
