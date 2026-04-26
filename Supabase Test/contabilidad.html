@@ -110,7 +110,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .client-card-count { font-size:11px; color:var(--muted); margin-top:4px; }
 
 /* ─── View toggle ─── */
-.view-toggle-row { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.view-toggle-row { display:flex; justify-content:flex-start; margin-bottom:12px; }
 .view-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:white; }
 .view-toggle-btn { padding:5px 12px; font-size:0.75rem; font-weight:600; cursor:pointer; border:none; background:white; color:var(--muted); font-family:inherit; transition:all 0.12s; display:flex; align-items:center; gap:5px; }
 .view-toggle-btn:not(:last-child) { border-right:1px solid var(--border); }
@@ -588,7 +588,7 @@ let ckMes = getCurrentMonth();
 let ckContadora = 'Todas';
 let ckCliente = null;
 let ckClienteContadora = null;
-let ckViewMode = 'cards'; // 'cards' or 'table'
+let ckViewMode = 'table'; // 'table' or 'cards'
 
 // KPI state
 let kpiSubTab = 'detalle';
@@ -1112,8 +1112,8 @@ function renderCkClientList(el) {
   var iconTable = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="9" y1="6" x2="9" y2="18"/></svg>';
   html += '<div class="view-toggle-row">';
   html += '<div class="view-toggle">';
-  html += '<button class="view-toggle-btn' + (ckViewMode === 'cards' ? ' active' : '') + '" onclick="ckToggleView(\'cards\')">' + iconCards + ' Cuadros</button>';
   html += '<button class="view-toggle-btn' + (ckViewMode === 'table' ? ' active' : '') + '" onclick="ckToggleView(\'table\')">' + iconTable + ' Tabla</button>';
+  html += '<button class="view-toggle-btn' + (ckViewMode === 'cards' ? ' active' : '') + '" onclick="ckToggleView(\'cards\')">' + iconCards + ' Cuadros</button>';
   html += '</div></div>';
 
   if (ckViewMode === 'table') {
