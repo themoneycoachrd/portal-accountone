@@ -109,6 +109,31 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .client-card-pct { font-size:12px; font-weight:700; min-width:36px; text-align:right; }
 .client-card-count { font-size:11px; color:var(--muted); margin-top:4px; }
 
+/* ─── View toggle ─── */
+.view-toggle-row { display:flex; justify-content:flex-end; margin-bottom:12px; }
+.view-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:white; }
+.view-toggle-btn { padding:5px 12px; font-size:0.75rem; font-weight:600; cursor:pointer; border:none; background:white; color:var(--muted); font-family:inherit; transition:all 0.12s; display:flex; align-items:center; gap:5px; }
+.view-toggle-btn:not(:last-child) { border-right:1px solid var(--border); }
+.view-toggle-btn:hover { background:#f3f4f6; color:var(--text); }
+.view-toggle-btn.active { background:var(--navy); color:white; }
+.view-toggle-btn svg { width:14px; height:14px; }
+
+/* ─── Client table view (checklist) ─── */
+.ck-client-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+.ck-client-table th { background:#f8f9fb; padding:10px 14px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+.ck-client-table td { padding:10px 14px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; }
+.ck-client-table tr:hover td { background:#fafbfc; cursor:pointer; }
+.ck-client-table tr:last-child td { border-bottom:none; }
+.ck-table-name { font-weight:700; color:var(--navy); }
+.ck-table-contadora { font-size:0.75rem; color:var(--light); }
+.ck-progress-bar { width:100px; height:8px; background:#eef0f4; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px; }
+.ck-progress-fill { height:100%; border-radius:4px; }
+.ck-progress-text { font-size:0.75rem; color:var(--muted); }
+.ck-status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:600; }
+.ck-status-completo { background:#d1fae5; color:#065f46; }
+.ck-status-progreso { background:#dbeafe; color:#1e40af; }
+.ck-status-pendiente { background:#f3f4f6; color:#6b7280; }
+
 /* ─── Detail view (checklist) ─── */
 .detail-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
 .detail-back { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); font-family:inherit; }
@@ -563,6 +588,7 @@ let ckMes = getCurrentMonth();
 let ckContadora = 'Todas';
 let ckCliente = null;
 let ckClienteContadora = null;
+let ckViewMode = 'cards'; // 'cards' or 'table'
 
 // KPI state
 let kpiSubTab = 'detalle';
@@ -937,6 +963,11 @@ function ckBackToClients() {
   renderCkContent();
 }
 
+function ckToggleView(mode) {
+  ckViewMode = mode;
+  renderCkContent();
+}
+
 // KPI navigation
 function kpiSwitchSubTab(tab) {
   kpiSubTab = tab;
@@ -1076,21 +1107,55 @@ function renderCkClientList(el) {
   html += '<div class="summary-stat"><div class="summary-stat-label">Avance promedio</div><div class="summary-stat-value" style="color:' + getBarColor(avgPct) + '">' + avgPct + '%</div></div>';
   html += '</div>';
 
-  // Client cards
-  html += '<div class="client-grid">';
-  clients.forEach(c => {
-    const barColor = c.pct === 100 ? 'var(--green)' : c.pct > 0 ? 'var(--amber)' : '#e2e8f0';
-    html += '<div class="client-card" onclick="ckSelectClient(\'' + esc(c.contadora) + '\',\'' + esc(c.cliente) + '\')">';
-    html += '<div class="client-card-name">' + c.cliente + '</div>';
-    html += '<div class="client-card-contadora">' + c.contadora + '</div>';
-    html += '<div class="client-card-progress">';
-    html += '<div class="client-card-bar"><div class="client-card-fill" style="width:' + c.pct + '%;background:' + barColor + '"></div></div>';
-    html += '<div class="client-card-pct" style="color:' + getBarColor(c.pct) + '">' + c.pct + '%</div>';
+  // View toggle
+  var iconCards = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>';
+  var iconTable = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="9" y1="6" x2="9" y2="18"/></svg>';
+  html += '<div class="view-toggle-row">';
+  html += '<div class="view-toggle">';
+  html += '<button class="view-toggle-btn' + (ckViewMode === 'cards' ? ' active' : '') + '" onclick="ckToggleView(\'cards\')">' + iconCards + ' Cuadros</button>';
+  html += '<button class="view-toggle-btn' + (ckViewMode === 'table' ? ' active' : '') + '" onclick="ckToggleView(\'table\')">' + iconTable + ' Tabla</button>';
+  html += '</div></div>';
+
+  if (ckViewMode === 'table') {
+    // Table view
+    html += '<div style="overflow-x:auto">';
+    html += '<table class="ck-client-table"><thead><tr>';
+    html += '<th>Cliente</th>';
+    html += '<th>Contadora</th>';
+    html += '<th>Progreso</th>';
+    html += '<th>Tareas</th>';
+    html += '<th>Estado</th>';
+    html += '</tr></thead><tbody>';
+    clients.forEach(c => {
+      const barColor = c.pct === 100 ? 'var(--green)' : c.pct > 0 ? 'var(--amber)' : '#e2e8f0';
+      const statusText = c.pct === 100 ? 'Completado' : c.pct > 0 ? 'En progreso' : 'Pendiente';
+      const statusClass = c.pct === 100 ? 'ck-status-completo' : c.pct > 0 ? 'ck-status-progreso' : 'ck-status-pendiente';
+      html += '<tr onclick="ckSelectClient(\'' + esc(c.contadora) + '\',\'' + esc(c.cliente) + '\')">';
+      html += '<td class="ck-table-name">' + c.cliente + '</td>';
+      html += '<td class="ck-table-contadora">' + c.contadora + '</td>';
+      html += '<td><div class="ck-progress-bar"><div class="ck-progress-fill" style="width:' + c.pct + '%;background:' + barColor + '"></div></div><span style="font-size:0.78rem;font-weight:700;color:' + getBarColor(c.pct) + '">' + c.pct + '%</span></td>';
+      html += '<td><span class="ck-progress-text">' + c.done + '/' + c.total + '</span></td>';
+      html += '<td><span class="ck-status-badge ' + statusClass + '">' + statusText + '</span></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    // Card view (original)
+    html += '<div class="client-grid">';
+    clients.forEach(c => {
+      const barColor = c.pct === 100 ? 'var(--green)' : c.pct > 0 ? 'var(--amber)' : '#e2e8f0';
+      html += '<div class="client-card" onclick="ckSelectClient(\'' + esc(c.contadora) + '\',\'' + esc(c.cliente) + '\')">';
+      html += '<div class="client-card-name">' + c.cliente + '</div>';
+      html += '<div class="client-card-contadora">' + c.contadora + '</div>';
+      html += '<div class="client-card-progress">';
+      html += '<div class="client-card-bar"><div class="client-card-fill" style="width:' + c.pct + '%;background:' + barColor + '"></div></div>';
+      html += '<div class="client-card-pct" style="color:' + getBarColor(c.pct) + '">' + c.pct + '%</div>';
+      html += '</div>';
+      html += '<div class="client-card-count">' + c.done + ' de ' + c.total + ' tareas</div>';
+      html += '</div>';
+    });
     html += '</div>';
-    html += '<div class="client-card-count">' + c.done + ' de ' + c.total + ' tareas</div>';
-    html += '</div>';
-  });
-  html += '</div>';
+  }
 
   el.innerHTML = html;
 }
