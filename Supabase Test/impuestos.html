@@ -116,6 +116,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .tax-table .client-name { font-weight:600; color:var(--navy); min-width:160px; cursor:pointer; }
 .tax-table .client-name:hover { color:var(--blue); text-decoration:underline; }
 .tax-table .client-contadora { font-size:0.75rem; color:var(--muted); font-weight:400; }
+.tax-table tr.group-row td { background:#f0f2f5; font-weight:700; font-size:0.72rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.4px; border-bottom:2px solid var(--border); padding:8px 12px; }
 
 /* ─── Status Badges ─── */
 .status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:600; white-space:nowrap; }
@@ -704,13 +705,31 @@ function renderMain() {
     h += '<th>Estado</th>';
     h += '</tr></thead><tbody>';
 
+    // Sort by contadora first, then by client name
+    tableRows.sort(function(a, b) {
+      var ca = (a.contadora || '').localeCompare(b.contadora || '', 'es');
+      if (ca !== 0) return ca;
+      return (a.cliente || '').localeCompare(b.cliente || '', 'es');
+    });
+    var colCount = 5 + IMPUESTOS.length + 1; // #, Cliente, Contadora, Progreso, Tareas, [impuestos], Estado
+    var lastContadora = null;
+    var rowNum = 0;
+
     tableRows.forEach(function(r, idx) {
+      // Group header when contadora changes
+      if (r.contadora !== lastContadora) {
+        var contClientes = tableRows.filter(function(x) { return x.contadora === r.contadora; });
+        var contDone = contClientes.filter(function(x) { return x.prog.pct === 100; }).length;
+        h += '<tr class="group-row"><td colspan="' + colCount + '">' + esc(r.contadora) + ' (' + contDone + '/' + contClientes.length + ' completados)</td></tr>';
+        lastContadora = r.contadora;
+      }
+      rowNum++;
       var barColor = r.prog.pct === 100 ? 'var(--green)' : r.prog.pct > 0 ? 'var(--amber)' : '#e2e8f0';
       var statusText = r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
       var statusClass = r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
 
       h += '<tr onclick="openDetail(\'' + escJs(r.cliente) + '\',\'' + escJs(r.contadora) + '\')" style="cursor:pointer">';
-      h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
+      h += '<td style="color:var(--muted);font-size:0.75rem">' + rowNum + '</td>';
       h += '<td class="client-name">' + esc(r.cliente) + '</td>';
       h += '<td style="font-size:0.78rem;color:var(--muted)">' + esc(r.contadora) + '</td>';
       h += '<td><div class="imp-progress-bar"><div class="imp-progress-fill" style="width:' + r.prog.pct + '%;background:' + barColor + '"></div></div><span class="imp-progress-text" style="color:' + getBarColor(r.prog.pct) + '">' + r.prog.pct + '%</span></td>';
@@ -881,7 +900,23 @@ function renderDetail() {
       var d = datos[it.id] || { done: false, fecha: null };
       var isDone = it.special === 'select' ? (d.valor === 'si' || d.valor === 'n/a') : d.done;
       var rowClass = isDone ? 'row-done' : '';
-      var fechaDisplay = d.fecha ? d.fecha : '<span style="color:var(--light)">—</span>';
+      var fechaDisplay;
+      if (d.fecha) {
+        var fParts = d.fecha.split('-');
+        var fDate = new Date(parseInt(fParts[0]), parseInt(fParts[1]) - 1, parseInt(fParts[2]));
+        var sem = '';
+        if (firmaDate && dlDate) {
+          fDate.setHours(0,0,0,0);
+          var fCopy = new Date(firmaDate); fCopy.setHours(0,0,0,0);
+          var dCopy = new Date(dlDate); dCopy.setHours(0,0,0,0);
+          if (fDate <= fCopy) sem = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle"></span>';
+          else if (fDate <= dCopy) sem = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:4px;vertical-align:middle"></span>';
+          else sem = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:4px;vertical-align:middle"></span>';
+        }
+        fechaDisplay = sem + formatDateShort(fDate);
+      } else {
+        fechaDisplay = '<span style="color:var(--light)">—</span>';
+      }
 
       h += '<tr class="' + rowClass + '">';
       h += '<td style="color:var(--light);font-size:11px">' + rowNum + '</td>';
