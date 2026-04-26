@@ -75,9 +75,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .kpi-placeholder p { font-size:0.9rem; }
 
 /* ─── Month Tabs ─── */
-.month-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:16px; }
-.month-tab { padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:500; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
-.month-tab:hover { border-color:var(--blue); color:var(--blue); }
+.month-tabs { display:flex; gap:4px; flex-wrap:wrap; }
+.month-tab { padding:6px 14px; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.month-tab:hover { background:#eef0f4; }
 .month-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
 
 /* ─── Contadora Pills ─── */
@@ -102,9 +102,9 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .client-card-pct { font-size:12px; font-weight:700; min-width:36px; text-align:right; }
 .client-card-count { font-size:11px; color:var(--muted); margin-top:4px; }
 
-.contadora-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
-.contadora-pill { padding:6px 16px; border-radius:20px; cursor:pointer; font-size:0.82rem; font-weight:600; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
-.contadora-pill:hover { border-color:var(--navy); color:var(--navy); }
+.contadora-pills { display:flex; gap:4px; flex-wrap:wrap; }
+.contadora-pill { padding:5px 14px; border-radius:20px; font-size:0.78rem; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); transition:all 0.12s; font-family:inherit; }
+.contadora-pill:hover { background:#eef0f4; }
 .contadora-pill.active { background:var(--navy); color:white; border-color:var(--navy); }
 
 /* ─── Tax Table ─── */
@@ -631,7 +631,7 @@ function renderMain() {
     selectedContadora = 'Todas';
   }
 
-  h += '<div class="contadora-pills">';
+  h += '<div class="contadora-pills" style="margin-top:10px">';
   h += '<button class="contadora-pill' + (selectedContadora === 'Todas' ? ' active' : '') + '" onclick="selectedContadora=\'Todas\';renderMain()">Todas</button>';
   contNames.forEach(function(name) {
     h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + escJs(name) + '\';renderMain()">' + esc(name) + '</button>';
@@ -777,7 +777,7 @@ function renderDetail() {
   // Contadora pills (filtered by selected month)
   var mesContadoras = getContadorasForMes(selectedMes);
   var contNames = sortContadoras(Object.keys(mesContadoras));
-  h += '<div class="contadora-pills">';
+  h += '<div class="contadora-pills" style="margin-top:10px">';
   h += '<button class="contadora-pill' + (selectedContadora === 'Todas' ? ' active' : '') + '" onclick="selectedContadora=\'Todas\';renderDetail()">Todas</button>';
   contNames.forEach(function(name) {
     h += '<button class="contadora-pill' + (selectedContadora === name ? ' active' : '') + '" onclick="selectedContadora=\'' + escJs(name) + '\';renderDetail()">' + esc(name) + '</button>';
