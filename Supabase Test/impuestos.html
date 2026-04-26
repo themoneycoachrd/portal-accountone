@@ -45,8 +45,34 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .breadcrumb-bar .sep { color:var(--light); font-size:11px; }
 .breadcrumb-bar .current { color:var(--text); font-weight:600; }
 
+/* ─── Main tabs (Checklist | KPI) ─── */
+.main-tabs { display:flex; background:var(--card); border-bottom:2px solid var(--border); }
+.main-tab { padding:12px 24px; cursor:pointer; font-weight:600; font-size:0.9rem; color:var(--muted); border-bottom:3px solid transparent; transition:all 0.15s; background:none; border-top:none; border-left:none; border-right:none; font-family:inherit; }
+.main-tab:hover { color:var(--text); }
+.main-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
+
 /* ─── Content ─── */
 .content { padding:24px; max-width:1200px; margin:0 auto; }
+
+/* ─── Summary stats ─── */
+.summary-stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:12px; margin-bottom:20px; }
+.summary-stat { background:white; border-radius:12px; padding:16px; border:1px solid var(--border); text-align:center; }
+.summary-stat-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--light); font-weight:600; }
+.summary-stat-value { font-size:1.6rem; font-weight:800; margin-top:4px; }
+
+/* ─── Progress in table ─── */
+.imp-progress-bar { width:80px; height:8px; background:#eef0f4; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px; }
+.imp-progress-fill { height:100%; border-radius:4px; }
+.imp-progress-text { font-size:0.75rem; font-weight:700; }
+.imp-status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:600; }
+.imp-status-completo { background:#d1fae5; color:#065f46; }
+.imp-status-progreso { background:#dbeafe; color:#1e40af; }
+.imp-status-pendiente { background:#f3f4f6; color:#6b7280; }
+
+/* ─── KPI placeholder ─── */
+.kpi-placeholder { text-align:center; padding:60px 20px; color:var(--muted); }
+.kpi-placeholder .emoji { font-size:2.5rem; margin-bottom:12px; }
+.kpi-placeholder p { font-size:0.9rem; }
 
 /* ─── Month Tabs ─── */
 .month-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:16px; }
@@ -60,19 +86,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .contadora-pill:hover { border-color:var(--navy); color:var(--navy); }
 .contadora-pill.active { background:var(--navy); color:white; border-color:var(--navy); }
 
-/* ─── Filter Cards ─── */
-.filter-cards { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
-.filter-card { padding:14px 20px; border-radius:12px; cursor:pointer; border:2px solid var(--border); background:var(--card); min-width:140px; transition:all 0.2s; }
-.filter-card:hover { border-color:var(--navy); }
-.filter-card.active { border-color:var(--blue); background:#f0f4ff; }
-.filter-card .fc-count { font-size:1.6rem; font-weight:700; line-height:1; }
-.filter-card .fc-label { font-size:0.75rem; color:var(--muted); margin-top:4px; font-weight:500; }
-.filter-card.fc-por-vencer .fc-count { color:var(--amber); }
-.filter-card.fc-en-atraso .fc-count { color:var(--red); }
-.filter-card.fc-en-progreso .fc-count { color:var(--blue); }
-.filter-card.fc-todos .fc-count { color:var(--navy); }
-
-/* ─── Tax Table (matrix) ─── */
+/* ─── Tax Table ─── */
 .tax-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
 .tax-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
 .tax-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; }
@@ -144,7 +158,8 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 /* ─── Embed ─── */
 body.embed .login-overlay,
 body.embed .header,
-body.embed .breadcrumb-bar { display:none !important; }
+body.embed .breadcrumb-bar,
+body.embed .main-tabs { display:none !important; }
 body.embed .content { padding-top:12px; }
 
 /* ─── Footer ─── */
@@ -191,9 +206,17 @@ body.embed .content { padding-top:12px; }
     <span class="current">Impuestos</span>
   </div>
 
+  <div class="main-tabs" id="mainTabs">
+    <button class="main-tab active" id="tab-checklist" onclick="switchMainTab('checklist')">Checklist</button>
+    <button class="main-tab" id="tab-kpi" onclick="switchMainTab('kpi')">KPI</button>
+  </div>
+
   <div class="content">
-    <div id="mainView"></div>
-    <div id="detailView" style="display:none"></div>
+    <div id="checklistPanel">
+      <div id="mainView"></div>
+      <div id="detailView" style="display:none"></div>
+    </div>
+    <div id="kpiPanel" style="display:none"></div>
   </div>
 
   <div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
@@ -261,8 +284,8 @@ var userRole = null;
 var userNameVal = '';
 var selectedMes = '';
 var selectedContadora = 'Todas';
-var activeFilter = 'todos';
 var currentView = 'main'; // 'main' or 'detail'
+var mainTab = 'checklist'; // 'checklist' or 'kpi'
 
 // Data
 var contadorasMap = {};
@@ -384,6 +407,20 @@ function mapKey(cliente, mes, impuesto) {
   return cliente + '||' + mes + '||' + impuesto;
 }
 
+function switchMainTab(tab) {
+  mainTab = tab;
+  document.getElementById('tab-checklist').className = 'main-tab' + (tab === 'checklist' ? ' active' : '');
+  document.getElementById('tab-kpi').className = 'main-tab' + (tab === 'kpi' ? ' active' : '');
+  document.getElementById('checklistPanel').style.display = tab === 'checklist' ? '' : 'none';
+  document.getElementById('kpiPanel').style.display = tab === 'kpi' ? '' : 'none';
+  if (tab === 'kpi') renderKpi();
+}
+
+function renderKpi() {
+  var el = document.getElementById('kpiPanel');
+  el.innerHTML = '<div class="kpi-placeholder"><div class="emoji">📊</div><p>KPI de Impuestos — próximamente.</p></div>';
+}
+
 function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
@@ -485,6 +522,31 @@ function getContadoraForClient(cliente) {
 }
 
 // ==================== MAIN VIEW (Matrix Table) ====================
+function getClientProgress(cliente, mes) {
+  var totalItems = 0;
+  var doneItems = 0;
+  IMPUESTOS.forEach(function(imp) {
+    var items = getItemsForTax(imp.id);
+    totalItems += items.length;
+    var row = getImpuestoRow(cliente, mes, imp.id);
+    var datos = row ? (row.datos || {}) : {};
+    items.forEach(function(it) {
+      var d = datos[it.id];
+      if (!d) return;
+      if (it.special === 'select') { if (d.valor === 'si' || d.valor === 'n/a') doneItems++; }
+      else { if (d.done) doneItems++; }
+    });
+  });
+  var pct = totalItems > 0 ? Math.round(doneItems / totalItems * 100) : 0;
+  return { done: doneItems, total: totalItems, pct: pct };
+}
+
+function getBarColor(pct) {
+  if (pct === 100) return 'var(--green)';
+  if (pct >= 50) return 'var(--amber)';
+  return 'var(--red)';
+}
+
 function renderMain() {
   currentView = 'main';
   document.getElementById('mainView').style.display = '';
@@ -509,78 +571,75 @@ function renderMain() {
   });
   h += '</div>';
 
-  // Compute stats
+  // Build client list with progress
   var clients = getClientsForMonth();
   var clientNames = Object.keys(clients).sort();
-  var stats = { todos: 0, por_vencer: 0, en_atraso: 0, en_progreso: 0 };
   var tableRows = [];
 
   clientNames.forEach(function(cliente) {
     var contadora = clients[cliente];
+    var prog = getClientProgress(cliente, selectedMes);
     var rowStatuses = {};
-    var hasNonFinal = false;
-
     IMPUESTOS.forEach(function(imp) {
       var row = getImpuestoRow(cliente, selectedMes, imp.id);
       var datos = row ? (row.datos || {}) : {};
       var enAtraso = row ? row.en_atraso : false;
-      var status = calcStatusWithVencer(imp.id, datos, enAtraso, selectedMes);
-      rowStatuses[imp.id] = status;
-      if (status !== 'finalizado') hasNonFinal = true;
+      rowStatuses[imp.id] = calcStatusWithVencer(imp.id, datos, enAtraso, selectedMes);
     });
-
-    var clientStatuses = Object.values(rowStatuses);
-    if (clientStatuses.some(function(s) { return s === 'en-atraso'; })) stats.en_atraso++;
-    if (clientStatuses.some(function(s) { return s === 'por-vencer'; })) stats.por_vencer++;
-    if (clientStatuses.some(function(s) { return s === 'en-progreso'; })) stats.en_progreso++;
-    if (hasNonFinal) stats.todos++;
-
-    tableRows.push({ cliente: cliente, contadora: contadora, statuses: rowStatuses, hasNonFinal: hasNonFinal });
+    tableRows.push({ cliente: cliente, contadora: contadora, prog: prog, statuses: rowStatuses });
   });
 
-  // Filter cards
-  h += '<div class="filter-cards">';
-  h += '<div class="filter-card fc-todos' + (activeFilter === 'todos' ? ' active' : '') + '" onclick="activeFilter=\'todos\';renderMain()">';
-  h += '<div class="fc-count">' + stats.todos + '</div><div class="fc-label">Pendientes</div></div>';
-  h += '<div class="filter-card fc-por-vencer' + (activeFilter === 'por_vencer' ? ' active' : '') + '" onclick="activeFilter=\'por_vencer\';renderMain()">';
-  h += '<div class="fc-count">' + stats.por_vencer + '</div><div class="fc-label">Por vencer</div></div>';
-  h += '<div class="filter-card fc-en-atraso' + (activeFilter === 'en_atraso' ? ' active' : '') + '" onclick="activeFilter=\'en_atraso\';renderMain()">';
-  h += '<div class="fc-count">' + stats.en_atraso + '</div><div class="fc-label">En atraso</div></div>';
-  h += '<div class="filter-card fc-en-progreso' + (activeFilter === 'en_progreso' ? ' active' : '') + '" onclick="activeFilter=\'en_progreso\';renderMain()">';
-  h += '<div class="fc-count">' + stats.en_progreso + '</div><div class="fc-label">En progreso</div></div>';
+  // Summary stats (same as contabilidad)
+  var totalClients = tableRows.length;
+  var completados = tableRows.filter(function(r) { return r.prog.pct === 100; }).length;
+  var enProgreso = tableRows.filter(function(r) { return r.prog.pct > 0 && r.prog.pct < 100; }).length;
+  var sinIniciar = tableRows.filter(function(r) { return r.prog.pct === 0; }).length;
+  var avgPct = totalClients > 0 ? Math.round(tableRows.reduce(function(s, r) { return s + r.prog.pct; }, 0) / totalClients) : 0;
+
+  h += '<div class="summary-stats">';
+  h += '<div class="summary-stat"><div class="summary-stat-label">Clientes</div><div class="summary-stat-value">' + totalClients + '</div></div>';
+  h += '<div class="summary-stat"><div class="summary-stat-label">Completados</div><div class="summary-stat-value" style="color:var(--green)">' + completados + '</div></div>';
+  h += '<div class="summary-stat"><div class="summary-stat-label">En progreso</div><div class="summary-stat-value" style="color:var(--amber)">' + enProgreso + '</div></div>';
+  h += '<div class="summary-stat"><div class="summary-stat-label">Sin iniciar</div><div class="summary-stat-value" style="color:var(--red)">' + sinIniciar + '</div></div>';
+  h += '<div class="summary-stat"><div class="summary-stat-label">Avance promedio</div><div class="summary-stat-value" style="color:' + getBarColor(avgPct) + '">' + avgPct + '%</div></div>';
   h += '</div>';
 
-  // Filter
-  var filteredRows = tableRows.filter(function(r) {
-    if (activeFilter === 'todos') return r.hasNonFinal;
-    var vals = Object.values(r.statuses);
-    if (activeFilter === 'por_vencer') return vals.some(function(s) { return s === 'por-vencer'; });
-    if (activeFilter === 'en_atraso') return vals.some(function(s) { return s === 'en-atraso'; });
-    if (activeFilter === 'en_progreso') return vals.some(function(s) { return s === 'en-progreso'; });
-    return true;
-  });
-
-  if (filteredRows.length === 0) {
-    h += '<div class="empty-state"><div class="emoji">✅</div><p>No hay impuestos pendientes para este filtro.</p></div>';
+  // Table
+  if (tableRows.length === 0) {
+    h += '<div class="empty-state"><div class="emoji">📋</div><p>No hay clientes asignados para ' + MESES_FULL[MESES_KEY.indexOf(selectedMes)] + '.</p></div>';
   } else {
+    h += '<div style="overflow-x:auto">';
     h += '<table class="tax-table">';
-    h += '<thead><tr><th>Cliente</th>';
+    h += '<thead><tr>';
+    h += '<th>Cliente</th>';
+    h += '<th>Contadora</th>';
+    h += '<th>Progreso</th>';
+    h += '<th>Tareas</th>';
     IMPUESTOS.forEach(function(imp) {
-      h += '<th style="text-align:center">' + imp.label + '<br><span style="font-weight:400;text-transform:none;font-size:0.65rem">Día ' + imp.deadline + '</span></th>';
+      h += '<th style="text-align:center">' + imp.label + '</th>';
     });
+    h += '<th>Estado</th>';
     h += '</tr></thead><tbody>';
 
-    filteredRows.forEach(function(r) {
-      h += '<tr>';
-      h += '<td class="client-name" onclick="openDetail(\'' + esc(r.cliente) + '\',\'' + esc(r.contadora) + '\')">' + r.cliente + '<br><span class="client-contadora">' + r.contadora + '</span></td>';
+    tableRows.forEach(function(r) {
+      var barColor = r.prog.pct === 100 ? 'var(--green)' : r.prog.pct > 0 ? 'var(--amber)' : '#e2e8f0';
+      var statusText = r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
+      var statusClass = r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
+
+      h += '<tr onclick="openDetail(\'' + esc(r.cliente) + '\',\'' + esc(r.contadora) + '\')" style="cursor:pointer">';
+      h += '<td class="client-name">' + r.cliente + '</td>';
+      h += '<td style="font-size:0.78rem;color:var(--muted)">' + r.contadora + '</td>';
+      h += '<td><div class="imp-progress-bar"><div class="imp-progress-fill" style="width:' + r.prog.pct + '%;background:' + barColor + '"></div></div><span class="imp-progress-text" style="color:' + getBarColor(r.prog.pct) + '">' + r.prog.pct + '%</span></td>';
+      h += '<td style="font-size:0.78rem;color:var(--muted)">' + r.prog.done + '/' + r.prog.total + '</td>';
       IMPUESTOS.forEach(function(imp) {
         var s = r.statuses[imp.id];
         h += '<td style="text-align:center"><span class="status-badge ' + s + '">' + statusLabel(s) + '</span></td>';
       });
+      h += '<td><span class="imp-status-badge ' + statusClass + '">' + statusText + '</span></td>';
       h += '</tr>';
     });
 
-    h += '</tbody></table>';
+    h += '</tbody></table></div>';
   }
 
   el.innerHTML = h;
