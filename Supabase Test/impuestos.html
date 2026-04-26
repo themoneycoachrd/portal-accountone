@@ -515,23 +515,27 @@ async function initApp() {
 
 // ==================== DATA ====================
 async function loadContadoras() {
-  var { data, error } = await sb.from('asignaciones').select('contadora, cliente, mes');
-  if (error) { console.error('Error cargando asignaciones:', error); return; }
-  asignacionesRaw = data || [];
-  // Build month-aware map: { mes: { contadora: [client1, ...] } }
+  // Leer clientes de la maestra (fuente única)
+  var { data, error } = await sb.from('clientes')
+    .select('nombre, contadora_impuestos, responsabilidad_impuestos, activo');
+  if (error) { console.error('Error cargando clientes:', error); return; }
+  // Filtrar: solo activos con responsabilidad de impuestos
+  var clientes = (data || []).filter(function(c) {
+    return c.activo !== false && c.responsabilidad_impuestos === true;
+  });
+  // Construir mapa contadora → [clientes] (ya no depende del mes)
   contadorasMap = {};
-  asignacionesRaw.forEach(function(r) {
-    if (!r.contadora || !r.cliente || !r.mes) return;
-    if (!contadorasMap[r.mes]) contadorasMap[r.mes] = {};
-    if (!contadorasMap[r.mes][r.contadora]) contadorasMap[r.mes][r.contadora] = {};
-    contadorasMap[r.mes][r.contadora][r.cliente] = true;
+  var maestraMap = {};
+  clientes.forEach(function(c) {
+    var cont = c.contadora_impuestos || 'Sin asignar';
+    if (!maestraMap[cont]) maestraMap[cont] = {};
+    maestraMap[cont][c.nombre] = true;
   });
-  // Convert client sets to sorted arrays
-  Object.keys(contadorasMap).forEach(function(mes) {
-    Object.keys(contadorasMap[mes]).forEach(function(c) {
-      contadorasMap[mes][c] = Object.keys(contadorasMap[mes][c]).sort();
-    });
+  Object.keys(maestraMap).forEach(function(cont) {
+    maestraMap[cont] = Object.keys(maestraMap[cont]).sort();
   });
+  // Guardar como mapa fijo (mismo para todos los meses)
+  contadorasMap = { _maestra: maestraMap };
 }
 
 async function loadImpuestos() {
@@ -549,7 +553,9 @@ function getImpuestoRow(cliente, mes, impuesto) {
 }
 
 function getContadorasForMes(mes) {
-  return contadorasMap[mes] || {};
+  // Desde la consolidación, el universo de clientes viene de la maestra
+  // y es el mismo para todos los meses
+  return contadorasMap._maestra || {};
 }
 
 function isContadoraExcluida(name) {

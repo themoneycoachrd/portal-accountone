@@ -391,9 +391,9 @@ async function initApp() {
 
 // ==================== DATA LOADING ====================
 async function loadContadoras() {
-  var { data } = await sb.from('asignaciones').select('contadora');
+  var { data } = await sb.from('contadoras').select('nombre,activa');
   var names = {};
-  (data || []).forEach(function(r) { if (r.contadora) names[r.contadora] = true; });
+  (data || []).forEach(function(r) { if (r.activa) names[r.nombre] = true; });
   contadorasList = Object.keys(names).sort();
 
   // Populate modal dropdowns

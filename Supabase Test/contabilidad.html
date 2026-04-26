@@ -597,30 +597,50 @@ let kpiContadora = null;
 let kpiMes = null;
 
 // ==================== UNIFIED ASIGNACIONES ====================
+// Fuente principal: tabla clientes (maestra).
+// Asignaciones solo aporta dato mensual de transacciones digitadas (adm) para KPI.
+
+var CLIENTES_CONTAB = []; // clientes con responsabilidad_contabilidad = true
+var ASIG_ADM = {};        // { "cliente_mes": adm } — transacciones digitadas por mes
 
 async function loadAsignaciones() {
-  const { data, error } = await sb.from('asignaciones').select('*');
-  if (error) { console.error('Error cargando asignaciones:', error); return; }
+  // 1. Cargar clientes de la maestra
+  const { data: cData, error: cErr } = await sb.from('clientes')
+    .select('nombre, contadora_contabilidad, monto_adm, responsabilidad_contabilidad, activo');
+  if (cErr) { console.error('Error cargando clientes:', cErr); return; }
+  CLIENTES_CONTAB = (cData || []).filter(c =>
+    c.activo !== false && c.responsabilidad_contabilidad === true
+  );
+
+  // 2. Cargar asignaciones para datos mensuales de digitación (KPI)
+  const { data: aData } = await sb.from('asignaciones').select('cliente, mes, adm');
+  ASIG_ADM = {};
+  (aData || []).forEach(r => {
+    if (r.cliente && r.mes) ASIG_ADM[r.cliente + '_' + r.mes] = r.adm || 0;
+  });
+
+  // 3. Construir ASIGNACIONES (misma estructura para compatibilidad)
   ASIGNACIONES = {};
-  (data || []).forEach(r => {
-    if (isExcluida(r.contadora)) return;
-    const key = r.contadora + '_' + r.mes;
-    if (!ASIGNACIONES[key]) ASIGNACIONES[key] = [];
-    const exists = ASIGNACIONES[key].some(c => c.nombre === r.cliente);
-    if (!exists) {
-      ASIGNACIONES[key].push({ nombre: r.cliente, transacciones: r.adm || 0, contratado: r.serv || 0 });
-    }
+  CLIENTES_CONTAB.forEach(c => {
+    const cont = c.contadora_contabilidad;
+    if (!cont || isExcluida(cont)) return;
+    MESES.forEach(mes => {
+      const key = cont + '_' + mes;
+      if (!ASIGNACIONES[key]) ASIGNACIONES[key] = [];
+      const adm = ASIG_ADM[c.nombre + '_' + mes] || 0;
+      ASIGNACIONES[key].push({
+        nombre: c.nombre,
+        transacciones: adm,
+        contratado: c.monto_adm || 0
+      });
+    });
   });
 }
 
 // Returns array of objects {nombre, transacciones, contratado} — for KPI
 function getClients(contadora, mes) {
-  const idx = MESES.indexOf(mes);
-  for (let i = idx; i >= 0; i--) {
-    const key = contadora + '_' + MESES[i];
-    if (ASIGNACIONES[key] && ASIGNACIONES[key].length > 0) return ASIGNACIONES[key];
-  }
-  return [];
+  const key = contadora + '_' + mes;
+  return ASIGNACIONES[key] || [];
 }
 
 // Returns sorted array of client name strings — for checklist
@@ -629,13 +649,14 @@ function getClientNames(contadora, mes) {
   return clients.map(c => c.nombre).sort();
 }
 
-// Returns all unique contadora names from ASIGNACIONES
+// Returns all unique contadora names from maestra
 function getContadoraNames() {
   const names = {};
-  for (const key in ASIGNACIONES) {
-    const contadora = key.split('_')[0];
-    if (!isExcluida(contadora)) names[contadora] = true;
-  }
+  CLIENTES_CONTAB.forEach(c => {
+    if (c.contadora_contabilidad && !isExcluida(c.contadora_contabilidad)) {
+      names[c.contadora_contabilidad] = true;
+    }
+  });
   return sortContadoras(Object.keys(names));
 }
 
