@@ -369,6 +369,49 @@
   .cl-empty { text-align:center; padding:60px 20px; color:var(--muted); }
   .cl-empty .emoji { font-size:2.5rem; margin-bottom:12px; }
 
+  /* ─── BD: Base de Datos sub-tabs ─── */
+  .bd-sub-tabs { display:flex; gap:4px; padding:10px 24px; background:#f4f6f9; border-bottom:1px solid var(--border); overflow-x:auto; }
+  .bd-sub-tab { padding:6px 12px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:white; color:var(--muted); white-space:nowrap; transition:all 0.15s; }
+  .bd-sub-tab:hover { background:#e2e8f0; }
+  .bd-sub-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
+
+  /* ─── BD: Contadoras table ─── */
+  .bd-cont-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+  .bd-cont-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+  .bd-cont-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; vertical-align:middle; }
+  .bd-cont-table tr:hover td { background:#fafbfc; }
+  .bd-cont-table tr:last-child td { border-bottom:none; }
+  .bd-tipo-plena { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; background:#dbeafe; color:#1e40af; }
+  .bd-tipo-facturacion { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; background:#fef3c7; color:#92400e; }
+  .bd-tipo-freelance { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:600; background:#ede9fe; color:#5b21b6; }
+
+  /* ─── BD: Asignaciones ─── */
+  .bd-asig-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+  .bd-asig-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+  .bd-asig-table td { padding:8px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; vertical-align:middle; }
+  .bd-asig-table tr:hover td { background:#fafbfc; }
+  .bd-asig-table tr:last-child td { border-bottom:none; }
+  .bd-asig-table select { padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.8rem; font-family:inherit; background:white; cursor:pointer; }
+  .bd-asig-table select:focus { outline:none; border-color:var(--blue); }
+  .bd-asig-table input[type="number"] { width:70px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.8rem; font-family:inherit; text-align:right; }
+  .bd-asig-table input[type="number"]:focus { outline:none; border-color:var(--blue); }
+  .bd-asig-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .bd-asig-save { padding:8px 16px; background:var(--green); color:white; border:none; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; font-family:inherit; }
+  .bd-asig-save:hover { background:#059669; }
+  .bd-asig-save:disabled { opacity:0.5; cursor:not-allowed; }
+  .bd-asig-add { padding:6px 14px; background:var(--blue); color:white; border:none; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:inherit; }
+  .bd-asig-add:hover { background:#3451d1; }
+  .bd-month-pills { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:16px; }
+  .bd-month-pill { padding:6px 14px; border-radius:8px; cursor:pointer; font-size:0.85rem; font-weight:500; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
+  .bd-month-pill:hover { border-color:var(--blue); color:var(--blue); }
+  .bd-month-pill.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .bd-summary { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+  .bd-summary-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 20px; }
+  .bd-summary-count { font-size:1.4rem; font-weight:700; color:var(--navy); }
+  .bd-summary-label { font-size:0.75rem; color:var(--muted); }
+  .bd-note { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:16px; }
+  .bd-dirty-indicator { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--amber); margin-left:6px; vertical-align:middle; }
+
   /* ─── Modal ─── */
   .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:500; display:flex; align-items:center; justify-content:center; }
   .modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:520px; box-shadow:0 8px 40px rgba(0,0,0,0.15); max-height:90vh; overflow-y:auto; }
@@ -459,8 +502,9 @@
   <div class="content" id="ctd-content"></div>
 </div>
 
-<div id="cl-area" class="hidden">
-  <div class="content" id="cl-content"></div>
+<div id="bd-area" class="hidden">
+  <div class="bd-sub-tabs" id="bdSubTabs"></div>
+  <div class="content" id="bd-content"></div>
 </div>
 
 <div class="footer">Conectado a Supabase — los datos se guardan en la nube.</div>
@@ -529,6 +573,52 @@
   </div>
 </div>
 
+<!-- Modal Contadora -->
+<div class="modal-overlay hidden" id="bd-cont-modal-overlay" onclick="if(event.target===this)bdContCloseModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="bd-cont-modal-title">Nueva contadora</h3>
+      <button class="modal-close" onclick="bdContCloseModal()" title="Cerrar">✕</button>
+    </div>
+    <div class="m-field">
+      <label>Nombre *</label>
+      <input type="text" id="bd-cont-m-nombre" placeholder="Nombre de la contadora">
+      <div class="m-error" id="bd-cont-m-nombre-err">Campo obligatorio</div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Tipo</label>
+        <select id="bd-cont-m-tipo">
+          <option value="plena">Plena (contabilidad completa)</option>
+          <option value="facturacion">Facturación electrónica</option>
+          <option value="freelance">Freelance</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <label>Capacidad mensual</label>
+        <input type="number" id="bd-cont-m-capacidad" placeholder="Ej: 1000">
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
+        <label>Estado</label>
+        <select id="bd-cont-m-activa">
+          <option value="true">Activa</option>
+          <option value="false">Inactiva</option>
+        </select>
+      </div>
+      <div class="m-field">
+        <label>Notas</label>
+        <input type="text" id="bd-cont-m-notas" placeholder="Notas opcionales">
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="bdContCloseModal()">Cancelar</button>
+      <button class="btn-modal-save" id="bd-cont-m-save" onclick="bdContSave()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================== SUPABASE ====================
 const SUPABASE_URL = 'https://ouetusstqvpyjeycfdio.supabase.co';
@@ -560,7 +650,7 @@ function renderGerMainTabs() {
   el.innerHTML = [
     { id:'clientes', label:'Control de Clientes' },
     { id:'contadoras', label:'Control de Contadoras' },
-    { id:'directorio', label:'Clientes' }
+    { id:'basedatos', label:'Base de Datos' }
   ].map(t => '<button class="main-tab ' + (gerMainTab === t.id ? 'active' : '') + '" onclick="switchGerTab(\'' + t.id + '\')">' + t.label + '</button>').join('');
 }
 
@@ -569,16 +659,16 @@ function switchGerTab(tab) {
   renderGerMainTabs();
   document.getElementById('cc-area').classList.add('hidden');
   document.getElementById('ctd-area').classList.add('hidden');
-  document.getElementById('cl-area').classList.add('hidden');
+  document.getElementById('bd-area').classList.add('hidden');
   if (tab === 'clientes') {
     document.getElementById('cc-area').classList.remove('hidden');
     ccRenderAll();
   } else if (tab === 'contadoras') {
     document.getElementById('ctd-area').classList.remove('hidden');
     ctdRenderApp();
-  } else if (tab === 'directorio') {
-    document.getElementById('cl-area').classList.remove('hidden');
-    clRenderAll();
+  } else if (tab === 'basedatos') {
+    document.getElementById('bd-area').classList.remove('hidden');
+    bdRenderAll();
   }
 }
 
@@ -2132,18 +2222,85 @@ async function loadUserProfile() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// ██  CLIENTES (CL) MODULE — Directorio maestro
+// ██  BASE DE DATOS (BD) MODULE — Clientes, Contadoras, Asignaciones
 // ══════════════════════════════════════════════════════════════
 
-var clData = [];
-var clSearch = '';
-var clEditingId = null; // null = new, uuid = editing
+var bdActiveSubTab = 'clientes';
+var bdClientes = [];
+var bdContadoras = [];
+var bdAsignaciones = [];
+var bdAsigMes = 'abril';
+var bdAsigDirty = false; // track unsaved changes in assignments
+var bdAsigEdits = {}; // { rowIdx: { contadora, serv, adm } }
 
-async function clLoadData() {
+var clSearch = '';
+var clEditingId = null;
+var bdContEditingId = null;
+
+const BD_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const BD_MESES_SHORT = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// ─── BD Data Loading ───
+async function bdLoadClientes() {
   var { data, error } = await sb.from('clientes').select('*').order('nombre');
   if (error) { console.error('Error cargando clientes:', error); return; }
-  clData = data || [];
+  bdClientes = data || [];
 }
+
+async function bdLoadContadoras() {
+  var { data, error } = await sb.from('contadoras').select('*').order('nombre');
+  if (error) { console.warn('Tabla contadoras no disponible:', error.message); bdContadoras = []; return; }
+  bdContadoras = data || [];
+}
+
+async function bdLoadAsignaciones() {
+  var { data, error } = await sb.from('asignaciones').select('*').eq('anio', 2026).order('cliente');
+  if (error) { console.error('Error cargando asignaciones:', error); return; }
+  bdAsignaciones = data || [];
+}
+
+async function bdLoadAll() {
+  await Promise.all([bdLoadClientes(), bdLoadContadoras(), bdLoadAsignaciones()]);
+}
+
+// ─── BD Sub-tabs ───
+function bdRenderSubTabs() {
+  var el = document.getElementById('bdSubTabs');
+  var tabs = [
+    { id:'clientes', label:'Clientes' },
+    { id:'contadoras', label:'Contadoras' },
+    { id:'asignaciones', label:'Asignaciones' }
+  ];
+  el.innerHTML = tabs.map(function(t) {
+    return '<button class="bd-sub-tab ' + (bdActiveSubTab === t.id ? 'active' : '') + '" onclick="bdSwitchSubTab(\'' + t.id + '\')">' + t.label + '</button>';
+  }).join('');
+}
+
+function bdSwitchSubTab(tab) {
+  if (bdAsigDirty && bdActiveSubTab === 'asignaciones') {
+    if (!confirm('Tienes cambios sin guardar en asignaciones. ¿Salir sin guardar?')) return;
+    bdAsigDirty = false;
+    bdAsigEdits = {};
+  }
+  bdActiveSubTab = tab;
+  bdRenderSubTabs();
+  bdRenderContent();
+}
+
+function bdRenderAll() {
+  bdRenderSubTabs();
+  bdRenderContent();
+}
+
+function bdRenderContent() {
+  if (bdActiveSubTab === 'clientes') bdRenderClientes();
+  else if (bdActiveSubTab === 'contadoras') bdRenderContadoras();
+  else if (bdActiveSubTab === 'asignaciones') bdRenderAsignaciones();
+}
+
+// ═══════════════════════════════════════════
+// BD SUB-TAB: CLIENTES
+// ═══════════════════════════════════════════
 
 function clFormatDate(d) {
   if (!d) return '';
@@ -2151,32 +2308,29 @@ function clFormatDate(d) {
   return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : d;
 }
 
-function clRenderAll() {
-  var el = document.getElementById('cl-content');
+function bdRenderClientes() {
+  var el = document.getElementById('bd-content');
   var h = '';
 
-  // Stats
-  var activos = clData.filter(function(c) { return c.activo !== false; }).length;
-  var inactivos = clData.length - activos;
+  var activos = bdClientes.filter(function(c) { return c.activo !== false; }).length;
+  var inactivos = bdClientes.length - activos;
   h += '<div class="cl-stats">';
   h += '<div class="cl-stat"><div class="cl-stat-count">' + activos + '</div><div class="cl-stat-label">Clientes activos</div></div>';
   h += '<div class="cl-stat"><div class="cl-stat-count">' + inactivos + '</div><div class="cl-stat-label">Inactivos</div></div>';
-  h += '<div class="cl-stat"><div class="cl-stat-count">' + clData.length + '</div><div class="cl-stat-label">Total</div></div>';
+  h += '<div class="cl-stat"><div class="cl-stat-count">' + bdClientes.length + '</div><div class="cl-stat-label">Total</div></div>';
   h += '</div>';
 
-  // Toolbar
   h += '<div class="cl-toolbar">';
-  h += '<input class="cl-search" type="text" placeholder="Buscar cliente..." value="' + (clSearch || '') + '" oninput="clSearch=this.value;clRenderAll()">';
+  h += '<input class="cl-search" type="text" placeholder="Buscar cliente..." value="' + esc(clSearch) + '" oninput="clSearch=this.value;bdRenderClientes()">';
   if (userRole === 'admin') {
     h += '<button class="btn-add" onclick="clOpenModal()">+ Nuevo cliente</button>';
   }
   h += '</div>';
 
-  // Filter
-  var filtered = clData;
+  var filtered = bdClientes;
   if (clSearch) {
     var q = clSearch.toLowerCase();
-    filtered = clData.filter(function(c) {
+    filtered = bdClientes.filter(function(c) {
       return (c.nombre || '').toLowerCase().indexOf(q) >= 0
         || (c.rnc || '').toLowerCase().indexOf(q) >= 0
         || (c.contadora || '').toLowerCase().indexOf(q) >= 0
@@ -2185,12 +2339,12 @@ function clRenderAll() {
   }
 
   if (filtered.length === 0) {
-    if (clData.length === 0) {
+    if (bdClientes.length === 0) {
       h += '<div class="cl-empty"><div class="emoji">👥</div><p>No hay clientes registrados.</p>';
       if (userRole === 'admin') h += '<p style="font-size:0.82rem">Usa el botón de arriba para agregar el primero.</p>';
       h += '</div>';
     } else {
-      h += '<div class="cl-empty"><p>No se encontraron resultados para "' + clSearch + '"</p></div>';
+      h += '<div class="cl-empty"><p>No se encontraron resultados para "' + esc(clSearch) + '"</p></div>';
     }
     el.innerHTML = h;
     return;
@@ -2204,10 +2358,10 @@ function clRenderAll() {
 
   filtered.forEach(function(c) {
     h += '<tr>';
-    h += '<td class="cl-name">' + (c.nombre || '') + '</td>';
-    h += '<td style="font-size:0.8rem">' + (c.rnc || '<span style="color:var(--light)">—</span>') + '</td>';
-    h += '<td>' + (c.contadora || '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
-    h += '<td style="font-size:0.8rem">' + (c.contacto || '') + '</td>';
+    h += '<td class="cl-name">' + esc(c.nombre) + '</td>';
+    h += '<td style="font-size:0.8rem">' + (c.rnc ? esc(c.rnc) : '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td>' + (c.contadora ? esc(c.contadora) : '<span style="color:var(--light)">Sin asignar</span>') + '</td>';
+    h += '<td style="font-size:0.8rem">' + esc(c.contacto || '') + '</td>';
     h += '<td class="cl-date">' + (clFormatDate(c.fecha_entrada) || '<span style="color:var(--light)">—</span>') + '</td>';
     h += '<td class="cl-date">' + (clFormatDate(c.inicio_responsabilidad_fiscal) || '<span style="color:var(--light)">—</span>') + '</td>';
     h += '<td><span class="' + (c.activo !== false ? 'cl-badge-activo' : 'cl-badge-inactivo') + '">' + (c.activo !== false ? 'Activo' : 'Inactivo') + '</span></td>';
@@ -2224,11 +2378,13 @@ function clRenderAll() {
 function clPopulateContadoraSelect() {
   var sel = document.getElementById('cl-m-contadora');
   sel.innerHTML = '<option value="">Sin asignar</option>';
-  // Use contadoras from CC module data if available
+  // Use contadoras from BD module if available, fallback to names from data
   var names = {};
-  Object.keys(ccDATA).forEach(function(k) { var c = ccDATA[k].contadora; if (c) names[c] = true; });
-  // Also from clData contadoras
-  clData.forEach(function(c) { if (c.contadora) names[c.contadora] = true; });
+  bdContadoras.forEach(function(c) { if (c.activa) names[c.nombre] = true; });
+  if (Object.keys(names).length === 0) {
+    Object.keys(ccDATA).forEach(function(k) { var c = ccDATA[k].contadora; if (c) names[c] = true; });
+    bdClientes.forEach(function(c) { if (c.contadora) names[c.contadora] = true; });
+  }
   Object.keys(names).sort().forEach(function(n) {
     sel.innerHTML += '<option value="' + n + '">' + n + '</option>';
   });
@@ -2239,7 +2395,7 @@ function clOpenModal(editId) {
   clPopulateContadoraSelect();
 
   if (clEditingId) {
-    var c = clData.find(function(x) { return x.id === clEditingId; });
+    var c = bdClientes.find(function(x) { return x.id === clEditingId; });
     if (!c) return;
     document.getElementById('cl-modal-title').textContent = 'Editar cliente';
     document.getElementById('cl-m-nombre').value = c.nombre || '';
@@ -2314,9 +2470,350 @@ async function clSaveClient() {
   }
 
   clCloseModal();
-  await clLoadData();
-  clRenderAll();
+  await bdLoadClientes();
+  bdRenderClientes();
   gerShowToast(clEditingId ? 'Cliente actualizado' : 'Cliente agregado');
+}
+
+// ═══════════════════════════════════════════
+// BD SUB-TAB: CONTADORAS
+// ═══════════════════════════════════════════
+
+function bdRenderContadoras() {
+  var el = document.getElementById('bd-content');
+
+  if (bdContadoras.length === 0) {
+    var h = '<div class="bd-note">La tabla <b>contadoras</b> aún no existe en Supabase. Ejecuta el script <code>db/contadoras-table.sql</code> en el SQL Editor para habilitarla.</div>';
+    h += '<div class="cl-empty"><p>No hay contadoras registradas.</p></div>';
+    el.innerHTML = h;
+    return;
+  }
+
+  var h = '';
+  var activas = bdContadoras.filter(function(c) { return c.activa; }).length;
+  var plenas = bdContadoras.filter(function(c) { return c.activa && c.tipo === 'plena'; }).length;
+
+  h += '<div class="bd-summary">';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count">' + activas + '</div><div class="bd-summary-label">Activas</div></div>';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count">' + plenas + '</div><div class="bd-summary-label">Plenas</div></div>';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count">' + (bdContadoras.length - activas) + '</div><div class="bd-summary-label">Inactivas</div></div>';
+  h += '</div>';
+
+  if (userRole === 'admin') {
+    h += '<div style="margin-bottom:14px"><button class="btn-add" onclick="bdContOpenModal()">+ Nueva contadora</button></div>';
+  }
+
+  h += '<table class="bd-cont-table">';
+  h += '<thead><tr><th>Nombre</th><th>Tipo</th><th>Capacidad</th><th>Estado</th><th>Notas</th>';
+  if (userRole === 'admin') h += '<th></th>';
+  h += '</tr></thead><tbody>';
+
+  bdContadoras.forEach(function(c) {
+    var tipoCls = 'bd-tipo-' + c.tipo;
+    var tipoLabel = c.tipo === 'plena' ? 'Plena' : (c.tipo === 'facturacion' ? 'Facturación' : 'Freelance');
+    h += '<tr>';
+    h += '<td style="font-weight:600;color:var(--navy)">' + esc(c.nombre) + '</td>';
+    h += '<td><span class="' + tipoCls + '">' + tipoLabel + '</span></td>';
+    h += '<td>' + (c.capacidad ? c.capacidad.toLocaleString() : '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td><span class="' + (c.activa ? 'cl-badge-activo' : 'cl-badge-inactivo') + '">' + (c.activa ? 'Activa' : 'Inactiva') + '</span></td>';
+    h += '<td style="font-size:0.8rem;color:var(--muted)">' + esc(c.notas || '') + '</td>';
+    if (userRole === 'admin') {
+      h += '<td><button style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="bdContOpenModal(\'' + c.id + '\')">Editar</button></td>';
+    }
+    h += '</tr>';
+  });
+
+  h += '</tbody></table>';
+  el.innerHTML = h;
+}
+
+function bdContOpenModal(editId) {
+  bdContEditingId = editId || null;
+  if (bdContEditingId) {
+    var c = bdContadoras.find(function(x) { return x.id === bdContEditingId; });
+    if (!c) return;
+    document.getElementById('bd-cont-modal-title').textContent = 'Editar contadora';
+    document.getElementById('bd-cont-m-nombre').value = c.nombre || '';
+    document.getElementById('bd-cont-m-tipo').value = c.tipo || 'plena';
+    document.getElementById('bd-cont-m-capacidad').value = c.capacidad || '';
+    document.getElementById('bd-cont-m-activa').value = c.activa ? 'true' : 'false';
+    document.getElementById('bd-cont-m-notas').value = c.notas || '';
+  } else {
+    document.getElementById('bd-cont-modal-title').textContent = 'Nueva contadora';
+    document.getElementById('bd-cont-m-nombre').value = '';
+    document.getElementById('bd-cont-m-tipo').value = 'plena';
+    document.getElementById('bd-cont-m-capacidad').value = '';
+    document.getElementById('bd-cont-m-activa').value = 'true';
+    document.getElementById('bd-cont-m-notas').value = '';
+  }
+  document.getElementById('bd-cont-m-nombre-err').style.display = 'none';
+  document.getElementById('bd-cont-modal-overlay').classList.remove('hidden');
+}
+
+function bdContCloseModal() {
+  document.getElementById('bd-cont-modal-overlay').classList.add('hidden');
+  bdContEditingId = null;
+}
+
+async function bdContSave() {
+  var nombre = document.getElementById('bd-cont-m-nombre').value.trim();
+  if (!nombre) {
+    document.getElementById('bd-cont-m-nombre-err').style.display = 'block';
+    return;
+  }
+  document.getElementById('bd-cont-m-nombre-err').style.display = 'none';
+
+  var capVal = document.getElementById('bd-cont-m-capacidad').value;
+  var record = {
+    nombre: nombre,
+    tipo: document.getElementById('bd-cont-m-tipo').value,
+    activa: document.getElementById('bd-cont-m-activa').value === 'true',
+    capacidad: capVal ? parseInt(capVal) : null,
+    notas: document.getElementById('bd-cont-m-notas').value.trim() || ''
+  };
+
+  var btn = document.getElementById('bd-cont-m-save');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  var result;
+  if (bdContEditingId) {
+    result = await sb.from('contadoras').update(record).eq('id', bdContEditingId);
+  } else {
+    result = await sb.from('contadoras').insert(record);
+  }
+
+  btn.disabled = false; btn.textContent = 'Guardar';
+
+  if (result.error) {
+    gerShowToast('Error: ' + result.error.message, 'error');
+    console.error(result.error);
+    return;
+  }
+
+  bdContCloseModal();
+  await bdLoadContadoras();
+  bdRenderContadoras();
+  gerShowToast(bdContEditingId ? 'Contadora actualizada' : 'Contadora agregada');
+}
+
+// ═══════════════════════════════════════════
+// BD SUB-TAB: ASIGNACIONES
+// ═══════════════════════════════════════════
+
+function bdGetContadorasForAsig() {
+  // Active contadoras excluding facturacion type
+  if (bdContadoras.length > 0) {
+    return bdContadoras.filter(function(c) { return c.activa && c.tipo !== 'facturacion'; }).map(function(c) { return c.nombre; });
+  }
+  // Fallback: derive from asignaciones data
+  var names = {};
+  bdAsignaciones.forEach(function(a) {
+    if (a.contadora && a.contadora !== 'Karina') names[a.contadora] = true;
+  });
+  return Object.keys(names).sort();
+}
+
+function bdGetAsigForMes(mes) {
+  // Get assignments for selected month, exclude facturación contadoras
+  var facContadoras = bdContadoras.filter(function(c) { return c.tipo === 'facturacion'; }).map(function(c) { return c.nombre; });
+  if (facContadoras.length === 0) facContadoras = ['Karina']; // fallback
+
+  return bdAsignaciones.filter(function(a) {
+    return a.mes === mes && facContadoras.indexOf(a.contadora) < 0;
+  }).sort(function(a, b) {
+    return (a.cliente || '').localeCompare(b.cliente || '');
+  });
+}
+
+function bdRenderAsignaciones() {
+  var el = document.getElementById('bd-content');
+  var h = '';
+
+  // Month pills
+  h += '<div class="bd-month-pills">';
+  BD_MESES.forEach(function(m, i) {
+    h += '<button class="bd-month-pill ' + (bdAsigMes === m ? 'active' : '') + '" onclick="bdSwitchAsigMes(\'' + m + '\')">' + BD_MESES_SHORT[i] + '</button>';
+  });
+  h += '</div>';
+
+  var rows = bdGetAsigForMes(bdAsigMes);
+  var contadoraNames = bdGetContadorasForAsig();
+
+  // Summary
+  var contadoraCounts = {};
+  rows.forEach(function(r) {
+    var c = r.contadora || 'Sin asignar';
+    contadoraCounts[c] = (contadoraCounts[c] || 0) + 1;
+  });
+  var sinAsignar = contadoraCounts['Sin asignar'] || 0;
+
+  h += '<div class="bd-summary">';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count">' + rows.length + '</div><div class="bd-summary-label">Clientes asignados</div></div>';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count">' + Object.keys(contadoraCounts).filter(function(k) { return k !== 'Sin asignar'; }).length + '</div><div class="bd-summary-label">Contadoras activas</div></div>';
+  h += '<div class="bd-summary-item"><div class="bd-summary-count" style="color:' + (sinAsignar > 0 ? 'var(--red)' : 'var(--green)') + '">' + sinAsignar + '</div><div class="bd-summary-label">Sin asignar</div></div>';
+  h += '</div>';
+
+  if (rows.length === 0) {
+    h += '<div class="cl-empty"><p>No hay asignaciones para ' + bdAsigMes.charAt(0).toUpperCase() + bdAsigMes.slice(1) + ' 2026.</p></div>';
+    el.innerHTML = h;
+    return;
+  }
+
+  // Toolbar
+  if (userRole === 'admin') {
+    h += '<div class="bd-asig-toolbar">';
+    h += '<button class="bd-asig-add" onclick="bdAsigAddRow()">+ Agregar asignación</button>';
+    h += '<div>';
+    if (bdAsigDirty) h += '<span class="bd-dirty-indicator" title="Cambios sin guardar"></span> ';
+    h += '<button class="bd-asig-save" id="bdAsigSaveBtn" onclick="bdAsigSaveAll()" ' + (bdAsigDirty ? '' : 'disabled') + '>Guardar cambios</button>';
+    h += '</div>';
+    h += '</div>';
+  }
+
+  // Table
+  h += '<div class="table-wrap"><table class="bd-asig-table">';
+  h += '<thead><tr><th>#</th><th>Cliente</th><th>Contadora</th><th style="text-align:right">Serv</th><th style="text-align:right">Adm</th>';
+  if (userRole === 'admin') h += '<th></th>';
+  h += '</tr></thead><tbody>';
+
+  rows.forEach(function(r, idx) {
+    var edited = bdAsigEdits[idx];
+    var contVal = edited ? edited.contadora : r.contadora;
+    var servVal = edited ? edited.serv : r.serv;
+    var admVal = edited ? edited.adm : r.adm;
+
+    h += '<tr>';
+    h += '<td style="color:var(--light);font-size:0.75rem">' + (idx + 1) + '</td>';
+    h += '<td style="font-weight:600;color:var(--navy)">' + esc(r.cliente) + '</td>';
+
+    if (userRole === 'admin') {
+      h += '<td><select onchange="bdAsigEdit(' + idx + ',\'contadora\',this.value)">';
+      h += '<option value="Sin asignar"' + (contVal === 'Sin asignar' ? ' selected' : '') + '>Sin asignar</option>';
+      contadoraNames.forEach(function(cn) {
+        h += '<option value="' + esc(cn) + '"' + (contVal === cn ? ' selected' : '') + '>' + esc(cn) + '</option>';
+      });
+      h += '</select></td>';
+      h += '<td><input type="number" value="' + (servVal || 0) + '" onchange="bdAsigEdit(' + idx + ',\'serv\',this.value)" style="text-align:right"></td>';
+      h += '<td><input type="number" value="' + (admVal || 0) + '" onchange="bdAsigEdit(' + idx + ',\'adm\',this.value)" style="text-align:right"></td>';
+      h += '<td><button style="padding:3px 8px;border:1px solid #fecaca;border-radius:6px;background:white;font-size:0.72rem;cursor:pointer;color:var(--red)" onclick="bdAsigDeleteRow(' + r.id + ')">✕</button></td>';
+    } else {
+      h += '<td>' + esc(contVal || 'Sin asignar') + '</td>';
+      h += '<td style="text-align:right">' + (servVal || 0) + '</td>';
+      h += '<td style="text-align:right">' + (admVal || 0) + '</td>';
+    }
+
+    h += '</tr>';
+  });
+
+  h += '</tbody></table></div>';
+  el.innerHTML = h;
+}
+
+function bdSwitchAsigMes(mes) {
+  if (bdAsigDirty) {
+    if (!confirm('Tienes cambios sin guardar. ¿Cambiar de mes sin guardar?')) return;
+  }
+  bdAsigMes = mes;
+  bdAsigDirty = false;
+  bdAsigEdits = {};
+  bdRenderAsignaciones();
+}
+
+function bdAsigEdit(idx, field, value) {
+  if (!bdAsigEdits[idx]) {
+    var rows = bdGetAsigForMes(bdAsigMes);
+    var r = rows[idx];
+    bdAsigEdits[idx] = { contadora: r.contadora, serv: r.serv, adm: r.adm, id: r.id };
+  }
+  if (field === 'serv' || field === 'adm') value = parseFloat(value) || 0;
+  bdAsigEdits[idx][field] = value;
+  bdAsigDirty = true;
+
+  // Update save button state without full re-render
+  var btn = document.getElementById('bdAsigSaveBtn');
+  if (btn) btn.disabled = false;
+}
+
+async function bdAsigSaveAll() {
+  var btn = document.getElementById('bdAsigSaveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  var keys = Object.keys(bdAsigEdits);
+  var errors = [];
+
+  for (var i = 0; i < keys.length; i++) {
+    var edit = bdAsigEdits[keys[i]];
+    if (!edit.id) continue;
+    var { error } = await sb.from('asignaciones')
+      .update({ contadora: edit.contadora, serv: edit.serv, adm: edit.adm })
+      .eq('id', edit.id);
+    if (error) errors.push(error.message);
+  }
+
+  if (btn) { btn.textContent = 'Guardar cambios'; }
+
+  if (errors.length > 0) {
+    gerShowToast('Error: ' + errors[0], 'error');
+  } else {
+    bdAsigDirty = false;
+    bdAsigEdits = {};
+    await bdLoadAsignaciones();
+    bdRenderAsignaciones();
+    gerShowToast('Asignaciones actualizadas');
+  }
+}
+
+async function bdAsigAddRow() {
+  // Get list of clients not yet assigned for this month
+  var rows = bdGetAsigForMes(bdAsigMes);
+  var assigned = {};
+  rows.forEach(function(r) { assigned[r.cliente] = true; });
+
+  var available = bdClientes.filter(function(c) {
+    return c.activo !== false && !assigned[c.nombre];
+  });
+
+  if (available.length === 0) {
+    gerShowToast('Todos los clientes activos ya están asignados para este mes', 'error');
+    return;
+  }
+
+  // Insert the first available client as "Sin asignar"
+  var clienteNombre = available[0].nombre;
+  var nombre = prompt('Cliente a agregar para ' + bdAsigMes + ':\n\nDisponibles: ' + available.map(function(c) { return c.nombre; }).join(', '), clienteNombre);
+  if (!nombre) return;
+
+  // Verify client exists
+  var match = available.find(function(c) { return c.nombre.toLowerCase() === nombre.toLowerCase(); });
+  if (!match) {
+    gerShowToast('Cliente no encontrado entre los disponibles', 'error');
+    return;
+  }
+
+  var { error } = await sb.from('asignaciones').insert({
+    mes: bdAsigMes, anio: 2026, contadora: 'Sin asignar', cliente: match.nombre, serv: 0, adm: 0
+  });
+
+  if (error) {
+    gerShowToast('Error: ' + error.message, 'error');
+    return;
+  }
+
+  await bdLoadAsignaciones();
+  bdRenderAsignaciones();
+  gerShowToast('Asignación agregada: ' + match.nombre);
+}
+
+async function bdAsigDeleteRow(id) {
+  if (!confirm('¿Eliminar esta asignación?')) return;
+  var { error } = await sb.from('asignaciones').delete().eq('id', id);
+  if (error) {
+    gerShowToast('Error: ' + error.message, 'error');
+    return;
+  }
+  await bdLoadAsignaciones();
+  bdRenderAsignaciones();
+  gerShowToast('Asignación eliminada');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2328,7 +2825,7 @@ async function showApp() {
   document.getElementById('app-wrapper').classList.remove('hidden');
   document.getElementById('user-display-name').textContent = userName;
 
-  // Load both modules' data in parallel
+  // Load all modules' data in parallel
   await Promise.all([
     ccLoadData(),
     ccLoadImplementaciones(),
@@ -2336,7 +2833,7 @@ async function showApp() {
     ccLoadPerfilesFromDB(),
     ccLoadKpiFromDB(),
     ctdLoadContadoras(),
-    clLoadData()
+    bdLoadAll()
   ]);
 
   // Init CC state
@@ -2345,6 +2842,14 @@ async function showApp() {
 
   // Init CTD state
   ctdSelectedMes = ctdGetCurrentReportMonth();
+
+  // Init BD state
+  bdActiveSubTab = 'clientes';
+  // Set asignaciones month to current month or latest with data
+  var now = new Date();
+  var curMes = BD_MESES[now.getMonth()];
+  var mesConDatos = bdAsignaciones.filter(function(a) { return a.mes === curMes; });
+  bdAsigMes = mesConDatos.length > 0 ? curMes : (bdAsignaciones.length > 0 ? bdAsignaciones[bdAsignaciones.length - 1].mes : curMes);
 
   // Render
   renderGerMainTabs();
