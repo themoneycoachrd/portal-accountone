@@ -133,6 +133,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .ck-status-completo { background:#d1fae5; color:#065f46; }
 .ck-status-progreso { background:#dbeafe; color:#1e40af; }
 .ck-status-pendiente { background:#f3f4f6; color:#6b7280; }
+.ck-status-sinasignar { background:#fef3c7; color:#92400e; }
 
 /* ─── Detail view (checklist) ─── */
 .detail-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
@@ -1112,7 +1113,12 @@ function renderCkClientList(el) {
       clients.push({ contadora: c, cliente: cl, done: prog.done, total: prog.total, pct: prog.pct });
     });
   });
-  clients.sort((a, b) => a.cliente.localeCompare(b.cliente, 'es'));
+  clients.sort((a, b) => {
+    const aSin = a.contadora === 'Sin asignar' ? 1 : 0;
+    const bSin = b.contadora === 'Sin asignar' ? 1 : 0;
+    if (aSin !== bSin) return aSin - bSin;
+    return a.cliente.localeCompare(b.cliente, 'es');
+  });
 
   if (clients.length === 0) {
     el.innerHTML = '<div class="empty">No hay clientes asignados para ' + MESES_FULL[mesIdx] + '.</div>';
@@ -1130,7 +1136,7 @@ function renderCkClientList(el) {
 
   let html = '';
   html += '<div class="summary-stats">';
-  html += '<div class="summary-stat"><div class="summary-stat-label">Total clientes activos</div><div class="summary-stat-value">' + totalActivos + '</div></div>';
+  html += '<div class="summary-stat"><div class="summary-stat-label">Total clientes</div><div class="summary-stat-value">' + totalActivos + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">Asignados</div><div class="summary-stat-value">' + (totalActivos - sinAsignarCount) + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">Sin asignar</div><div class="summary-stat-value" style="color:' + (sinAsignarCount > 0 ? 'var(--amber)' : 'var(--green)') + '">' + sinAsignarCount + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">Completados</div><div class="summary-stat-value" style="color:var(--green)">' + completados + '</div></div>';
@@ -1161,8 +1167,9 @@ function renderCkClientList(el) {
     html += '</tr></thead><tbody>';
     clients.forEach((c, idx) => {
       const barColor = c.pct === 100 ? 'var(--green)' : c.pct > 0 ? 'var(--amber)' : '#e2e8f0';
-      const statusText = c.pct === 100 ? 'Completado' : c.pct > 0 ? 'En progreso' : 'Pendiente';
-      const statusClass = c.pct === 100 ? 'ck-status-completo' : c.pct > 0 ? 'ck-status-progreso' : 'ck-status-pendiente';
+      const isSinAsignar = c.contadora === 'Sin asignar';
+      const statusText = isSinAsignar ? 'Sin asignar' : c.pct === 100 ? 'Completado' : c.pct > 0 ? 'En progreso' : 'Pendiente';
+      const statusClass = isSinAsignar ? 'ck-status-sinasignar' : c.pct === 100 ? 'ck-status-completo' : c.pct > 0 ? 'ck-status-progreso' : 'ck-status-pendiente';
       html += '<tr onclick="ckSelectClient(\'' + esc(c.contadora) + '\',\'' + esc(c.cliente) + '\')">';
       html += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
       html += '<td class="ck-table-name">' + c.cliente + '</td>';

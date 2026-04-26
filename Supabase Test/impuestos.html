@@ -69,6 +69,7 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .imp-status-completo { background:#d1fae5; color:#065f46; }
 .imp-status-progreso { background:#dbeafe; color:#1e40af; }
 .imp-status-pendiente { background:#f3f4f6; color:#6b7280; }
+.imp-status-sinasignar { background:#fef3c7; color:#92400e; }
 
 /* ─── KPI placeholder ─── */
 .kpi-placeholder { text-align:center; padding:60px 20px; color:var(--muted); }
@@ -659,7 +660,12 @@ function renderMain() {
 
   // Build client list with progress
   var clients = getClientsForMonth();
-  var clientNames = Object.keys(clients).sort(function(a, b) { return a.localeCompare(b, 'es'); });
+  var clientNames = Object.keys(clients).sort(function(a, b) {
+    var aSin = clients[a] === 'Sin asignar' ? 1 : 0;
+    var bSin = clients[b] === 'Sin asignar' ? 1 : 0;
+    if (aSin !== bSin) return aSin - bSin;
+    return a.localeCompare(b, 'es');
+  });
   var tableRows = [];
 
   clientNames.forEach(function(cliente) {
@@ -683,7 +689,7 @@ function renderMain() {
   var avgPct = totalClients > 0 ? Math.round(tableRows.reduce(function(s, r) { return s + r.prog.pct; }, 0) / totalClients) : 0;
 
   h += '<div class="summary-stats">';
-  h += '<div class="summary-stat"><div class="summary-stat-label">Total clientes activos</div><div class="summary-stat-value">' + impTotalActivos + '</div></div>';
+  h += '<div class="summary-stat"><div class="summary-stat-label">Total clientes</div><div class="summary-stat-value">' + impTotalActivos + '</div></div>';
   h += '<div class="summary-stat"><div class="summary-stat-label">Asignados</div><div class="summary-stat-value">' + (impTotalActivos - impSinAsignar) + '</div></div>';
   h += '<div class="summary-stat"><div class="summary-stat-label">Sin asignar</div><div class="summary-stat-value" style="color:' + (impSinAsignar > 0 ? 'var(--amber)' : 'var(--green)') + '">' + impSinAsignar + '</div></div>';
   h += '<div class="summary-stat"><div class="summary-stat-label">Completados</div><div class="summary-stat-value" style="color:var(--green)">' + completados + '</div></div>';
@@ -721,8 +727,9 @@ function renderMain() {
 
     tableRows.forEach(function(r, idx) {
       var barColor = r.prog.pct === 100 ? 'var(--green)' : r.prog.pct > 0 ? 'var(--amber)' : '#e2e8f0';
-      var statusText = r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
-      var statusClass = r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
+      var isSinAsignar = r.contadora === 'Sin asignar';
+      var statusText = isSinAsignar ? 'Sin asignar' : r.prog.pct === 100 ? 'Completado' : r.prog.pct > 0 ? 'En progreso' : 'Pendiente';
+      var statusClass = isSinAsignar ? 'imp-status-sinasignar' : r.prog.pct === 100 ? 'imp-status-completo' : r.prog.pct > 0 ? 'imp-status-progreso' : 'imp-status-pendiente';
 
       h += '<tr onclick="openDetail(\'' + escJs(r.cliente) + '\',\'' + escJs(r.contadora) + '\')" style="cursor:pointer">';
       h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
