@@ -1207,63 +1207,119 @@ function ccRenderContent() {
 
 // ─── Servicios tab ───
 var ccServFiltro = null; // null = todos, o 'Contabilidad completa', 'Solo impuestos', 'Solo supervisión'
+var ccServMes = MESES[new Date().getMonth()]; // mes actual para tab Servicios
+
+function ccServGetActivosMes(mesKey) {
+  var mesIdx = MESES.indexOf(mesKey);
+  var lastDay = new Date(2026, mesIdx + 1, 0);
+  var lastDayStr = '2026-' + String(mesIdx + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+  return ccAllClientes.filter(function(c) {
+    var entered = !c.fecha_entrada || c.fecha_entrada <= lastDayStr;
+    var notLeft = !c.fecha_salida || c.fecha_salida > lastDayStr;
+    return entered && notLeft;
+  });
+}
 
 function ccRenderServicios(el) {
-  var activos = ccAllClientes.filter(function(c) { return c.activo !== false; });
+  var mesIdx = MESES.indexOf(ccServMes);
+  var currentMonthIdx = new Date().getMonth();
+
+  // Month tabs
+  var html = '<div class="nav-area" style="padding:12px 24px;background:var(--bg);border-bottom:1px solid var(--border);margin:-24px -24px 20px -24px">';
+  html += '<div class="month-tabs">';
+  MESES.forEach(function(m, i) {
+    if (i > currentMonthIdx) return;
+    html += '<button class="month-tab' + (m === ccServMes ? ' active' : '') + '" onclick="ccServMes=\'' + m + '\';ccRenderContent()">' + MESES_LABEL[i] + '</button>';
+  });
+  html += '</div></div>';
+
+  // Filter clients active in selected month
+  var activos = ccServGetActivosMes(ccServMes);
   var total = activos.length;
-  var contab = activos.filter(function(c) { return c.tipo_servicio === 'Contabilidad completa'; });
   var imp = activos.filter(function(c) { return c.tipo_servicio === 'Solo impuestos'; });
+  var contab = activos.filter(function(c) { return c.tipo_servicio === 'Contabilidad completa'; });
   var sup = activos.filter(function(c) { return c.tipo_servicio === 'Solo supervisión'; });
   var sinTipo = activos.filter(function(c) { return !c.tipo_servicio; });
 
   function statClass(key) { return ccServFiltro === key ? 'stat cc-serv-stat active' : 'stat cc-serv-stat'; }
 
-  var html = '<div class="stats">';
+  html += '<div class="stats">';
   html += '<div class="' + statClass(null) + '" onclick="ccServFilter(null)" style="cursor:pointer">';
-  html += '<div class="stat-label">Total clientes activos</div><div class="stat-value">' + total + '</div>';
-  html += '<div class="stat-sub">Todos los servicios</div></div>';
-
-  html += '<div class="' + statClass('Contabilidad completa') + '" onclick="ccServFilter(\'Contabilidad completa\')" style="cursor:pointer">';
-  html += '<div class="stat-label">Contabilidad completa</div><div class="stat-value stat-green">' + contab.length + '</div>';
-  html += '<div class="stat-sub">' + (total > 0 ? (contab.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+  html += '<div class="stat-label">Total clientes</div><div class="stat-value">' + total + '</div>';
+  html += '<div class="stat-sub">' + MESES_FULL[mesIdx] + ' 2026</div></div>';
 
   html += '<div class="' + statClass('Solo impuestos') + '" onclick="ccServFilter(\'Solo impuestos\')" style="cursor:pointer">';
-  html += '<div class="stat-label">Tax One (Solo impuestos)</div><div class="stat-value" style="color:var(--blue)">' + imp.length + '</div>';
-  html += '<div class="stat-sub">' + (total > 0 ? (imp.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+  html += '<div class="stat-label">Tax One</div><div class="stat-value" style="color:var(--blue)">' + imp.length + '</div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (imp.length / total * 100).toFixed(0) : 0) + '%</div></div>';
+
+  html += '<div class="' + statClass('Contabilidad completa') + '" onclick="ccServFilter(\'Contabilidad completa\')" style="cursor:pointer">';
+  html += '<div class="stat-label">Contabilidad</div><div class="stat-value stat-green">' + contab.length + '</div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (contab.length / total * 100).toFixed(0) : 0) + '%</div></div>';
 
   html += '<div class="' + statClass('Solo supervisión') + '" onclick="ccServFilter(\'Solo supervisión\')" style="cursor:pointer">';
   html += '<div class="stat-label">Supervisión</div><div class="stat-value" style="color:var(--amber)">' + sup.length + '</div>';
-  html += '<div class="stat-sub">' + (total > 0 ? (sup.length / total * 100).toFixed(0) : 0) + '% del total</div></div>';
+  html += '<div class="stat-sub">' + (total > 0 ? (sup.length / total * 100).toFixed(0) : 0) + '%</div></div>';
+
+  if (sinTipo.length > 0) {
+    html += '<div class="' + statClass('__sin_tipo') + '" onclick="ccServFilter(\'__sin_tipo\')" style="cursor:pointer">';
+    html += '<div class="stat-label">Sin asignar</div><div class="stat-value" style="color:var(--muted)">' + sinTipo.length + '</div>';
+    html += '<div class="stat-sub">' + (total > 0 ? (sinTipo.length / total * 100).toFixed(0) : 0) + '%</div></div>';
+  }
   html += '</div>';
 
-  // Determinar qué lista mostrar
+  // Determine which list to show
   var lista, titulo;
-  if (ccServFiltro === 'Contabilidad completa') { lista = contab; titulo = 'Contabilidad completa'; }
-  else if (ccServFiltro === 'Solo impuestos') { lista = imp; titulo = 'Tax One (Solo impuestos)'; }
+  if (ccServFiltro === 'Solo impuestos') { lista = imp; titulo = 'Tax One'; }
+  else if (ccServFiltro === 'Contabilidad completa') { lista = contab; titulo = 'Contabilidad completa'; }
   else if (ccServFiltro === 'Solo supervisión') { lista = sup; titulo = 'Supervisión'; }
-  else { lista = activos; titulo = 'Todos los clientes activos'; }
+  else if (ccServFiltro === '__sin_tipo') { lista = sinTipo; titulo = 'Sin servicio asignado'; }
+  else { lista = activos; titulo = 'Todos los clientes'; }
 
-  lista.sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); });
+  // Sort: group by service type (imp → contab → sup → sin tipo), then alphabetical
+  var tipoOrden = { 'Solo impuestos': 0, 'Contabilidad completa': 1, 'Solo supervisión': 2 };
+  lista.sort(function(a, b) {
+    var aOrd = a.tipo_servicio ? (tipoOrden[a.tipo_servicio] != null ? tipoOrden[a.tipo_servicio] : 99) : 99;
+    var bOrd = b.tipo_servicio ? (tipoOrden[b.tipo_servicio] != null ? tipoOrden[b.tipo_servicio] : 99) : 99;
+    if (aOrd !== bOrd) return aOrd - bOrd;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es');
+  });
 
   html += '<div class="card">';
-  html += '<h3>' + titulo + ' (' + lista.length + ')</h3>';
+  html += '<h3>' + titulo + ' (' + lista.length + ') — ' + MESES_FULL[mesIdx] + ' 2026</h3>';
 
   if (sinTipo.length > 0 && ccServFiltro === null) {
-    html += '<div class="note">' + sinTipo.length + ' cliente(s) sin tipo de servicio asignado. Asígnalo desde BD Clientes → Editar.</div>';
+    html += '<div class="note">' + sinTipo.length + ' cliente(s) sin tipo de servicio. Asígnalo desde BD Clientes → Editar.</div>';
   }
 
   html += '<div class="table-wrap"><table>';
   html += '<tr><th>#</th><th>Cliente</th><th>RNC</th><th>Servicio</th><th>Cont. contab</th><th>Cont. imp</th><th>Adm</th></tr>';
-  lista.forEach(function(c, i) {
+
+  var lastTipo = null;
+  var counter = 0;
+  lista.forEach(function(c) {
+    var tipoKey = c.tipo_servicio || '__sin_tipo';
+
+    // Group header when showing all (no filter active)
+    if (ccServFiltro === null && tipoKey !== lastTipo) {
+      var groupLabel = '';
+      if (tipoKey === 'Solo impuestos') groupLabel = 'Tax One';
+      else if (tipoKey === 'Contabilidad completa') groupLabel = 'Contabilidad completa';
+      else if (tipoKey === 'Solo supervisión') groupLabel = 'Supervisión';
+      else groupLabel = 'Sin servicio asignado';
+      html += '<tr style="background:#f1f5f9"><td colspan="7" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);padding:10px 12px">' + groupLabel + '</td></tr>';
+      lastTipo = tipoKey;
+    }
+
+    counter++;
     var tipoLabel = '';
     var tipoColor = 'var(--muted)';
     if (c.tipo_servicio === 'Contabilidad completa') { tipoLabel = 'Contabilidad'; tipoColor = 'var(--green)'; }
     else if (c.tipo_servicio === 'Solo impuestos') { tipoLabel = 'Tax One'; tipoColor = 'var(--blue)'; }
     else if (c.tipo_servicio === 'Solo supervisión') { tipoLabel = 'Supervisión'; tipoColor = 'var(--amber)'; }
-    else { tipoLabel = 'Sin asignar'; tipoColor = 'var(--light)'; }
+    else { tipoLabel = 'Sin asignar'; tipoColor = '#94a3b8'; }
 
     html += '<tr>';
-    html += '<td>' + (i + 1) + '</td>';
+    html += '<td>' + counter + '</td>';
     html += '<td><strong>' + esc(c.nombre || '') + '</strong></td>';
     html += '<td>' + esc(c.rnc || '') + '</td>';
     html += '<td><span style="font-size:11px;font-weight:600;color:' + tipoColor + '">' + tipoLabel + '</span></td>';
