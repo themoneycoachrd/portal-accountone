@@ -548,6 +548,17 @@
         <input type="text" id="cl-m-telefono" placeholder="809-000-0000">
       </div>
       <div class="m-field">
+        <label>Tipo de servicio</label>
+        <select id="cl-m-tipo-servicio">
+          <option value="">—</option>
+          <option value="Contabilidad completa">Contabilidad completa</option>
+          <option value="Solo impuestos">Solo impuestos</option>
+          <option value="Solo supervisión">Solo supervisión</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-row">
+      <div class="m-field">
         <label>Monto Adm (transacciones contratadas)</label>
         <select id="cl-m-monto-adm">
           <option value="">—</option>
@@ -555,6 +566,10 @@
           <option value="100">100</option>
           <option value="200">200</option>
         </select>
+      </div>
+      <div class="m-field">
+        <label>Fecha de salida</label>
+        <input type="date" id="cl-m-fecha-salida">
       </div>
     </div>
     <div class="m-row">
@@ -2388,24 +2403,37 @@ function bdRenderClientes() {
     return;
   }
 
-  filtered.sort(function(a, b) { return (a.nombre || '').localeCompare(b.nombre || '', 'es'); });
+  // Ordenar: activos primero (alfabético), inactivos al final (alfabético)
+  filtered.sort(function(a, b) {
+    var aActivo = a.activo !== false ? 0 : 1;
+    var bActivo = b.activo !== false ? 0 : 1;
+    if (aActivo !== bActivo) return aActivo - bActivo;
+    return (a.nombre || '').localeCompare(b.nombre || '', 'es');
+  });
 
   h += '<table class="cl-table">';
   h += '<thead><tr>';
-  h += '<th style="width:36px">#</th><th>Cliente</th><th>RNC</th><th>Cont. contab</th><th>Cont. imp</th><th>Adm</th><th>Contacto</th><th>Estado</th>';
+  h += '<th style="width:36px">#</th><th>Cliente</th><th>RNC</th><th>Servicio</th><th>Cont. contab</th><th>Cont. imp</th><th>Adm</th><th>Estado</th>';
   if (userRole === 'admin') h += '<th></th>';
   h += '</tr></thead><tbody>';
 
   filtered.forEach(function(c, idx) {
-    h += '<tr>';
+    var isInactivo = c.activo === false;
+    var rowStyle = isInactivo ? ' style="opacity:0.55"' : '';
+    h += '<tr' + rowStyle + '>';
     h += '<td style="color:var(--muted);font-size:0.75rem">' + (idx + 1) + '</td>';
     h += '<td class="cl-name">' + esc(c.nombre) + '</td>';
     h += '<td style="font-size:0.8rem">' + (c.rnc ? esc(c.rnc) : '<span style="color:var(--light)">—</span>') + '</td>';
+    h += '<td style="font-size:0.8rem">' + (c.tipo_servicio ? esc(c.tipo_servicio) : '<span style="color:var(--light)">—</span>') + '</td>';
     h += '<td>' + (c.responsabilidad_contabilidad === false ? '<span style="color:var(--light);font-size:0.75rem">N/A</span>' : (c.contadora_contabilidad ? esc(c.contadora_contabilidad) : '<span style="color:var(--light)">Sin asignar</span>')) + '</td>';
     h += '<td>' + (c.responsabilidad_impuestos === false ? '<span style="color:var(--light);font-size:0.75rem">N/A</span>' : (c.contadora_impuestos ? esc(c.contadora_impuestos) : '<span style="color:var(--light)">Sin asignar</span>')) + '</td>';
     h += '<td style="font-size:0.8rem">' + (c.monto_adm || '<span style="color:var(--light)">—</span>') + '</td>';
-    h += '<td style="font-size:0.8rem">' + esc(c.contacto || '') + '</td>';
-    h += '<td><span class="' + (c.activo !== false ? 'cl-badge-activo' : 'cl-badge-inactivo') + '">' + (c.activo !== false ? 'Activo' : 'Inactivo') + '</span></td>';
+    if (isInactivo) {
+      var salida = c.fecha_salida ? c.fecha_salida.split('-').reverse().join('/') : '';
+      h += '<td><span class="cl-badge-inactivo">Inactivo</span>' + (salida ? '<div style="font-size:0.7rem;color:var(--muted);margin-top:2px">Salida: ' + salida + '</div>' : '') + '</td>';
+    } else {
+      h += '<td><span class="cl-badge-activo">Activo</span></td>';
+    }
     if (userRole === 'admin') {
       h += '<td style="white-space:nowrap">';
       h += '<button style="padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-size:0.75rem;cursor:pointer;color:var(--muted)" onclick="clEditClient(\'' + c.id + '\')">Editar</button> ';
@@ -2475,7 +2503,9 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-contacto').value = c.contacto || '';
     document.getElementById('cl-m-email').value = c.email || '';
     document.getElementById('cl-m-telefono').value = c.telefono || '';
+    document.getElementById('cl-m-tipo-servicio').value = c.tipo_servicio || '';
     document.getElementById('cl-m-monto-adm').value = c.monto_adm || '';
+    document.getElementById('cl-m-fecha-salida').value = c.fecha_salida || '';
     document.getElementById('cl-m-resp-contab').checked = c.responsabilidad_contabilidad !== false;
     document.getElementById('cl-m-contadora-contab').value = c.contadora_contabilidad || '';
     document.getElementById('cl-m-resp-imp').checked = c.responsabilidad_impuestos !== false;
@@ -2495,7 +2525,9 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-contacto').value = '';
     document.getElementById('cl-m-email').value = '';
     document.getElementById('cl-m-telefono').value = '';
+    document.getElementById('cl-m-tipo-servicio').value = '';
     document.getElementById('cl-m-monto-adm').value = '';
+    document.getElementById('cl-m-fecha-salida').value = '';
     document.getElementById('cl-m-resp-contab').checked = true;
     document.getElementById('cl-m-contadora-contab').value = '';
     document.getElementById('cl-m-resp-imp').checked = true;
@@ -2582,12 +2614,14 @@ async function clSaveClient() {
     contacto: document.getElementById('cl-m-contacto').value.trim() || null,
     email: document.getElementById('cl-m-email').value.trim() || null,
     telefono: document.getElementById('cl-m-telefono').value.trim() || null,
+    tipo_servicio: document.getElementById('cl-m-tipo-servicio').value || null,
     responsabilidad_contabilidad: document.getElementById('cl-m-resp-contab').checked,
     contadora_contabilidad: newContab,
     responsabilidad_impuestos: document.getElementById('cl-m-resp-imp').checked,
     contadora_impuestos: newImp,
     monto_adm: montoVal ? parseInt(montoVal) : null,
     fecha_entrada: document.getElementById('cl-m-fecha-entrada').value || null,
+    fecha_salida: document.getElementById('cl-m-fecha-salida').value || null,
     inicio_responsabilidad_fiscal: document.getElementById('cl-m-inicio-fiscal').value || null,
     notas: document.getElementById('cl-m-notas').value.trim() || null
   };
