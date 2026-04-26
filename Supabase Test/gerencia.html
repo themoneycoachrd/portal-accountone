@@ -276,8 +276,48 @@
   .btn-primary:hover { background:var(--navy-mid); }
   .btn-ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
 
+  /* ─── CTD: Client table (admin) ─── */
+  .ctd-client-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+  .ctd-client-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+  .ctd-client-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; }
+  .ctd-client-table tr:hover td { background:#fafbfc; cursor:pointer; }
+  .ctd-client-table tr:last-child td { border-bottom:none; }
+  .ctd-client-name { font-weight:600; color:var(--navy); }
+  .ctd-client-name:hover { color:var(--blue); text-decoration:underline; }
+  .ctd-progress-bar { width:100px; height:8px; background:#eef0f4; border-radius:4px; overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px; }
+  .ctd-progress-fill { height:100%; border-radius:4px; }
+  .ctd-progress-text { font-size:0.75rem; color:var(--muted); }
+  .ctd-status-badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.72rem; font-weight:600; }
+  .ctd-status-completo { background:#d1fae5; color:#065f46; }
+  .ctd-status-progreso { background:#dbeafe; color:#1e40af; }
+  .ctd-status-pendiente { background:#f3f4f6; color:#6b7280; }
+
+  /* ─── CTD: Detail view (24 tasks) ─── */
+  .ctd-detail-back { display:inline-flex; align-items:center; gap:6px; font-size:0.85rem; color:var(--muted); cursor:pointer; margin-bottom:16px; padding:6px 12px; border-radius:8px; border:none; background:none; font-family:inherit; }
+  .ctd-detail-back:hover { background:#f0f2f5; color:var(--navy); }
+  .ctd-detail-header { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 24px; margin-bottom:20px; }
+  .ctd-detail-name { font-size:1.15rem; font-weight:700; color:var(--navy); }
+  .ctd-detail-sub { font-size:0.82rem; color:var(--muted); margin-top:2px; }
+  .ctd-detail-stats { display:flex; align-items:center; gap:20px; margin-top:14px; }
+  .ctd-detail-pending { font-size:0.82rem; color:var(--muted); }
+  .ctd-detail-pending strong { color:var(--navy); }
+  .ctd-detail-progress-bar { flex:1; max-width:300px; height:8px; background:#eef0f4; border-radius:4px; overflow:hidden; }
+  .ctd-detail-progress-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+  .ctd-detail-pct { font-size:0.78rem; font-weight:600; color:var(--navy); min-width:40px; text-align:right; }
+  .ctd-checklist-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--border); }
+  .ctd-checklist-table th { background:#f8f9fb; padding:10px 12px; text-align:left; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:700; border-bottom:1px solid var(--border); }
+  .ctd-checklist-table td { padding:10px 12px; font-size:0.82rem; border-bottom:1px solid #f0f2f5; vertical-align:middle; }
+  .ctd-checklist-table tr:last-child td { border-bottom:none; }
+  .ctd-checklist-table tr:hover td { background:#fafbfc; }
+  .ctd-checklist-table .ctd-group-row td { background:#f4f6f9; font-weight:700; font-size:0.78rem; color:var(--navy); text-transform:uppercase; letter-spacing:0.03em; padding:8px 12px; }
+  .ctd-checklist-table .tipo-nomina { color:#8b5cf6; }
+  .ctd-checklist-table .tipo-ir17 { color:#ea580c; }
+  .ctd-checklist-table .tipo-anticipo { color:#0891b2; }
+  .ctd-checklist-table .tipo-itbis { color:#4361ee; }
+  .ctd-checklist-table .tipo-cierre { color:#059669; }
+
   /* ─── Misc ─── */
-  .hidden { display:none; }
+  .hidden { display:none !important; }
   .saving-indicator { font-size:0.72rem; color:var(--green); font-weight:600; margin-left:auto; }
 
   /* ─── User bar ─── */
@@ -332,7 +372,10 @@
   /* ─── Modal ─── */
   .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:500; display:flex; align-items:center; justify-content:center; }
   .modal { background:white; border-radius:16px; padding:28px; width:100%; max-width:520px; box-shadow:0 8px 40px rgba(0,0,0,0.15); max-height:90vh; overflow-y:auto; }
-  .modal h3 { font-size:1.1rem; color:var(--navy); margin-bottom:20px; }
+  .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .modal h3 { font-size:1.1rem; color:var(--navy); margin:0; }
+  .modal-close { width:32px; height:32px; border-radius:8px; border:none; background:none; cursor:pointer; font-size:18px; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+  .modal-close:hover { background:#f3f4f6; color:var(--navy); }
   .modal .m-field { margin-bottom:14px; }
   .modal .m-field label { display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:5px; }
   .modal .m-field input,
@@ -430,7 +473,10 @@
 <!-- Modal Nuevo Cliente -->
 <div class="modal-overlay hidden" id="cl-modal-overlay" onclick="if(event.target===this)clCloseModal()">
   <div class="modal">
-    <h3 id="cl-modal-title">Nuevo cliente</h3>
+    <div class="modal-header">
+      <h3 id="cl-modal-title">Nuevo cliente</h3>
+      <button class="modal-close" onclick="clCloseModal()" title="Cerrar">✕</button>
+    </div>
     <div class="m-row">
       <div class="m-field">
         <label>Nombre del cliente *</label>
@@ -1503,13 +1549,44 @@ var ctdKPI_GROUPS = [
   { id:'video', label:'Video / Reunion', calc: function(row) { return row.video_fecha ? 1 : 0; } }
 ];
 
+// ─── CTD 24-Task Items (same as contabilidad.html) ───
+var ctdCHECKLIST_ITEMS = [
+  { id:'solicitud_nomina',        n:1,  label:'Solicitud de Nomina',                       impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'recepcion_nomina',        n:2,  label:'Recepcion de Nomina',                        impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'registro_nomina',         n:3,  label:'Registro de Nomina',                         impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'informar_impuestos',      n:4,  label:'Informar a Impuestos (via Trello)',           impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_tss_nomina', n:5,  label:'Subir autorizacion de TSS al cliente',       impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_tss',        n:6,  label:'Subir autorizacion al cliente (TSS)',         impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'autorizacion_ir3',        n:7,  label:'Subir Autorizacion de IR-3 al cliente',      impuesto:'TSS / IR-3',    dia:3,  mesRel:1 },
+  { id:'solicitar_proveedores',   n:8,  label:'Solicitar Proveedores Informales',           impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'recepcion_proveedores',   n:9,  label:'Recepcion de Proveedores Informales',        impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'registrar_proveedores',   n:10, label:'Registrar gastos de Proveedores Informales', impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'borrador_ir17',           n:11, label:'Realizar Borrador de IR-17',                 impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'enviar_ir17',             n:12, label:'Enviar borrador de IR-17 al cliente',        impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'notificacion_ir17',       n:13, label:'Subir Notificacion de pago IR-17',           impuesto:'Proveedores',   dia:10, mesRel:1 },
+  { id:'autorizacion_anticipo',   n:14, label:'Subir autorizacion de Anticipo al cliente',  impuesto:'Anticipo',      dia:15, mesRel:1 },
+  { id:'verificar_facturas',      n:15, label:'Verificar facturas de gastos pendientes',    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'solicitar_facturas',      n:16, label:'Solicitar o confirmar facturas de gastos',   impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'facturas_registradas',    n:17, label:'Facturas de Gastos registradas',             impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'borrador_itbis',          n:18, label:'Realizar Borrador ITBIS',                    impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'enviar_itbis',            n:19, label:'Enviar autorizacion de pago ITBIS',          impuesto:'ITBIS',         dia:20, mesRel:1 },
+  { id:'registros_realizados',    n:20, label:'Registrar gastos',                           impuesto:'Presentacion',  dia:5,  mesRel:1, firmaOffset:4 },
+  { id:'presupuesto',             n:21, label:'Realizar Presupuesto y ejecucion',           impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'proyeccion_impuestos',    n:22, label:'Realizar Proyeccion de impuestos',           impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'resumen_declaracion',     n:23, label:'Realizar resumen de declaracion del mes',    impuesto:'Presentacion',  dia:30, mesRel:1 },
+  { id:'video_reunion',           n:24, label:'Grabar video o reunion con cliente',         impuesto:'Presentacion',  dia:30, mesRel:1 }
+];
+
 // ─── CTD State ───
 var ctdContadorasMap = {};
 var ctdSelectedMes = '';
 var ctdSelectedContadora = 'Todas';
 var ctdReporteData = [];
+var ctdChecklistData = {};
 var ctdOpenSections = {};
 var ctdOpenCards = {};
+var ctdDetailCliente = null;
+var ctdDetailContadora = null;
 
 // ─── CTD Utils ───
 function ctdGetCurrentReportMonth() {
@@ -1617,6 +1694,37 @@ async function ctdLoadReporteData(mes) {
   return result.data || [];
 }
 
+async function ctdLoadChecklistData() {
+  var result = await sb.from('checklist_contadores').select('*').eq('anio', 2026);
+  if (result.error) { console.error('Error cargando checklist:', result.error); return; }
+  ctdChecklistData = {};
+  (result.data || []).forEach(function(r) {
+    var key = r.contadora + '_' + r.cliente + '_' + r.mes;
+    ctdChecklistData[key] = { _id: r.id, datos: r.datos || {} };
+  });
+}
+
+function ctdGetCheckEntry(contadora, cliente, mes) {
+  var key = contadora + '_' + cliente + '_' + mes;
+  if (!ctdChecklistData[key]) {
+    ctdChecklistData[key] = { _id: null, datos: {} };
+  }
+  var d = ctdChecklistData[key].datos;
+  ctdCHECKLIST_ITEMS.forEach(function(item) {
+    if (!d[item.id]) d[item.id] = { done: false, fecha: '' };
+  });
+  return ctdChecklistData[key];
+}
+
+function ctdGetProgress(contadora, cliente, mes) {
+  var entry = ctdGetCheckEntry(contadora, cliente, mes);
+  var done = 0;
+  ctdCHECKLIST_ITEMS.forEach(function(item) {
+    if (entry.datos[item.id] && entry.datos[item.id].done) done++;
+  });
+  return { done: done, total: ctdCHECKLIST_ITEMS.length, pct: Math.round(done / ctdCHECKLIST_ITEMS.length * 100) };
+}
+
 async function ctdSaveReporte(contadora, cliente, mes, fields) {
   var record = { contadora: contadora, cliente: cliente, mes: mes, anio: 2026 };
   for (var key in fields) record[key] = fields[key];
@@ -1638,7 +1746,17 @@ async function ctdRenderGerencial() {
   var el = document.getElementById('ctd-content');
   el.innerHTML = '<div class="empty">Cargando...</div>';
 
-  ctdReporteData = await ctdLoadReporteData(ctdSelectedMes);
+  // Load checklist data alongside report data
+  await Promise.all([
+    ctdLoadReporteData(ctdSelectedMes).then(function(d) { ctdReporteData = d; }),
+    ctdLoadChecklistData()
+  ]);
+
+  // If detail view is active, render that instead
+  if (ctdDetailCliente) {
+    ctdRenderDetail(el);
+    return;
+  }
 
   var lookup = {};
   ctdReporteData.forEach(function(r) { lookup[r.contadora + '_' + r.cliente] = r; });
@@ -1700,69 +1818,154 @@ async function ctdRenderGerencial() {
   });
   html += '</div>';
 
-  // Expandable contadora sections
-  visibleContadoras.forEach(function(contadora) {
-    var isOpen = ctdOpenSections[contadora] || false;
-    var clients = (ctdContadorasMap[contadora] || []).slice().sort();
-    if (clients.length === 0) return;
-    var initial = contadora === 'Sin asignar' ? '?' : contadora.charAt(0);
-
-    html += '<div class="contadora-section">';
-
-    html += '<div class="ctd-contadora-header' + (isOpen ? ' expanded' : '') + '" onclick="ctdToggleSection(\'' + ctdEsc(contadora) + '\')">';
-    html += '<div class="contadora-header-avatar" style="background:var(--navy)">' + initial + '</div>';
-    html += '<div class="contadora-header-info">';
-    html += '<div class="contadora-header-name">' + contadora + '</div>';
-    html += '<div class="contadora-header-count">' + clients.length + ' clientes</div>';
-    html += '</div>';
-    html += '<span class="contadora-header-arrow' + (isOpen ? ' open' : '') + '">▼</span>';
-    html += '</div>';
-
-    html += '<div class="contadora-body' + (isOpen ? ' open' : '') + '">';
-    if (isOpen) {
-      var miniKPIs = ctdCalcKPI(clients, lookup, contadora);
-      html += '<div class="mini-kpis">';
-      miniKPIs.forEach(function(kpi) {
-        var color = ctdKpiColor(kpi.pct);
-        html += '<div class="mini-kpi">';
-        html += '<div class="mini-kpi-label">' + kpi.label + '</div>';
-        html += '<div class="mini-kpi-row">';
-        html += '<div class="mini-kpi-bar-bg"><div class="mini-kpi-bar-fill" style="width:' + kpi.pct + '%;background:' + color + '"></div></div>';
-        html += '<span class="mini-kpi-pct" style="color:' + color + '">' + kpi.pct + '%</span>';
-        html += '</div></div>';
-      });
-      html += '</div>';
-
-      html += '<table class="report-table"><thead><tr>';
-      html += '<th>Cliente</th><th class="center">Facturas</th>';
-      ctdITEMS.forEach(function(item) { html += '<th class="center">' + item.short + '</th>'; });
-      html += '</tr></thead><tbody>';
-
-      clients.forEach(function(cliente) {
-        var row = lookup[contadora + '_' + cliente] || {};
-        html += '<tr>';
-        html += '<td class="client-name-cell">' + cliente + '</td>';
-        html += '<td class="center">' + (row.facturas_mes || '—') + '</td>';
-        ctdITEMS.forEach(function(item) {
-          html += '<td class="center">' + ctdSemaforoHTML(row[item.id + '_fecha'], row[item.id + '_link']) + '</td>';
-        });
-        html += '</tr>';
-      });
-
-      html += '</tbody></table>';
-    }
-    html += '</div></div>';
-  });
-
-  if (visibleContadoras.length === 0 || allVisibleClients.length === 0) {
+  // Client table (flat, all clients)
+  if (allVisibleClients.length === 0) {
     html += '<div class="empty">No hay datos para mostrar.</div>';
+  } else {
+    html += '<table class="ctd-client-table">';
+    html += '<thead><tr><th>Cliente</th><th>Contadora</th><th>Checklist</th><th>Reportes</th><th>Estado</th></tr></thead>';
+    html += '<tbody>';
+
+    allVisibleClients.sort(function(a, b) { return a.cliente.localeCompare(b.cliente); });
+
+    allVisibleClients.forEach(function(item) {
+      var prog = ctdGetProgress(item.contadora, item.cliente, ctdSelectedMes);
+      var reportRow = lookup[item.contadora + '_' + item.cliente] || {};
+
+      // Report completion (facturas + 4 items)
+      var repDone = 0;
+      var repTotal = 5;
+      if (reportRow.facturas_mes && reportRow.facturas_mes > 0) repDone++;
+      ctdITEMS.forEach(function(itm) { if (reportRow[itm.id + '_fecha']) repDone++; });
+      var repPct = Math.round(repDone / repTotal * 100);
+
+      var barColor = prog.pct >= 90 ? 'var(--green)' : prog.pct >= 70 ? 'var(--amber)' : 'var(--red)';
+      var statusClass = prog.pct === 100 ? 'ctd-status-completo' : prog.pct > 0 ? 'ctd-status-progreso' : 'ctd-status-pendiente';
+      var statusText = prog.pct === 100 ? 'Completo' : prog.pct > 0 ? 'En progreso' : 'Pendiente';
+
+      html += '<tr onclick="ctdOpenDetail(\'' + ctdEsc(item.cliente) + '\',\'' + ctdEsc(item.contadora) + '\')">';
+      html += '<td class="ctd-client-name">' + item.cliente + '</td>';
+      html += '<td style="font-size:0.8rem;color:var(--muted)">' + item.contadora + '</td>';
+      html += '<td><div style="display:flex;align-items:center;gap:8px">';
+      html += '<div class="ctd-progress-bar"><div class="ctd-progress-fill" style="width:' + prog.pct + '%;background:' + barColor + '"></div></div>';
+      html += '<span class="ctd-progress-text">' + prog.done + '/' + prog.total + '</span>';
+      html += '</div></td>';
+      html += '<td><span class="ctd-progress-text">' + repDone + '/' + repTotal + '</span></td>';
+      html += '<td><span class="ctd-status-badge ' + statusClass + '">' + statusText + '</span></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
   }
 
   el.innerHTML = html;
 }
 
-function ctdToggleSection(contadora) {
-  ctdOpenSections[contadora] = !ctdOpenSections[contadora];
+function ctdOpenDetail(cliente, contadora) {
+  ctdDetailCliente = cliente;
+  ctdDetailContadora = contadora;
+  ctdRenderApp();
+}
+
+function ctdCloseDetail() {
+  ctdDetailCliente = null;
+  ctdRenderApp();
+}
+
+function ctdRenderDetail(el) {
+  var entry = ctdGetCheckEntry(ctdDetailContadora, ctdDetailCliente, ctdSelectedMes);
+  var prog = ctdGetProgress(ctdDetailContadora, ctdDetailCliente, ctdSelectedMes);
+
+  var barColor = prog.pct >= 90 ? 'var(--green)' : prog.pct >= 70 ? 'var(--amber)' : 'var(--red)';
+  var mesIdx = MESES.indexOf(ctdSelectedMes);
+  var mesFull = MESES_FULL ? MESES_FULL[mesIdx] : ctdSelectedMes;
+
+  var html = '';
+
+  // Month tabs
+  html += '<div class="month-tabs">';
+  MESES.forEach(function(m, i) {
+    html += '<button class="month-tab' + (m === ctdSelectedMes ? ' active' : '') + '" onclick="ctdSelectedMes=\'' + m + '\';ctdRenderApp()">' + MESES_LABEL[i] + '</button>';
+  });
+  html += '</div>';
+
+  html += '<button class="ctd-detail-back" onclick="ctdCloseDetail()">← Volver al control</button>';
+
+  // Header card
+  html += '<div class="ctd-detail-header">';
+  html += '<div class="ctd-detail-name">' + ctdDetailCliente + '</div>';
+  html += '<div class="ctd-detail-sub">Contadora: ' + ctdDetailContadora + ' · ' + mesFull + ' 2026</div>';
+  html += '<div class="ctd-detail-stats">';
+  html += '<div class="ctd-detail-pending"><strong>' + (prog.total - prog.done) + '</strong> tareas pendientes de ' + prog.total + '</div>';
+  html += '<div class="ctd-detail-progress-bar"><div class="ctd-detail-progress-fill" style="width:' + prog.pct + '%;background:' + barColor + '"></div></div>';
+  html += '<div class="ctd-detail-pct">' + prog.pct + '%</div>';
+  html += '</div></div>';
+
+  // Checklist table
+  html += '<table class="ctd-checklist-table">';
+  html += '<thead><tr><th style="width:30px">#</th><th>Tarea</th><th style="width:80px">Deadline</th><th style="width:130px">Estado</th><th style="width:100px">Completado</th></tr></thead>';
+  html += '<tbody>';
+
+  var lastGroup = '';
+
+  ctdCHECKLIST_ITEMS.forEach(function(item) {
+    // Group header
+    if (item.impuesto !== lastGroup) {
+      lastGroup = item.impuesto;
+      html += '<tr class="ctd-group-row"><td colspan="5">' + item.impuesto + ' — Día ' + item.dia + '</td></tr>';
+    }
+
+    var d = entry.datos[item.id] || { done: false, fecha: '' };
+    var isDone = d.done;
+
+    // Deadline calculation
+    var dlDay = item.dia;
+    var dlMonth = mesIdx + (item.mesRel || 1);
+    var dlYear = 2026;
+    if (dlMonth > 11) { dlMonth -= 12; dlYear++; }
+    var dlDate = new Date(dlYear, dlMonth, dlDay);
+    var dlStr = dlDay + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][dlMonth];
+
+    html += '<tr>';
+    html += '<td style="color:var(--muted);font-size:0.78rem">' + item.n + '</td>';
+    html += '<td>';
+    html += '<label style="cursor:pointer;display:flex;align-items:center;gap:8px">';
+    html += '<input type="checkbox"' + (isDone ? ' checked' : '') + ' onchange="ctdToggleTask(\'' + ctdEsc(ctdDetailContadora) + '\',\'' + ctdEsc(ctdDetailCliente) + '\',\'' + ctdSelectedMes + '\',\'' + item.id + '\',this.checked)" style="cursor:pointer;width:16px;height:16px;accent-color:var(--green)">';
+    html += '<span' + (isDone ? ' style="text-decoration:line-through;color:var(--muted)"' : '') + '>' + item.label + '</span>';
+    html += '</label></td>';
+    html += '<td style="font-size:0.78rem;font-weight:600">' + dlStr + '</td>';
+    html += '<td><span class="ctd-status-badge ' + (isDone ? 'ctd-status-completo' : 'ctd-status-pendiente') + '">' + (isDone ? 'Completado' : 'Pendiente') + '</span></td>';
+    html += '<td style="font-size:0.78rem;color:var(--muted)">' + (d.fecha || '—') + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+
+  el.innerHTML = html;
+}
+
+async function ctdToggleTask(contadora, cliente, mes, itemId, checked) {
+  var key = contadora + '_' + cliente + '_' + mes;
+  var entry = ctdGetCheckEntry(contadora, cliente, mes);
+  entry.datos[itemId].done = checked;
+  entry.datos[itemId].fecha = checked ? new Date().toISOString().slice(0,10) : '';
+
+  // Save immediately
+  try {
+    if (entry._id) {
+      await sb.from('checklist_contadores')
+        .update({ datos: entry.datos, updated_at: new Date().toISOString() })
+        .eq('id', entry._id);
+    } else {
+      var result = await sb.from('checklist_contadores')
+        .insert({ contadora: contadora, cliente: cliente, mes: mes, anio: 2026, datos: entry.datos })
+        .select();
+      if (result.data && result.data[0]) entry._id = result.data[0].id;
+    }
+  } catch(e) {
+    console.error('Error guardando checklist:', e);
+  }
+
   ctdRenderApp();
 }
 
