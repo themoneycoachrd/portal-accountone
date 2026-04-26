@@ -568,8 +568,14 @@
         </select>
       </div>
       <div class="m-field">
-        <label>Fecha de salida</label>
-        <input type="date" id="cl-m-fecha-salida">
+        <label>Estado</label>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <button type="button" id="cl-m-activo-btn" onclick="clToggleActivo()" style="padding:6px 16px;border-radius:20px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1px solid var(--border);transition:all 0.15s">Activo</button>
+          <div id="cl-m-salida-wrap" style="flex:1;display:none">
+            <label style="font-size:0.75rem;color:var(--muted)">Fecha de salida</label>
+            <input type="date" id="cl-m-fecha-salida" onchange="clOnFechaSalidaChange()">
+          </div>
+        </div>
       </div>
     </div>
     <div class="m-row">
@@ -2539,6 +2545,41 @@ function clPopulateContadoraSelects() {
   });
 }
 
+// Estado activo/inactivo del modal
+var clModalActivo = true;
+
+function clRenderActivoBtn() {
+  var btn = document.getElementById('cl-m-activo-btn');
+  var salidaWrap = document.getElementById('cl-m-salida-wrap');
+  if (clModalActivo) {
+    btn.textContent = 'Activo';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'white';
+    btn.style.borderColor = 'var(--green)';
+    salidaWrap.style.display = 'none';
+  } else {
+    btn.textContent = 'Inactivo';
+    btn.style.background = 'var(--red)';
+    btn.style.color = 'white';
+    btn.style.borderColor = 'var(--red)';
+    salidaWrap.style.display = 'block';
+  }
+}
+
+function clToggleActivo() {
+  clModalActivo = !clModalActivo;
+  if (clModalActivo) document.getElementById('cl-m-fecha-salida').value = '';
+  clRenderActivoBtn();
+}
+
+function clOnFechaSalidaChange() {
+  var val = document.getElementById('cl-m-fecha-salida').value;
+  if (val && clModalActivo) {
+    clModalActivo = false;
+    clRenderActivoBtn();
+  }
+}
+
 // Valores originales de contadora para detectar cambios
 var clOrigContab = '';
 var clOrigImp = '';
@@ -2577,6 +2618,8 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-tipo-servicio').value = c.tipo_servicio || '';
     document.getElementById('cl-m-monto-adm').value = c.monto_adm || '';
     document.getElementById('cl-m-fecha-salida').value = c.fecha_salida || '';
+    clModalActivo = c.activo !== false;
+    clRenderActivoBtn();
     document.getElementById('cl-m-resp-contab').checked = c.responsabilidad_contabilidad !== false;
     document.getElementById('cl-m-contadora-contab').value = c.contadora_contabilidad || '';
     document.getElementById('cl-m-resp-imp').checked = c.responsabilidad_impuestos !== false;
@@ -2599,6 +2642,8 @@ function clOpenModal(editId) {
     document.getElementById('cl-m-tipo-servicio').value = '';
     document.getElementById('cl-m-monto-adm').value = '';
     document.getElementById('cl-m-fecha-salida').value = '';
+    clModalActivo = true;
+    clRenderActivoBtn();
     document.getElementById('cl-m-resp-contab').checked = true;
     document.getElementById('cl-m-contadora-contab').value = '';
     document.getElementById('cl-m-resp-imp').checked = true;
@@ -2693,6 +2738,7 @@ async function clSaveClient() {
     monto_adm: montoVal ? parseInt(montoVal) : null,
     fecha_entrada: document.getElementById('cl-m-fecha-entrada').value || null,
     fecha_salida: document.getElementById('cl-m-fecha-salida').value || null,
+    activo: clModalActivo,
     inicio_responsabilidad_fiscal: document.getElementById('cl-m-inicio-fiscal').value || null,
     notas: document.getElementById('cl-m-notas').value.trim() || null
   };
