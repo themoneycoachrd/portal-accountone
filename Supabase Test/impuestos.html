@@ -81,6 +81,27 @@ body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-se
 .month-tab.active { background:var(--navy); color:white; border-color:var(--navy); }
 
 /* ─── Contadora Pills ─── */
+/* ─── View toggle ─── */
+.view-toggle-row { display:flex; justify-content:flex-start; margin-bottom:12px; }
+.view-toggle { display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; background:white; }
+.view-toggle-btn { padding:5px 12px; font-size:0.75rem; font-weight:600; cursor:pointer; border:none; background:white; color:var(--muted); font-family:inherit; transition:all 0.12s; display:flex; align-items:center; gap:5px; }
+.view-toggle-btn:not(:last-child) { border-right:1px solid var(--border); }
+.view-toggle-btn:hover { background:#f3f4f6; color:var(--text); }
+.view-toggle-btn.active { background:var(--navy); color:white; }
+.view-toggle-btn svg { width:14px; height:14px; }
+
+/* ─── Client cards ─── */
+.client-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px; }
+.client-card { background:white; border:2px solid var(--border); border-radius:12px; padding:18px; cursor:pointer; transition:all 0.2s; }
+.client-card:hover { border-color:var(--blue); transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+.client-card-name { font-size:15px; font-weight:700; margin-bottom:4px; }
+.client-card-contadora { font-size:11px; color:var(--light); margin-bottom:10px; }
+.client-card-progress { display:flex; align-items:center; gap:8px; }
+.client-card-bar { flex:1; height:8px; background:#f1f5f9; border-radius:4px; overflow:hidden; }
+.client-card-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.client-card-pct { font-size:12px; font-weight:700; min-width:36px; text-align:right; }
+.client-card-count { font-size:11px; color:var(--muted); margin-top:4px; }
+
 .contadora-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; }
 .contadora-pill { padding:6px 16px; border-radius:20px; cursor:pointer; font-size:0.82rem; font-weight:600; background:var(--card); border:1px solid var(--border); color:var(--muted); transition:all 0.2s; }
 .contadora-pill:hover { border-color:var(--navy); color:var(--navy); }
@@ -292,6 +313,7 @@ var userNameVal = '';
 var selectedMes = '';
 var selectedContadora = 'Todas';
 var currentView = 'main'; // 'main' or 'detail'
+var impViewMode = 'table'; // 'table' or 'cards'
 var mainTab = 'checklist'; // 'checklist' or 'kpi'
 
 // Data
@@ -315,15 +337,24 @@ function getCurrentMonth() {
   return MESES_KEY[prev];
 }
 
+var CONTADORA_EXCLUIDAS = ['Milka', 'Milka (freelance)', 'Yolenny'];
+var CONTADORA_ORDER = ['Taina', 'Beliani', 'Victoria', 'Yessica', 'Karina', 'Sin asignar'];
+
 function sortContadoras(names) {
-  var regular = [];
-  var last = [];
-  names.forEach(function(n) {
-    if (n === 'Sin asignar') last.push(n);
-    else regular.push(n);
-  });
-  regular.sort();
-  return regular.concat(last);
+  return names
+    .filter(function(n) {
+      for (var i = 0; i < CONTADORA_EXCLUIDAS.length; i++) {
+        if (n === CONTADORA_EXCLUIDAS[i] || n.indexOf(CONTADORA_EXCLUIDAS[i]) === 0) return false;
+      }
+      return true;
+    })
+    .sort(function(a, b) {
+      var ia = CONTADORA_ORDER.indexOf(a);
+      var ib = CONTADORA_ORDER.indexOf(b);
+      if (ia < 0) ia = 999;
+      if (ib < 0) ib = 999;
+      return ia - ib;
+    });
 }
 
 function getDeadlineDate(impuestoId, mesKey, anio) {
@@ -521,10 +552,18 @@ function getContadorasForMes(mes) {
   return contadorasMap[mes] || {};
 }
 
+function isContadoraExcluida(name) {
+  for (var i = 0; i < CONTADORA_EXCLUIDAS.length; i++) {
+    if (name === CONTADORA_EXCLUIDAS[i] || name.indexOf(CONTADORA_EXCLUIDAS[i]) === 0) return true;
+  }
+  return false;
+}
+
 function getClientsForMonth() {
   var mesMap = getContadorasForMes(selectedMes);
   var clients = {};
   Object.keys(mesMap).forEach(function(contadora) {
+    if (isContadoraExcluida(contadora)) return;
     if (selectedContadora !== 'Todas' && contadora !== selectedContadora) return;
     mesMap[contadora].forEach(function(cliente) {
       if (!clients[cliente]) clients[cliente] = contadora;
@@ -601,7 +640,7 @@ function renderMain() {
 
   // Build client list with progress
   var clients = getClientsForMonth();
-  var clientNames = Object.keys(clients).sort();
+  var clientNames = Object.keys(clients).sort(function(a, b) { return a.localeCompare(b, 'es'); });
   var tableRows = [];
 
   clientNames.forEach(function(cliente) {
@@ -617,7 +656,7 @@ function renderMain() {
     tableRows.push({ cliente: cliente, contadora: contadora, prog: prog, statuses: rowStatuses });
   });
 
-  // Summary stats (same as contabilidad)
+  // Summary stats
   var totalClients = tableRows.length;
   var completados = tableRows.filter(function(r) { return r.prog.pct === 100; }).length;
   var enProgreso = tableRows.filter(function(r) { return r.prog.pct > 0 && r.prog.pct < 100; }).length;
@@ -632,10 +671,19 @@ function renderMain() {
   h += '<div class="summary-stat"><div class="summary-stat-label">Avance promedio</div><div class="summary-stat-value" style="color:' + getBarColor(avgPct) + '">' + avgPct + '%</div></div>';
   h += '</div>';
 
-  // Table
+  // View toggle
+  var iconCards = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>';
+  var iconTable = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3" y2="18"/><line x1="9" y1="6" x2="9" y2="18"/></svg>';
+  h += '<div class="view-toggle-row">';
+  h += '<div class="view-toggle">';
+  h += '<button class="view-toggle-btn' + (impViewMode === 'table' ? ' active' : '') + '" onclick="impToggleView(\'table\')">' + iconTable + ' Tabla</button>';
+  h += '<button class="view-toggle-btn' + (impViewMode === 'cards' ? ' active' : '') + '" onclick="impToggleView(\'cards\')">' + iconCards + ' Cuadros</button>';
+  h += '</div></div>';
+
   if (tableRows.length === 0) {
     h += '<div class="empty-state"><div class="emoji">📋</div><p>No hay clientes asignados para ' + MESES_FULL[MESES_KEY.indexOf(selectedMes)] + '.</p></div>';
-  } else {
+  } else if (impViewMode === 'table') {
+    // Table view
     h += '<div style="overflow-x:auto">';
     h += '<table class="tax-table">';
     h += '<thead><tr>';
@@ -670,9 +718,30 @@ function renderMain() {
     });
 
     h += '</tbody></table></div>';
+  } else {
+    // Cards view
+    h += '<div class="client-grid">';
+    tableRows.forEach(function(r) {
+      var barColor = r.prog.pct === 100 ? 'var(--green)' : r.prog.pct > 0 ? 'var(--amber)' : '#e2e8f0';
+      h += '<div class="client-card" onclick="openDetail(\'' + escJs(r.cliente) + '\',\'' + escJs(r.contadora) + '\')">';
+      h += '<div class="client-card-name">' + esc(r.cliente) + '</div>';
+      h += '<div class="client-card-contadora">' + esc(r.contadora) + '</div>';
+      h += '<div class="client-card-progress">';
+      h += '<div class="client-card-bar"><div class="client-card-fill" style="width:' + r.prog.pct + '%;background:' + barColor + '"></div></div>';
+      h += '<div class="client-card-pct" style="color:' + getBarColor(r.prog.pct) + '">' + r.prog.pct + '%</div>';
+      h += '</div>';
+      h += '<div class="client-card-count">' + r.prog.done + ' de ' + r.prog.total + ' tareas</div>';
+      h += '</div>';
+    });
+    h += '</div>';
   }
 
   el.innerHTML = h;
+}
+
+function impToggleView(mode) {
+  impViewMode = mode;
+  renderMain();
 }
 
 // ==================== DETAIL VIEW ====================
