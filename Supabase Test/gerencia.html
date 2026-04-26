@@ -761,29 +761,100 @@ let ccPerfilOpen = {};
 let ccPerfilEditing = {};
 
 // ─── CC Supabase Data Loading ───
+// Helpers para calcular mes a partir de fecha
+function ccMonthIdx(dateStr) {
+  if (!dateStr) return -1;
+  var parts = dateStr.split('-');
+  if (parts.length < 2) return -1;
+  return parseInt(parts[1], 10) - 1; // 0-based
+}
+function ccYear(dateStr) {
+  if (!dateStr) return 0;
+  return parseInt(dateStr.split('-')[0], 10);
+}
+
 async function ccLoadData() {
-  const data = {};
-  MESES.forEach(m => { data[m] = null; });
-  const { data: resumen } = await sb.from('meses_resumen').select('*').eq('anio', 2026);
-  const { data: asig } = await sb.from('asignaciones').select('*').eq('anio', 2026);
-  if (resumen) {
-    resumen.forEach(r => {
-      const asigMes = (asig || []).filter(a => a.mes === r.mes);
-      const asignaciones = {};
-      asigMes.forEach(a => {
-        if (!asignaciones[a.contadora]) asignaciones[a.contadora] = [];
-        asignaciones[a.contadora].push({ n: a.cliente, s: parseFloat(a.serv) || 0, a: parseFloat(a.adm) || 0 });
-      });
-      data[r.mes] = {
-        total: r.total_clientes,
-        nuevos: r.nuevos || [],
-        churn: r.churn || [],
-        notas: r.notas || '',
-        txTotal: { serv: parseFloat(r.serv_total) || 0, adm: parseFloat(r.adm_total) || 0 },
-        asignaciones
-      };
+  var data = {};
+  MESES.forEach(function(m) { data[m] = null; });
+
+  // 1. Cargar todos los clientes de la maestra
+  var { data: clientes } = await sb.from('clientes').select('nombre, fecha_entrada, fecha_salida, activo, monto_adm, contadora_contabilidad, responsabilidad_contabilidad');
+  clientes = clientes || [];
+
+  // 2. Cargar asignaciones para el detalle por contadora (serv/adm por mes)
+  var { data: asig } = await sb.from('asignaciones').select('*').eq('anio', 2026);
+  asig = asig || [];
+
+  // 3. Cargar notas de meses_resumen (si existen, solo para las notas)
+  var { data: resumen } = await sb.from('meses_resumen').select('mes, notas').eq('anio', 2026);
+  var notasPorMes = {};
+  (resumen || []).forEach(function(r) { if (r.notas) notasPorMes[r.mes] = r.notas; });
+
+  // 4. Para cada mes, calcular movimientos desde la maestra
+  var currentMonthIdx = new Date().getMonth(); // 0-based (0=jan)
+
+  MESES.forEach(function(mes, mesIdx) {
+    // Solo generar datos hasta el mes actual
+    if (mesIdx > currentMonthIdx) return;
+
+    // Nuevos: fecha_entrada cae en este mes y año 2026
+    var nuevos = [];
+    var churn = [];
+
+    clientes.forEach(function(c) {
+      if (c.fecha_entrada && ccYear(c.fecha_entrada) === 2026 && ccMonthIdx(c.fecha_entrada) === mesIdx) {
+        nuevos.push(c.nombre);
+      }
+      if (c.fecha_salida && ccYear(c.fecha_salida) === 2026 && ccMonthIdx(c.fecha_salida) === mesIdx) {
+        churn.push(c.nombre);
+      }
     });
-  }
+
+    // Cierre: clientes activos al final del mes
+    // Un cliente está activo al final del mes si:
+    //   - fecha_entrada IS NULL (pre-existente) o fecha_entrada <= último día del mes
+    //   - Y fecha_salida IS NULL o fecha_salida > último día del mes
+    var lastDay = new Date(2026, mesIdx + 1, 0); // último día del mes
+    var lastDayStr = '2026-' + String(mesIdx + 1).padStart(2, '0') + '-' + String(lastDay.getDate()).padStart(2, '0');
+
+    var total = 0;
+    clientes.forEach(function(c) {
+      var entered = !c.fecha_entrada || c.fecha_entrada <= lastDayStr;
+      var notLeft = !c.fecha_salida || c.fecha_salida > lastDayStr;
+      if (entered && notLeft) total++;
+    });
+
+    // Asignaciones del mes (para detalle por contadora)
+    var asigMes = asig.filter(function(a) { return a.mes === mes; });
+    var asignaciones = {};
+    asigMes.forEach(function(a) {
+      if (!asignaciones[a.contadora]) asignaciones[a.contadora] = [];
+      asignaciones[a.contadora].push({ n: a.cliente, s: parseFloat(a.serv) || 0, a: parseFloat(a.adm) || 0 });
+    });
+
+    // Transacciones: sumar monto_adm de clientes activos ese mes
+    var servTotal = 0;
+    var admTotal = 0;
+    clientes.forEach(function(c) {
+      var entered = !c.fecha_entrada || c.fecha_entrada <= lastDayStr;
+      var notLeft = !c.fecha_salida || c.fecha_salida > lastDayStr;
+      if (entered && notLeft && c.responsabilidad_contabilidad !== false) {
+        servTotal += (c.monto_adm || 0);
+      }
+    });
+    // adm real viene de asignaciones
+    asigMes.forEach(function(a) { admTotal += (parseFloat(a.adm) || 0); });
+
+    data[mes] = {
+      total: total,
+      nuevos: nuevos,
+      churn: churn,
+      notas: notasPorMes[mes] || '',
+      txTotal: { serv: servTotal, adm: admTotal },
+      asignaciones: asignaciones
+    };
+  });
+
   ccDATA = data;
 }
 
