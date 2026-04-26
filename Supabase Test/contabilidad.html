@@ -399,7 +399,7 @@ const KPI_ESCALA = [
 
 const MV_EXCEPTION = { contadora: 'Beliani', cliente: 'Mv Creative' };
 
-const EXCLUIDAS = ['Karina', 'Milka', 'Yolenny'];
+const EXCLUIDAS = ['Milka', 'Yolenny'];
 
 // ─── 23 items del checklist, ordenados por fecha cronologica ───
 const ITEM_GROUPS = [
@@ -623,9 +623,10 @@ async function loadAsignaciones() {
   ASIGNACIONES = {};
   CLIENTES_CONTAB.forEach(c => {
     const cont = c.contadora_contabilidad;
-    if (!cont || isExcluida(cont)) return;
+    if (cont && isExcluida(cont)) return;
+    var grupo = cont || 'Sin asignar';
     MESES.forEach(mes => {
-      const key = cont + '_' + mes;
+      const key = grupo + '_' + mes;
       if (!ASIGNACIONES[key]) ASIGNACIONES[key] = [];
       const adm = ASIG_ADM[c.nombre + '_' + mes] || 0;
       ASIGNACIONES[key].push({
@@ -652,12 +653,17 @@ function getClientNames(contadora, mes) {
 // Returns all unique contadora names from maestra
 function getContadoraNames() {
   const names = {};
+  var hasSinAsignar = false;
   CLIENTES_CONTAB.forEach(c => {
     if (c.contadora_contabilidad && !isExcluida(c.contadora_contabilidad)) {
       names[c.contadora_contabilidad] = true;
+    } else if (!c.contadora_contabilidad) {
+      hasSinAsignar = true;
     }
   });
-  return sortContadoras(Object.keys(names));
+  var sorted = sortContadoras(Object.keys(names));
+  if (hasSinAsignar) sorted.push('Sin asignar');
+  return sorted;
 }
 
 // ==================== CHECKLIST DATA ====================
@@ -1119,10 +1125,14 @@ function renderCkClientList(el) {
   const enProgreso = clients.filter(c => c.pct > 0 && c.pct < 100).length;
   const sinIniciar = clients.filter(c => c.pct === 0).length;
   const avgPct = Math.round(clients.reduce((s, c) => s + c.pct, 0) / totalClients);
+  const totalActivos = CLIENTES_CONTAB.length;
+  const sinAsignarCount = CLIENTES_CONTAB.filter(c => !c.contadora_contabilidad).length;
 
   let html = '';
   html += '<div class="summary-stats">';
-  html += '<div class="summary-stat"><div class="summary-stat-label">Clientes</div><div class="summary-stat-value">' + totalClients + '</div></div>';
+  html += '<div class="summary-stat"><div class="summary-stat-label">Total clientes activos</div><div class="summary-stat-value">' + totalActivos + '</div></div>';
+  html += '<div class="summary-stat"><div class="summary-stat-label">Asignados</div><div class="summary-stat-value">' + (totalActivos - sinAsignarCount) + '</div></div>';
+  html += '<div class="summary-stat"><div class="summary-stat-label">Sin asignar</div><div class="summary-stat-value" style="color:' + (sinAsignarCount > 0 ? 'var(--amber)' : 'var(--green)') + '">' + sinAsignarCount + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">Completados</div><div class="summary-stat-value" style="color:var(--green)">' + completados + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">En progreso</div><div class="summary-stat-value" style="color:var(--amber)">' + enProgreso + '</div></div>';
   html += '<div class="summary-stat"><div class="summary-stat-label">Sin iniciar</div><div class="summary-stat-value" style="color:var(--red)">' + sinIniciar + '</div></div>';
